@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด</title>
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-PW7HPDW');</script>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicom.ico" rel="icon">
+  <!--<link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">-->
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Roboto:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/css/w3.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+  <link href="assets/css/css.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anuphan&display=swap" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/versions/2.12.0/sdk.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-firestore.js"></script>
+
+  <style>
+    .mb-5 { margin-bottom: 1.0rem!important; }
+  </style>
+</head>
+
+
+<body class="body1">
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PW7HPDW"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+  <header id="header" class="d-flex align-items-center" style="background: #ccdff6;">
+    <div class="container d-flex align-items-center justify-content-between">
+      <a href="index.html"><img src="./img/logo.png" style="height: 40px;"></a>
+<!--
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a class="nav-link scrollto " href="#hero">หน้าแรก</a></li>
+          <li><a class="nav-link scrollto" href="#about">รายละเอียด</a></li>
+          <li><a class="nav-link scrollto" href="#team">ข้อตกลงการใช้งาน</a></li>
+          <li><a class="nav-link scrollto" href="#contact">ติดต่อเรา</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav>
+-->
+
+    </div>
+  </header><!-- End Header -->
+
+
+
+  <section class="inner-page" style="padding:40px 0" data-aos="fade-up">
+    <div class="container">
+      <div class="section-title">
+        <h2>หนังสือแจ้งยอดเงินปันผลและเงินเฉลี่ยคืนดอกเบี้ย<br>ประจำปี 2567</h2>
+        <div id="MyProfile" style="margin-top:10px;"></div>
+        <p style="margin-top:10px; text-align: left; color:#666; font-size:13px;">
+          <span id="DisplayUser"></span><br>
+          เรื่อง <b>ประกาศจ่ายเงินปันผล ประจำปี 2567</b><br><br>สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด จะประกาศจ่ายเงินปันผล ประจำปี 2567 ในอัตราร้อยละ <b><font color="#f68b1f">4.65%</font></b> เงินเฉลี่ยคืนดอกเบี้ยเงินกู้อัตราร้อยละ <b><font color="#f68b1f">10%</font></b> และเงินค่าสมนาคุณ <b><font color="#f68b1f">120 บาท</font></b> ซึ่งสหกรณ์จะโอนเงินดังกล่าว หลังจากได้รับอนุมัติจากที่ประชุมใหญ่แล้วเข้าบัญชีเงินเดือนของสมาชิก ในวันที่ 7 กุมภาพันธ์ 2568</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="DisplayData" class="inner-page" data-aos="fade-up" data-aos-delay="200" style="background: #f2f6fb; margin-top:-8px;display: none;">
+    <div class="container">
+        <div class="section-title">
+          <h2 style="background: #a1acb5;">ข้อมูลเงินปันผล และเฉลี่ยคืนดอกเบี้ย</h2>
+        </div>
+        <div class="card mb-3" style="margin-top:15px;">
+          <div class="card-body" style="background: #fff; border-radius: 15px;">
+
+            
+            <div id="Loading" style="margin:40px auto;"><center><img src="./img/loading.gif" style="width:50px;"></center></div>
+            <div id="DisplayMoney"></div>
+<!--
+            <div class="row" style="margin-top:-6px;">
+              <div class="col-sm-3 mb-0" style="width: 55%; padding-top:13px;">เงินปันผล (บาท)</div>
+              <div class="col-sm-9 text-secondary" style="width: 45%;float: left;">
+                <div><input id='txtidmember' type='text' value='143,406.00' style='text-align: right;'></div>
+              </div>
+            </div>
+            <hr>
+
+
+            <div class="row" style="margin-top:-6px;">
+              <div class="col-sm-3 mb-0" style="width: 55%; padding-top:13px;">เงินเฉลี่ยคืน (บาท)</div>
+              <div class="col-sm-9 text-secondary" style="width: 45%;float: left;">
+                <div><input id='txtidmember' type='text' value='2,345,000' style='text-align: right;'></div>
+              </div>
+            </div>
+            <hr>
+
+
+            <div class="row" style="margin-top:-6px;">
+              <div class="col-sm-3 mb-0" style="width: 55%; padding-top:13px;">สมนาคุณ (บาท)</div>
+              <div class="col-sm-9 text-secondary" style="width: 45%;float: left;">
+                <div><input id='txtidmember' type='text' value='120.00' style='text-align: right;'></div>
+              </div>
+            </div>
+            <hr>
+
+
+            <div class="row" style="margin-top:-6px;">
+              <div class="col-sm-3 mb-0" style="width: 55%; padding-top:13px;">จ่ายสุทธิ (บาท)</div>
+              <div class="col-sm-9 text-secondary" style="width: 45%;float: left;">
+                <div><input id='txtidmember' type='text' value='143,526.00' style='text-align: right;'></div>
+              </div>
+            </div>
+-->
+          </div>
+        </div>
+      </div>
+      <div id="DateConfirm" class="row" style="margin-top: 20px; display: none;">
+        <div class="col-sm-12">
+          <center>
+            <div class="btn btn-info btn-info-font red" onclick="DataFalse()">ข้อมูลไม่ถูกต้อง</div>
+            <div class="btn btn-info btn-info-font green" onclick="DataTrue()">ข้อมูลถูกต้องแล้ว</div>
+          </center>
+        </div>
+      </div>
+      <div id="ShowConfirm" class="row" style="margin-top: 20px; display: none;">
+        <div class="col-sm-12">
+          <center>
+            <div id="DisplayDate"></div>
+          </center>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+<!--
+    <section class="inner-page" data-aos="fade-up" data-aos-delay="400" style="background: #ffffff;">
+      <div class="container">
+        <div class="col-md-8" style="width:95%;margin:auto;">
+          <div class="section-title">
+            <h2 style="background: #a1acb5;">สินเชื่อและเงินกู้ยืม</h2>
+          </div>
+        </div>
+        <center>
+          <div id="UserNew"></div>
+          <div class="txt-line-center" style="padding-bottom:0px;">เลือกประเภทสมาชิกที่ต้องการสมัคร</div>
+        </center>
+      </div>
+    </section>
+
+
+    <section class="inner-page" data-aos="fade-up" data-aos-delay="600" style="background: #f2f6fb; margin-top:-8px;">
+      <div class="container">
+        <div class="col-md-8" style="width:95%;margin:auto;">
+          <div class="section-title">
+            <h2 style="background: #a1acb5;">3. เลือกศูนย์ไฟ-ฟ้าที่ต้องการเป็นสมาชิก</h2>
+            <p>เลือกศูนย์ไฟ-ฟ้าเพียง 1 ศูนย์ที่ท่านต้องการเป็นสมาชิก</p>
+          </div>
+          <div id="DisplayLocation"></div>
+        </div>
+      </div>
+    </section>
+  <div class="clr" style="height: 10px;"></div>
+-->
+
+
+
+
+  <div id="id01" class="w3-modal w3-animate-opacity">
+    <div class="w3-modal-content w3-card-4">
+      <div class="w3-container" style="min-height:300px;padding:24px;width:100%;text-align:center;">
+        <div class="section-title">
+          <h2 style="background: #ff0000">แจ้งรายการไม่ถูกต้อง</h2>
+        </div>
+        <div><img src="./img/note.png" style="width:100%; margin:10px auto 10px auto; max-width:220px;"></div>
+        <div>
+          <div><p style="margin-top:10px; text-align: left; color:#666; font-size: 13px; line-height:1.2;">กรอกรายละเอียดส่วนที่คุณเห็นว่าไม่ถูกต้อง ให้ครบถ้วนก่อนที่จะทำการบันทึกรายการ<br></p></div>
+          <div class="row" style="margin-top:-6px;">
+            <div class="col-sm-9 text-secondary">
+              <div><textarea class="form-control" rows="5" id="txtmemo" style="padding:5px;"></textarea></div>
+            </div>
+          </div>
+          <div class="clr" style="height: 20px;"></div>
+
+
+        </div>
+        <div class="btn btn-info btn-info-font red" onclick="CancelItem()">ส่งแจ้งตรวจสอบ</div>
+        <div class="btn btn-info btn-info-font grey" onclick="CloseAll()">ยกเลิกรายการ</div>
+      </div>
+    </div>
+    <div class="clr" style="height: 70px;"></div>
+  </div>
+
+
+  <div id="id02" class="w3-modal w3-animate-opacity">
+    <div class="w3-modal-content w3-card-4">
+      <div class="w3-container" style="min-height:300px;padding:24px;width:100%;text-align:center;">
+        <div class="section-title">
+          <h2>คุณได้ยืนยันรายการถูกต้องเรียบร้อยแล้ว</h2>
+        </div>
+        <div><img src="./img/checkok.png" style="width:100%; max-width:200px; margin: 15px auto;"></div>
+        <center>
+          <div id="DisplayDate1"></div>
+        </center>
+        <p style="font-size: 14px; color:#35b614;">ขอขอบคุณสำหรับการยืนยันข้อมูล</p>
+        <!--<div id="CheckKeyIN"></div> -->
+        <div onclick="CloseAll()" class="btn btn-info btn-info-font grey" style="margin-top:20px;">ปิดหน้าต่างนี้</div>
+      </div>
+    </div>
+    <div class="clr" style="height: 70px;"></div>
+  </div>
+
+
+  <div id="id03" class="w3-modal w3-animate-opacity">
+    <div class="w3-modal-content w3-card-4">
+      <div class="w3-container" style="min-height:300px;padding:24px;width:100%;text-align:center;">
+        <div class="section-title">
+          <h2>ขอเชิญประชุมใหญ่สามัญประจำปี 2567</h2>
+        </div>
+        <div><img src="./img/meeting.png" style="width:100%; max-width:200px; margin: 3px auto;"></div>
+        <center>
+          <div style="text-align: left; font-size: 13px;">ด้วย <b>สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด</b> ได้กำหนดให้มีการจัดประชุมใหญ่สามัญ ประจำปี 2567 ในวันศุกร์ ที่ 7 กุมภาพันธ์ 2568 ณ ห้องประชุมออดิทอเรียม ชั้น 7 ธนาคารทหารไทยธนชาต (สำนักพหลโยธิน) เลขที่ 3000 ถนนพหลโยธิน  แขวงจอมพล เขตจตุจักร กรุงเทพมหานคร โดยให้สมาชิกลงทะเบียนเข้าร่วมประชุมตั้งแต่ เวลา 11.00 น. และเริ่มการประชุมเวลา 11.30 น. </div>
+        </center>
+        <div id="StatusMeeting"></div>
+<!--
+        <div onclick="NoMeeting()" class="btn btn-info btn-info-font red" style="margin-top:20px;">ไม่เข้าร่วม</div>
+        <div onclick="YesMeeting()" class="btn btn-info btn-info-font green" style="margin-top:20px;">เข้าร่วม</div>
+        <div onclick="CloseAll()" class="btn btn-info btn-info-font grey" style="margin-top:20px;">ปิดหน้าต่าง</div>
+-->
+      </div>
+    </div>
+    <div class="clr" style="height: 70px;"></div>
+  </div>
+
+  <script src="assets/vendor/purecounter/purecounter.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="assets/vendor/waypoints/noframework.waypoints.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+
+  <!-- Template Main JS File -->
+  <script src="assets/js/main.js"></script>
+  <script src="./js/connect.js"></script>
+  <script src="js/viewpage.js"></script>
+
+</body>
+
+</html>
