@@ -10,7 +10,7 @@ var yEmpName = "";
 var Eid = "";
 
 $(document).ready(function () {
-/*
+
   var str = "";
   var sLineID = "Ua6b6bf745bd9bfd01a180de1a05c23b3";
   var sLineName = "Website";
@@ -23,8 +23,8 @@ $(document).ready(function () {
   $("#MyProfile").html(str);  
   Connect_DB();
   CheckEmpID();
-*/
-  main();
+
+  //main();
 });
 
 
