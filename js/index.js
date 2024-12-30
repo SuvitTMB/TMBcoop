@@ -28,7 +28,6 @@ $(document).ready(function () {
 });
 
 
-
 async function main() {
   await liff.init({ liffId: "1656865573-EkV554vL" });
   document.getElementById("isLoggedIn").append(liff.isLoggedIn());
@@ -54,13 +53,14 @@ async function getUserProfile() {
   sessionStorage.setItem("LineID", profile.userId);
   sessionStorage.setItem("LineName", profile.displayName);
   sessionStorage.setItem("LinePicture", profile.pictureUrl);
+  alert(profile.userId);
+
   str += '<div><img src="'+ sessionStorage.getItem("LinePicture") +'" class="user-profile"></div>';
   str += '<div class="NameLine">'+ sessionStorage.getItem("LineName")+'</div>';
   $("#MyProfile").html(str);  
   Connect_DB();
   CheckEmpID();
 }
-
 
 
 var xCheckUser = "";
@@ -75,7 +75,6 @@ function CheckEmpID() {
         xCheckUser = doc.data().EmpID;
         sessionStorage.setItem("TMBcoop_EmpID", doc.data().EmpID);
         sessionStorage.setItem("TMBcoop_EmpName", doc.data().EmpName);
-        //alert("confirm");
         gotohome();
       }
     });
