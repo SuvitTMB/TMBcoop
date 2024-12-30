@@ -30,7 +30,7 @@ $(document).ready(function () {
 
 
 async function main() {
-  await liff.init({ liffId: "1653903646-gVzRlD3z" });
+  await liff.init({ liffId: "1660982639-V9ZLJRl0" });
   document.getElementById("isLoggedIn").append(liff.isLoggedIn());
   if(liff.isLoggedIn()) {
     getUserProfile();
