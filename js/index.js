@@ -10,7 +10,7 @@ var yEmpName = "";
 var Eid = "";
 
 $(document).ready(function () {
-
+/*
   var str = "";
   var sLineID = "Ua6b6bf745bd9bfd01a180de1a05c23b3";
   var sLineName = "Website";
@@ -23,13 +23,13 @@ $(document).ready(function () {
   $("#MyProfile").html(str);  
   Connect_DB();
   CheckEmpID();
-
-  //main();
+*/
+  main();
 });
 
 
 async function main() {
-  await liff.init({ liffId: "1656865573-EkV554vL" });
+  await liff.init({ liffId: "1660982639-V9ZLJRl0" });
   document.getElementById("isLoggedIn").append(liff.isLoggedIn());
   if(liff.isLoggedIn()) {
     getUserProfile();
