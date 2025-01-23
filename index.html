@@ -35,7 +35,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Anuphan&display=swap" rel="stylesheet">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://static.line-scdn.net/liff/edge/versions/2.12.0/sdk.js"></script>
-  <!--<script src="https://static.line-scdn.net/liff/edge/versions/2.21.4/sdk.js"></script>-->
   <script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-firestore.js"></script>
 
@@ -52,8 +51,20 @@
   <header id="header" class="d-flex align-items-center" style="background: #ccdff6;">
     <div class="container d-flex align-items-center justify-content-between">
       <a href="index.html"><img src="./img/logo.png" style="height: 40px;"></a>
+<!--
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a class="nav-link scrollto " href="#hero">หน้าแรก</a></li>
+          <li><a class="nav-link scrollto" href="#about">รายละเอียด</a></li>
+          <li><a class="nav-link scrollto" href="#team">ข้อตกลงการใช้งาน</a></li>
+          <li><a class="nav-link scrollto" href="#contact">ติดต่อเรา</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav>
+-->
+
     </div>
-  </header>
+  </header><!-- End Header -->
   <div id="isLoggedIn" style="color:#fff;"></div>
 
   <section class="inner-page" style="padding:40px 0 10px 0;" data-aos="fade-up">
@@ -105,7 +116,7 @@
       <div class="row" id="savedata" style="display:block;">
         <div class="col-sm-12">
           <center>
-            <div class="btn btn-info btn-info-font green" onclick="CheckUserID()">ลงทะเบียนสมาชิก</div>
+            <div class="btn btn-info btn-info-font green" onclick="CheckLineID()">ลงทะเบียนสมาชิก</div>
           </center>
         </div>
       </div>
@@ -123,6 +134,7 @@
           <h2>การลงทะเบียนของคุณ<br>เสร็จเรียบร้อยแล้ว</h2>
         </div>
         <div><img src="./img/profile.png" style="width:100%; margin:10px auto 30px auto; max-width:240px;"></div>
+        <div id="WelcomeTOcoop"></div>
         <div class="btn btn-info btn-info-font green" onclick="gotohome()">ดูรายงานของคุณ</div>
       </div>
     </div>
@@ -144,6 +156,21 @@
     <div class="clr" style="height: 70px;"></div>
   </div>
 
+  <div id="id03" class="w3-modal w3-animate-opacity">
+    <div class="w3-modal-content w3-card-4">
+      <div class="w3-container" style="min-height:300px;padding:24px;width:100%;text-align:center;">
+        <div class="section-title">
+          <h2>รหัสสมาชิกนี้มีผู้นำมาเปิดใช้งานแล้ว</h2>
+        </div>
+        <div><img src="./img/false.png" style="width:100%; max-width:200px; margin-bottom: 15px;"></div>
+        <div><h6><font color='#ff0000'>รหัสสมาชิกนี้มีผู้นำมาเปิดใช้งานแล้ว<br>กรุณาติดต่อเจ้าหน้าที่สหกรณ์เพื่อตรวจสอบ</font><br><br>หรือกรอกข้อมูลใหม่อีกครั้ง</h6><br></div>
+        <div onclick="gotoindex()" class="btn btn-info btn-info-font grey">ปิดหน้าต่างนี้</div>
+      </div>
+    </div>
+    <div class="clr" style="height: 70px;"></div>
+  </div>
+
+
   <script src="assets/vendor/purecounter/purecounter.js"></script>
   <script src="assets/vendor/aos/aos.js"></script>
   <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -152,6 +179,7 @@
   <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
   <script src="assets/vendor/waypoints/noframework.waypoints.js"></script>
   <script src="assets/vendor/php-email-form/validate.js"></script>
+
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
   <script src="js/connect.js"></script>
