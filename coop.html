@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup Login/Registration ระบบสหกรณ์</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans Thai', 'Inter', sans-serif;
+            background-color: #f3f4f6; 
+        }
+
+        .screen {
+            display: none;
+            flex-grow: 1;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+            min-height: 100vh; 
+            width: 100%; 
+        }
+        .screen.active {
+            display: flex;
+        }
+
+        .form-input {
+            @apply w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500;
+            padding: 5px 10px; 
+            background-color: #ffedd5; 
+        }
+        .form-button {
+            @apply w-full bg-blue-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-blue-700 transition-colors;
+        }
+
+        /* --- PIN Screen Styles --- */
+        .pin-display {
+            display: flex;
+            gap: 0.5rem; /* 8px */
+            margin-bottom: 1.5rem; /* 24px */
+        }
+        .pin-dot {
+            width: 3rem; /* 48px */
+            height: 3rem; /* 48px */
+            border-radius: 0.5rem; /* 8px */
+            background-color: #ffffff;
+            border: 2px solid #cbd5e1; /* border-gray-300 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 600; /* font-semibold */
+            color: #374151; /* text-gray-700 */
+            transition: border-color 0.2s;
+        }
+        .pin-dot.filled {
+            border-color: #3b82f6; /* border-blue-500 */
+            background-color: #eff6ff; /* bg-blue-50 */
+        }
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem; /* 16px */
+            width: 100%;
+            max-width: 280px; /* 10.5rem */
+            margin-top: 1.5rem;
+        }
+        .numpad-button {
+            width: 100%;
+            padding-top: 100%; /* Creates 1:1 aspect ratio */
+            position: relative;
+            background-color: #ffffff;
+            border-radius: 9999px; /* rounded-full */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        .numpad-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* shadow-sm */
+        }
+        .numpad-button-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 500; /* font-medium */
+            color: #1f2937; /* text-gray-800 */
+        }
+        .numpad-button.icon {
+            font-size: 1.5rem; /* text-2xl */
+        }
+
+        /* --- NEW: PIN Input Box Styles (for Setup) --- */
+        .pin-input-group {
+            display: flex;
+            gap: 0.5rem; /* 8px */
+            justify-content: center;
+        }
+        .pin-input {
+            width: 3rem; /* 48px */
+            height: 3.5rem; /* 56px */
+            border: 2px solid #cbd5e1; /* border-gray-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+            text-align: center;
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 600; /* font-semibold */
+            color: #374151; /* text-gray-700 */
+            background-color: #f9fafb; /* bg-gray-50 */
+            /* Prevents the arrows on number inputs */
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        .pin-input::-webkit-outer-spin-button,
+        .pin-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .pin-input:focus {
+            outline: none;
+            border-color: #3b82f6; /* border-blue-500 */
+            box-shadow: 0 0 0 2px #bfdbfe; /* ring-2 ring-blue-200 */
+        }
+        /* ----------------------------------------------- */
+
+        /* --- Modal (Lightbox) Styles --- */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* display: flex; */ /* Changed: Use JS to toggle */
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 50;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 1.5rem; /* p-6 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); /* shadow-xl */
+            width: 100%;
+            max-width: 384px; /* max-w-sm */
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+        <!-- ===== 1. หน้าจอเริ่มต้น (Login/Registration Entry) ===== -->
+        <div id="welcome-screen" class="screen active bg-gradient-to-b from-sky-100 to-white">
+            <!-- User Request: Logo w-90% h-auto -->
+            <div class="w-32 h-32 rounded-full bg-white shadow-md flex items-center justify-center overflow-hidden mb-8 p-0 box-border">
+                <img src="https://www.tmbcoop.com/public/member/images/logo.jpg" alt="Coop Logo" class="w-[90%] h-auto object-cover" onerror="this.src='https://placehold.co/128x128/0284C7/FFFFFF?text=Logo'; this.onerror=null;">
+            </div>
+            <h1 class="text-base font-normal text-gray-800 mb-2">ยินดีต้อนรับสู่</h1>
+            <h2 class="text-xl font-bold text-blue-700 mb-6">
+                สหกรณ์ออมทรัพย์<br>
+                <span class="text-lg font-bold">พนักงานธนาคารทหารไทย จำกัด</span>
+            </h2>
+            
+            
+            <div class="w-full max-w-xs sm:max-w-sm space-y-4" style="margin-top:20px;">
+                <!-- UPDATED: Changed onclick to call goToPinLogin() -->
+                <button onclick="goToPinLogin()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md  hover:bg-blue-700 transition-colors text-sm">
+                    เข้าสู่ระบบ
+                </button>
+                <button onclick="showScreen('register-screen')" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors text-sm">
+                    ลงทะเบียนครั้งแรก
+                </button>
+            </div>
+            <p class="text-xs text-gray-400 mb-8" style="margin-top:15px;">กรุณาเลือกเมนูเพื่อดำเนินการต่อ</p>
+        </div>
+
+        <!-- ===== 1.5. หน้าจอเข้าสู่ระบบ (Login Form) ===== -->
+        <!-- REMOVED: This screen is no longer needed per user request -->
+        <!-- <div id="login-screen" class="screen bg-gradient-to-b from-sky-100 to-white"> ... </div> -->
+
+        <!-- ===== 2. หน้าจอ Loading ===== -->
+        <div id="loading-screen" class="screen bg-gradient-to-b from-sky-100 to-white">
+            <div class="flex flex-col items-center">
+                <!-- Icon (Banknotes) -->
+                <svg class="h-16 w-16 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c-1.35 0-2.663-.188-3.9-1m15.6 0a8.954 8.954 0 00-3.9-1m-1.8 0a8.954 8.954 0 01-3.9-1M3.284 14.253a8.954 8.954 0 01-3.9-1M12 3c1.35 0 2.663.188 3.9 1m-1.8 0a8.954 8.954 0 013.9 1m-15.6 0a8.954 8.954 0 003.9 1m1.8 0a8.954 8.954 0 003.9 1M3 8.25V15.75c0 1.121.828 2.083 1.933 2.162a8.996 8.996 0 003.132 0c1.105-.079 1.933-1.041 1.933-2.162V8.25m-7 0c0-1.121.828-2.083 1.933-2.162a8.996 8.996 0 013.132 0C11.172 6.167 12 7.129 12 8.25m-7 0c0-1.121.828-2.083 1.933-2.162a8.996 8.996 0 013.132 0C11.172 6.167 12 7.129 12 8.25M12 8.25V15.75c0 1.121.828 2.083 1.933 2.162a8.996 8.996 0 003.132 0c1.105-.079 1.933-1.041 1.933-2.162V8.25m-7 0c0-1.121.828-2.083 1.933-2.162a8.996 8.996 0 013.132 0C11.172 6.167 12 7.129 12 8.25m0 0c0-1.121.828-2.083 1.933-2.162a8.996 8.996 0 013.132 0C20.172 6.167 21 7.129 21 8.25v7.5c0 1.121-.828 2.083-1.933 2.162a8.996 8.996 0 01-3.132 0c-1.105-.079-1.933-1.041-1.933-2.162V8.25" />
+                </svg>
+                <!-- Spinner -->
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mt-6"></div>
+                <h2 class="text-lg font-semibold text-gray-800 mt-4">กำลังตรวจสอบข้อมูล</h2>
+                <p class="text-sm text-gray-500">กรุณารอสักครู่ ระบบกำลังตรวจสอบข้อมูลของท่าน</p>
+            </div> <!-- FIX: ปิด div ของ flex-col -->
+        </div> <!-- FIX: ปิด div ของ loading-screen -->
+
+        <!-- ===== 3. หน้าจอลงทะเบียนบัญชี ===== -->
+        <!-- FIX: สร้าง div ของ register-screen ที่หายไปขึ้นมาใหม่ -->
+        <div id="register-screen" class="screen bg-gradient-to-b from-sky-100 to-white">
+            <!-- FIX: เพิ่ม Logo และ Title ของหน้านี้กลับเข้ามา -->
+            <div class="w-32 h-32 rounded-full bg-white shadow-md flex items-center justify-center overflow-hidden mb-8 p-0 box-border">
+                <img src="https://www.tmbcoop.com/public/member/images/logo.jpg" alt="Coop Logo" class="w-[90%] h-auto object-cover" onerror="this.src='https://placehold.co/128x128/0284C7/FFFFFF?text=Logo'; this.onerror=null;">
+            </div>
+            <h2 class="text-xl font-bold text-gray-800 mb-2">ลงทะเบียนครั้งแรก</h2>
+            <p class="text-sm text-gray-600 mb-6">กรุณากรอกข้อมูลเพื่อสร้างบัญชีผู้ใช้งาน</p>
+
+            <!-- FIX: ย้าย form มาไว้ใน div ของ register-screen -->
+            <form id="registration-form" class="w-full max-w-xs sm:max-w-sm space-y-2"> <!-- Changed space-y-4 to space-y-2 -->
+                <div>
+                    <!-- NEW: Flex layout for label and input -->
+                    <div class="flex items-center gap-2">
+                        <!-- UPDATED: Changed text-right to text-left -->
+                        <label for="member-id" class="w-1/3 text-left text-xs font-medium text-gray-700">รหัสสมาชิก</label>
+                        <input type="text" id="member-id" name="member_id" class="form-input text-sm w-2/3" placeholder="ตัวอย่าง: 12345" required>
+                    </div>
+                    <!-- Moved error message -->
+                    <p id="member-id-error" class="text-red-500 text-xs mt-1 hidden text-right w-2/3 ml-auto h-4">กรุณากรอกรหัสสมาชิก</p>
+                </div>
+                <div>
+                    <!-- NEW: Flex layout for label and input -->
+                    <div class="flex items-center gap-2">
+                        <!-- UPDATED: Changed text-right to text-left -->
+                        <label for="full-name" class="w-1/3 text-left text-xs font-medium text-gray-700">ชื่อ - นามสกุล</label>
+                        <input type="text" id="full-name" name="full_name" class="form-input text-sm w-2/3" placeholder="ตัวอย่าง: สมชาย รักดี" required>
+                    </div>
+                    <!-- Moved error message -->
+                    <p id="name-error" class="text-red-500 text-xs mt-1 hidden text-right w-2/3 ml-auto h-4">ชื่อ-นามสกุล ไม่ตรงกับฐานข้อมูล</p>
+                </div>
+                <!-- NEW: Phone Number Field -->
+                <div>
+                    <!-- NEW: Flex layout for label and input -->
+                    <div class="flex items-center gap-2">
+                        <!-- UPDATED: Changed text-right to text-left -->
+                        <label for="phone" class="w-1/3 text-left text-xs font-medium text-gray-700">หมายเลขโทรศัพท์</label>
+                        <input type="tel" id="phone" name="phone" class="form-input text-sm w-2/3" placeholder="ตัวอย่าง: 0811112222" required>
+                    </div>
+                    <!-- Moved error message -->
+                    <p id="phone-reg-error" class="text-red-500 text-xs mt-1 hidden text-right w-2/3 ml-auto h-4">กรุณากรอกหมายเลขโทรศัพท์</p>
+                </div>
+                
+                <!-- REMOVED: Password and Confirm Password fields -->
+
+                <!-- UPDATED: Button with ID, disabled state, and new classes -->
+                <button type="submit" id="register-submit-button" class="w-full py-2 px-4 rounded-md font-semibold text-white !mt-6 text-sm bg-gray-400 cursor-not-allowed" disabled>
+                    ลงทะเบียนสมาชิก
+                </button>
+                <button type="button" onclick="showScreen('welcome-screen')" class="w-full bg-red-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-red-700 transition-colors text-sm">
+                    ยกเลิก / กลับหน้าเข้าสู่ระบบ
+                </button>
+            </form>
+        </div>
+
+        <!-- ===== 4. หน้าจอ Dashboard (กรณีเข้าสู่ระบบสำเร็จ) ===== -->
+        <div id="dashboard-screen" class="screen bg-gradient-to-b from-sky-100 to-white">
+            <header class="w-full bg-blue-600 text-white p-4 shadow-md absolute top-0 left-0">
+                <div class="flex justify-between items-center max-w-6xl mx-auto"> 
+                    <h1 class="text-lg font-bold">สหกรณ์ออมทรัพย์ฯ</h1>
+                    <!-- Logout Button -->
+                    <button onclick="logout()" class="text-white" title="ออกจากระบบ">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                        </svg>
+                    </button>
+                </div>
+            </header>
+            <div class-grow flex flex-col justify-center items-center w-full mt-20"> <!-- mt-20 to avoid header -->
+                <p class="text-base text-gray-600 mb-2">เข้าสู่ระบบสำเร็จ</p>
+                <h2 class="text-2xl font-bold text-blue-700 mb-6">สวัสดี, คุณสมชาย รักดี</h2>
+                <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-xs sm:max-w-sm text-left">
+                    <p class="text-xs text-gray-500">ยอดหุ้นสะสม</p>
+                    <p class="text-xl font-bold text-blue-700">250,000.00 บาท</p>
+                    <p class="mt-4 text-xs text-gray-500">เงินกู้คงเหลือ</p>
+                    <p class="text-xl font-bold text-red-600">50,000.00 บาท</p>
+                </div>
+                <!-- This button is just for simulation, real logout is the header icon -->
+                <button onclick="logout()" class="mt-8 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors text-sm">
+                    จำลอง: กลับหน้า Login/Reg
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== 5. (ใหม่) หน้าจอ PIN ===== -->
+        <div id="pin-screen" class="screen bg-gradient-to-b from-sky-100 to-white">
+            <div class="w-full max-w-xs sm:max-w-sm flex flex-col items-center">
+                <h2 id="pin-title" class="text-xl font-bold text-gray-800 mb-2">กรุณาระบุ PIN 6 หลัก</h2>
+                <p id="pin-subtitle" class="text-sm text-gray-600 mb-6">เพื่อเข้าสู่ระบบ</p>
+                
+                <!-- PIN Display -->
+                <div class="pin-display">
+                    <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
+                </div>
+                
+                <p id="pin-error-inline" class="text-red-500 text-sm mt-1 mb-4 h-6"></p>
+
+                <!-- Numpad -->
+                <div class="numpad">
+                    <button class="numpad-button" data-value="1"><div class="numpad-button-content">1</div></button>
+                    <button class="numpad-button" data-value="2"><div class="numpad-button-content">2</div></button>
+                    <button class="numpad-button" data-value="3"><div class="numpad-button-content">3</div></button>
+                    <button class="numpad-button" data-value="4"><div class="numpad-button-content">4</div></button>
+                    <button class="numpad-button" data-value="5"><div class="numpad-button-content">5</div></button>
+                    <button class="numpad-button" data-value="6"><div class="numpad-button-content">6</div></button>
+                    <button class="numpad-button" data-value="7"><div class="numpad-button-content">7</div></button>
+                    <button class="numpad-button" data-value="8"><div class="numpad-button-content">8</div></button>
+                    <button class="numpad-button" data-value="9"><div class="numpad-button-content">9</div></button>
+                    <!-- Cancel Button -->
+                    <button class="numpad-button icon" data-value="cancel">
+                        <div class="numpad-button-content text-red-600">
+                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
+                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                           </svg>
+                        </div>
+                    </button>
+                    <button class="numpad-button" data-value="0"><div class="numpad-button-content">0</div></button>
+                    <!-- Delete Button -->
+                    <button class="numpad-button icon" data-value="del">
+                        <div class="numpad-button-content text-blue-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75L14.25 12m0 0L12 14.25m2.25-2.25L14.25 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    <!-- ===== (ใหม่) Lightbox (Modal) สำหรับ PIN ซ้ำ (ยืนยันเบอร์) ===== -->
+    <div id="phone-verify-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">ยืนยันตัวตน (PIN ซ้ำ)</h3>
+            <p class="text-sm text-gray-600 mb-4">PIN นี้มีการใช้งานซ้ำ กรุณากรอกหมายเลขโทรศัพท์ที่ลงทะเบียนไว้เพื่อยืนยันตัวตน</p>
+            <div>
+                <label for="phone-number" class="block text-left text-xs font-medium text-gray-700 mb-1">หมายเลขโทรศัพท์</label>
+                <input type="tel" id="phone-number" class="form-input text-sm text-gray-900" placeholder="ตัวอย่าง: 081xxxxxxx" required>
+                 <p id="phone-error" class="text-red-500 text-xs mt-1 hidden text-left">หมายเลขโทรศัพท์ไม่ถูกต้อง</p>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <!-- Changed to call cancelPinFlow() -->
+                <button type="button" onclick="cancelPinFlow()" class="w-full bg-red-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-red-700 transition-colors text-sm">
+                    ยกเลิก
+                </button>
+                <button type="button" onclick="handlePhoneVerify()" class="w-full bg-green-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-green-700 transition-colors text-sm">
+                    เข้าสู่ระบบ
+                </button>
+            </div>
+        </div>
+    </div>
+        <!-- ===== (ใหม่) Lightbox (Modal) สำหรับ PIN ไม่พบ ===== -->
+    <div id="pin-error-modal" class="modal">
+        <div class="modal-content text-center">
+             <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">เกิดข้อผิดพลาด</h3>
+            <!-- UPDATED: Text specific to PIN not found -->
+            <p class="text-sm text-gray-600 mb-6">ไม่พบข้อมูล PIN นี้ในระบบ กรุณาลองอีกครั้ง</p>
+            <button type="button" onclick="closeModal('pin-error-modal')" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-blue-700 transition-colors text-sm">
+                ปิดหน้าต่าง
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== NEW: Lightbox (Modal) สำหรับการตั้งค่า PIN (Registration) ===== -->
+    <div id="set-pin-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">กำหนด PIN สำหรับการใช้งาน</h3>
+            
+            <!-- Set PIN Group -->
+            <div class="mb-4">
+                <label class="block text-left text-sm font-medium text-gray-700 mb-2">กำหนด PIN 6 หลัก</label>
+                <div id="set-pin-group" class="pin-input-group">
+                    <input type="tel" class="pin-input" maxlength="1" data-index="0">
+                    <input type="tel" class="pin-input" maxlength="1" data-index="1">
+                    <input type="tel" class="pin-input" maxlength="1" data-index="2">
+                    <input type="tel" class="pin-input" maxlength="1" data-index="3">
+                    <input type="tel" class="pin-input" maxlength="1" data-index="4">
+                    <input type="tel" class="pin-input" maxlength="1" data-index="5">
+                </div>
+            </div>
+
+            <!-- Confirm PIN Group -->
+            <div class="mb-4">
+                <label class="block text-left text-sm font-medium text-gray-700 mb-2">ยืนยัน PIN 6 หลัก</label>
+                <div id="confirm-pin-group" class="pin-input-group">
+                    <input type="tel" class="pin-input" maxlength="1" data-index="0">
+                    <input type="tel" class="pin-input" maxlength="1" data-index="1">
+                    <input type="tel" class="pin-input" maxlength="1" data-index="2">
+                    <input type="tel" class="pin-input" maxlength="1" data-index="3">
+                    <input type="tel" class="pin-input" maxlength="1" data-index="4">
+                    <input type="tel" class="pin-input" maxlength="1" data-index="5">
+                </div>
+            </div>
+            
+            <p id="pin-match-error" class="text-red-500 text-sm mt-2 mb-4 h-6 text-center"></p>
+
+            <div class="flex gap-4 mt-6">
+                <button type="button" onclick="cancelPinSetup()" class="w-full bg-red-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-red-700 transition-colors text-sm">
+                    ยกเลิก
+                </button>
+                <button type="button" id="save-pin-button" onclick="handlePinSave()" class="w-full bg-gray-400 text-white py-2 px-4 rounded-md font-semibold transition-colors text-sm cursor-not-allowed" disabled>
+                    บันทึก PIN ของคุณ
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- ================================================================ -->
+    
+    <!-- ===== NEW: Lightbox (Modal) สำหรับการลงทะเบียนไม่สำเร็จ (ไม่พบข้อมูล) ===== -->
+    <div id="registration-error-modal" class="modal">
+        <div class="modal-content text-center">
+             <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">การลงทะเบียนไม่สำเร็จ</h3>
+            <p class="text-sm text-gray-600 mb-6">ระบบไม่พบข้อมูล รหัสสมาชิก หรือ ชื่อ-นามสกุล<br>ตรงกับที่สมัครไว้ ให้ตรวจสอบข้อมูลการลงทะเบียนใหม่อีกครั้ง</p>
+            <button type="button" onclick="closeModal('registration-error-modal'); showScreen('register-screen')" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-blue-700 transition-colors text-sm">
+                ตกลง
+            </button>
+        </div>
+    </div>
+    <!-- ========================================================================= -->
+
+    <!-- ===== NEW: Custom Alert Modal (FIX) ===== -->
+    <div id="custom-alert-modal" class="modal">
+        <div class="modal-content text-center">
+            <div id="custom-alert-icon">
+                <!-- Icon will be inserted by JS -->
+            </div>
+            <h3 id="custom-alert-title" class="text-lg font-semibold text-gray-900 mb-2"></h3>
+            <p id="custom-alert-message" class="text-sm text-gray-600 mb-6"></p>
+            <button type="button" onclick="closeModal('custom-alert-modal')" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-blue-700 transition-colors text-sm">
+                ตกลง
+            </button>
+        </div>
+    </div>
+    <!-- ======================================== -->
+
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, serverTimestamp, setLogLevel, limit, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // FIX: Added signInWithCustomToken and onAuthStateChanged to imports
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"; 
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAciknEYhZU7AwOdfYytC1t_AnW2Ee11us",
+            authDomain: "faifah-ttb.firebaseapp.com",
+            projectId: "faifah-ttb",
+            storageBucket: "faifah-ttb.appspot.com",
+            messagingSenderId: "842980876200",
+            appId: "1:842980876200:web:f33bfad2ccbf263075079d",
+            measurementId: "G-DFMSBDT6W8"
+        };
+        const appId = 'default-app-id'; // ใช้เป็นค่าเริ่มต้นเมื่อไม่มีตัวแปรจากระบบ
+        
+        let app, auth, db;
+        let userId = null;
+        let dbUserRef = null;
+        let dbLogRef = null;
+
+        try {
+            // FIX: Remove try/catch block to prevent ReferenceError on initialization error
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            setLogLevel('Debug'); // Enable Firestore logging
+            console.log("Firebase initialized successfully.");
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+            // Removed showAlert to fix the ReferenceError issue
+        }
+
+        // --- Global State ---
+        let currentPin = '';
+        let currentUser = null; // Stores the user object {name, pin, phone, memberId, fbDocId}
+        let ambiguousUsers = []; // Stores users found during duplicate PIN check
+        
+        // --- Element Refs ---
+        const pinDisplayDots = document.querySelectorAll('#pin-screen .pin-dot');
+        const pinErrorInline = document.getElementById('pin-error-inline');
+        const pinTitle = document.getElementById('pin-title');
+        const pinSubtitle = document.getElementById('pin-subtitle');
+        
+        const phoneError = document.getElementById('phone-error');
+        
+        // NEW: PIN Setup Modal Refs
+        const setPinGroup = document.getElementById('set-pin-group');
+        const confirmPinGroup = document.getElementById('confirm-pin-group');
+        const setPinInputs = setPinGroup.querySelectorAll('.pin-input');
+        const confirmPinInputs = confirmPinGroup.querySelectorAll('.pin-input');
+        const pinMatchError = document.getElementById('pin-match-error');
+        const savePinButton = document.getElementById('save-pin-button');
+
+        // NEW: Registration Form Refs
+        const registerMemberIdInput = document.getElementById('member-id');
+        const registerFullNameInput = document.getElementById('full-name');
+        const registerPhoneInput = document.getElementById('phone');
+        const registerSubmitButton = document.getElementById('register-submit-button');
+
+        // --- Custom Alert ---
+        const alertIcon = document.getElementById('custom-alert-icon');
+        const alertTitle = document.getElementById('custom-alert-title');
+        const alertMessage = document.getElementById('custom-alert-message');
+        
+        function showAlert(title, message, isError = false) {
+            // Added check to ensure elements exist before setting properties
+            if (!alertTitle || !alertMessage || !alertIcon) {
+                console.error("Alert elements not found in DOM. Cannot show custom alert.");
+                return;
+            }
+            alertTitle.textContent = title;
+            alertMessage.textContent = message;
+            
+            if (isError) {
+                alertIcon.innerHTML = `<svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            } else {
+                 alertIcon.innerHTML = `<svg class="w-16 h-16 text-blue-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            }
+            
+            openModal('custom-alert-modal');
+        }
+
+        // --- Navigation ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            
+            // Reset PIN screen when shown
+            if (screenId === 'pin-screen') {
+                resetPinDisplay(); // Resets PIN UI and error messages
+            }
+            // NEW: Reset registration button when screen is shown
+            if (screenId === 'register-screen') {
+                document.getElementById('registration-form').reset(); // Also reset form
+                // Clear errors
+                document.getElementById('member-id-error').classList.add('hidden');
+                document.getElementById('name-error').classList.add('hidden');
+                document.getElementById('phone-reg-error').classList.add('hidden');
+                checkRegistrationInputs(); // Reset button state
+            }
+        }
+        
+        async function logout() {
+            if (currentUser) {
+                await writeLog('logout', { memberId: currentUser.memberId });
+            }
+            currentUser = null;
+            currentPin = '';
+            
+            // Clear registration form
+            document.getElementById('registration-form').reset();
+            checkRegistrationInputs(); 
+            
+            showScreen('welcome-screen');
+        }
+
+        // --- Modal Functions ---
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            
+            // If closing an error modal, reset the PIN entry
+            if (modalId === 'pin-error-modal') {
+                resetPinDisplay();
+            }
+            // If closing the phone verify modal, reset PIN and clear phone input
+            if (modalId === 'phone-verify-modal') {
+                 resetPinDisplay();
+                 document.getElementById('phone-number').value = '';
+                 phoneError.classList.add('hidden');
+                 ambiguousUsers = []; // Clear ambiguous users
+            }
+            // NEW: Clear PIN setup modal on close
+            if (modalId === 'set-pin-modal') {
+                clearPinInputGroup(setPinInputs);
+                clearPinInputGroup(confirmPinInputs);
+                pinMatchError.textContent = '';
+                savePinButton.disabled = true;
+                savePinButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+                savePinButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+            }
+        }
+        
+        // This function cancels the entire PIN flow and returns to welcome screen
+        async function cancelPinFlow() {
+            closeModal('phone-verify-modal'); // Close modal if open
+            await writeLog('login_cancel');
+            await logout(); // Use logout to reset everything
+        }
+
+        // NEW: Cancel function for the setup modal
+        function cancelPinSetup() {
+            closeModal('set-pin-modal');
+            currentUser = null; // Cancel the registration process
+        }
+
+        // NEW: Check registration inputs to enable/disable submit button
+        function checkRegistrationInputs() {
+            const memberIdFilled = registerMemberIdInput.value.trim() !== '';
+            const fullNameFilled = registerFullNameInput.value.trim() !== '';
+            const phoneFilled = registerPhoneInput.value.trim() !== '';
+
+            if (memberIdFilled && fullNameFilled && phoneFilled) {
+                registerSubmitButton.disabled = false;
+                registerSubmitButton.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                registerSubmitButton.classList.add('bg-green-600', 'hover:bg-green-700');
+            } else {
+                registerSubmitButton.disabled = true;
+                registerSubmitButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+                registerSubmitButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+            }
+        }
+
+
+        // --- Login Form Logic ---
+        // REMOVED: All logic for 'login-form' is gone.
+
+        // --- Registration Form Logic ---
+        document.getElementById('registration-form').addEventListener('submit', async function(event) {
+            event.preventDefault(); 
+            
+            // Get form elements
+            const memberIdInput = document.getElementById('member-id');
+            const fullNameInput = document.getElementById('full-name');
+            const phoneInput = document.getElementById('phone');
+
+            // Get error message elements
+            const memberIdError = document.getElementById('member-id-error');
+            const nameError = document.getElementById('name-error');
+            const phoneError = document.getElementById('phone-reg-error');
+
+            // Clear all previous errors
+            memberIdError.classList.add('hidden');
+            nameError.classList.add('hidden');
+            phoneError.classList.add('hidden');
+            
+            let isValid = true;
+            
+            // Get values
+            // UPDATED: Changed variable names to match request
+            const empId = memberIdInput.value.trim();
+            const empName = fullNameInput.value.trim();
+            const empPhone = phoneInput.value.trim();
+            
+            // --- Firestore Check ---
+            showScreen('loading-screen');
+            // UPDATED: Log with new key
+            await writeLog('register_start', { attemptedEmpID: empId });
+
+            let userDoc = null;
+            let userData = null;
+
+            try {
+                // UPDATED: Query using "EmpID" field
+                const q = query(dbUserRef, where("EmpID", "==", empId));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    // Scenario 1: EmpID not found at all
+                    isValid = false;
+                } else {
+                    userDoc = querySnapshot.docs[0];
+                    userData = userDoc.data();
+
+                    // 2. Check Name
+                    // UPDATED: Check against "EmpName" field
+                    if (userData.EmpName !== empName) {
+                        // Scenario 2: EmpID found, but EmpName doesn't match
+                        isValid = false;
+                    }
+                    // 3. Check if already registered
+                    else if (userData.pin !== null) {
+                        memberIdError.textContent = 'รหัสสมาชิกนี้ได้ลงทะเบียนเรียบร้อยแล้ว';
+                        memberIdError.classList.remove('hidden');
+                        isValid = false;
+                    }
+                    // 4. Check Phone (basic check)
+                    // UPDATED: Check empPhone variable
+                    else if (empPhone.length < 9) {
+                        phoneError.textContent = 'กรุณากรอกหมายเลขโทรศัพท์ให้ถูกต้อง';
+                        phoneError.classList.remove('hidden');
+                        isValid = false;
+                    }
+                }
+            } catch (e) {
+                console.error("Error querying user:", e);
+                showAlert("เกิดข้อผิดพลาด", "ไม่สามารถตรวจสอบข้อมูลได้ กรุณาลองใหม่อีกครั้ง", true);
+                isValid = false;
+            }
+            
+            if (isValid && userDoc) {
+                // --- Validation Success ---
+                // 1. Set current user (include Firestore doc ID)
+                // UPDATED: Store EmpID and EmpPhone
+                currentUser = { ...userData, fbDocId: userDoc.id, EmpID: empId };
+                currentUser.EmpPhone = empPhone; // Store phone from form
+                
+                // 2. Open the PIN Setup Modal
+                openModal('set-pin-modal');
+                showScreen('register-screen'); // Show form again with modal on top
+            } else {
+                // Handle Registration Failure (EmpID or EmpName Mismatch, or not found)
+                if (!isValid && !memberIdError.classList.contains('hidden')) {
+                     // If error is already showing for pin or phone, stay on screen
+                    showScreen('register-screen');
+                } else {
+                    // If validation failed due to EmpID/EmpName mismatch/not found
+                    await writeLog('register_fail', { reason: 'id_name_mismatch', attemptedEmpID: empId, attemptedEmpName: empName });
+                    openModal('registration-error-modal');
+                    // We stay on loading screen until user closes modal, then user goes back to reg screen
+                }
+            }
+        }); 
+
+        // NEW: Add listeners to registration form inputs
+        registerMemberIdInput.addEventListener('input', checkRegistrationInputs);
+        registerFullNameInput.addEventListener('input', checkRegistrationInputs);
+        registerPhoneInput.addEventListener('input', checkRegistrationInputs);
+
+        // --- (ใหม่) PIN Screen Logic (Numpad for Login) ---
+        
+        // อัปเดตการแสดงผลจุด PIN
+        function updatePinDisplay() {
+            pinDisplayDots.forEach((dot, index) => {
+                if (index < currentPin.length) {
+                    // dot.textContent = currentPin[index]; // แสดงตัวเลข
+                    dot.textContent = '●'; // แสดงเป็นจุด
+                    dot.classList.add('filled');
+                } else {
+                    dot.textContent = '';
+                    dot.classList.remove('filled');
+                }
+            });
+        }
+        
+        // รีเซ็ต PIN
+        function resetPinDisplay() {
+            currentPin = '';
+            pinErrorInline.textContent = ''; // ล้างข้อความ Error
+            updatePinDisplay();
+        }
+
+        // NEW: Function to go to PIN login screen from welcome
+        async function goToPinLogin() {
+            // Log the start of the login process
+            await writeLog('login_start');
+
+            pinTitle.textContent = 'กรุณาระบุ PIN 6 หลัก';
+            pinSubtitle.textContent = 'เพื่อเข้าสู่ระบบ';
+            currentUser = null; 
+            ambiguousUsers = [];
+            resetPinDisplay(); 
+            showScreen('pin-screen');
+        }
+
+        // จัดการการกดปุ่ม Numpad
+        function handlePinInput(value) {
+            pinErrorInline.textContent = ''; // ล้างข้อความ Error เมื่อเริ่มพิมพ์ใหม่
+            
+            if (value === 'del') {
+                currentPin = currentPin.slice(0, -1);
+            } else if (value === 'cancel') {
+                // กลับไปหน้าแรก
+                cancelPinFlow(); // This function now handles logging
+                return;
+            } else if (currentPin.length < 6) {
+                currentPin += value;
+            }
+
+            updatePinDisplay();
+
+            // ถ้าครบ 6 หลัก ให้ตรวจสอบทันที
+            if (currentPin.length === 6) {
+                processPin();
+            }
+        }
+        
+        // Process the 6-digit PIN based on the current state
+        // SIMPLIFIED: Numpad is ONLY for login
+        function processPin() {
+            checkPinDirect(); // Always check for login
+        }
+        
+        // REPLACED: checkPinLogin() is replaced with checkPinDirect()
+        // This function finds user by PIN, instead of assuming currentUser
+        async function checkPinDirect() {
+            showScreen('loading-screen');
+            ambiguousUsers = []; // Clear previous check
+            
+            // 1. Find all users with this PIN from Firestore
+            try {
+                const q = query(dbUserRef, where("pin", "==", currentPin));
+                const querySnapshot = await getDocs(q);
+                
+                querySnapshot.forEach(doc => {
+                    ambiguousUsers.push({ ...doc.data(), fbDocId: doc.id });
+                });
+
+                if (ambiguousUsers.length === 0) {
+                    // --- PIN Not Found in System ---
+                    await writeLog('login_pin_fail', { reason: 'pin_not_found', enteredPin: currentPin });
+                    openModal('pin-error-modal');
+                    showScreen('pin-screen'); // Go back to PIN screen
+                } 
+                else if (ambiguousUsers.length === 1) {
+                    // --- PIN is unique and correct ---
+                    currentUser = ambiguousUsers[0];
+                    // UPDATED: Log with EmpID if available
+                    await writeLog('login_success', { memberId: (currentUser.memberId || currentUser.EmpID), method: 'pin' });
+                    goToDashboard();
+                } 
+                else if (ambiguousUsers.length > 1) {
+                    // --- PIN is duplicated ---
+                    await writeLog('login_pin_duplicate', { enteredPin: currentPin, count: ambiguousUsers.length });
+                    currentUser = null; 
+                    openModal('phone-verify-modal');
+                    showScreen('pin-screen'); // Show PIN screen behind modal
+                }
+
+            } catch (e) {
+                console.error("Error checking PIN:", e);
+                await writeLog('login_pin_fail', { reason: 'db_error', error: e.message });
+                showAlert("เกิดข้อผิดพลาด", "ไม่สามารถตรวจสอบ PIN ได้ กรุณาลองใหม่อีกครั้ง", true);
+                showScreen('pin-screen');
+            }
+        }
+        
+        // REMOVED: checkPinConfirm() - This logic is now in the new modal handlers
+        
+        // Go to dashboard (helper function)
+        function goToDashboard() {
+             document.querySelector('#dashboard-screen h2').textContent = `สวัสดี, คุณ${currentUser.name}`;
+             showScreen('dashboard-screen');
+             resetPinDisplay(); // Clear PIN for next login
+        }
+
+        // เชื่อมต่อปุ่ม Numpad กับฟังก์ชัน
+        document.querySelectorAll('.numpad-button').forEach(button => {
+            button.addEventListener('click', () => {
+                handlePinInput(button.dataset.value);
+            });
+        });
+
+        // --- NEW: PIN Setup Modal Logic (6-Input Boxes) ---
+
+        function handlePinInputGroup(e) {
+            const input = e.target;
+            const group = input.parentElement;
+            const index = parseInt(input.dataset.index);
+
+            if (e.key === 'Backspace' && !input.value && index > 0) {
+                // Move focus back on backspace
+                group.children[index - 1].focus();
+            } else if (input.value && index < 5) {
+                // Move focus forward on input
+                group.children[index + 1].focus();
+            }
+            validatePinSetup();
+        }
+
+        function getPinFromInputs(inputGroup) {
+            let pin = '';
+            inputGroup.querySelectorAll('.pin-input').forEach(input => {
+                pin += input.value;
+            });
+            return pin;
+        }
+        
+        function clearPinInputGroup(inputs) {
+             inputs.forEach(input => {
+                input.value = '';
+            });
+        }
+
+        // FIX: Re-added missing function
+        function validatePinSetup() {
+            const newPin = getPinFromInputs(setPinGroup);
+            const confPin = getPinFromInputs(confirmPinGroup);
+            
+            if (newPin.length === 6 && confPin.length === 6) {
+                if (newPin === confPin) {
+                    pinMatchError.textContent = 'PIN ตรงกัน';
+                    pinMatchError.classList.remove('text-red-500');
+                    pinMatchError.classList.add('text-green-500');
+                    savePinButton.disabled = false;
+                    savePinButton.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                    savePinButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                } else {
+                    pinMatchError.textContent = 'PIN ไม่ตรงกัน กรุณาลองอีกครั้ง';
+                    pinMatchError.classList.add('text-red-500');
+                    pinMatchError.classList.remove('text-green-500');
+                    savePinButton.disabled = true;
+                    savePinButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+                    savePinButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+                }
+            } else {
+                pinMatchError.textContent = '';
+                savePinButton.disabled = true;
+                savePinButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+                savePinButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+            }
+        }
+
+        // FIX: Re-added missing function
+        async function handlePinSave() {
+            const newPin = getPinFromInputs(setPinGroup);
+            
+            // Save to Firebase
+            showScreen('loading-screen');
+            try {
+                const userDocRef = doc(db, dbUserRef.path, currentUser.fbDocId);
+                // UPDATED: Save "EmpPhone" field
+                await updateDoc(userDocRef, {
+                    pin: newPin,
+                    EmpPhone: currentUser.EmpPhone // Save the phone from registration form
+                });
+
+                // Update local user object
+                currentUser.pin = newPin;
+
+                // UPDATED: Log with EmpID
+                await writeLog('register_complete', { memberId: currentUser.EmpID });
+                
+                closeModal('set-pin-modal');
+                showAlert('ลงทะเบียนสำเร็จ', 'คุณได้ตั้งค่า PIN 6 หลักเรียบร้อยแล้ว');
+                
+                // After closing alert, go to dashboard
+                document.getElementById('custom-alert-modal').querySelector('button').onclick = () => {
+                     closeModal('custom-alert-modal');
+                 };
+
+            } catch (e) {
+                console.error("Error saving PIN:", e);
+                // UPDATED: Log with EmpID
+                await writeLog('register_fail', { memberId: currentUser.EmpID, error: e.message });
+                showAlert("เกิดข้อผิดพลาด", "ไม่สามารถบันทึก PIN ได้ กรุณาลองใหม่อีกครั้ง", true);
+                showScreen('register-screen'); // Go back to reg screen
+            }
+        }
+
+        // FIX: Re-added missing function
+        async function handlePhoneVerify() {
+            const phoneInput = document.getElementById('phone-number');
+            const phone = phoneInput.value.trim();
+            
+            phoneError.classList.add('hidden');
+            
+            // Search the ambiguous users list for the matching phone
+            // UPDATED: Check against "EmpPhone" field
+            const foundUser = ambiguousUsers.find(user => user.EmpPhone === phone);
+
+            if (!foundUser) { 
+                await writeLog('login_phone_verify_fail', { enteredPhone: phone });
+                phoneError.textContent = 'หมายเลขโทรศัพท์ไม่ถูกต้อง';
+                phoneError.classList.remove('hidden');
+                return;
+            }
+            
+            // --- Phone is correct ---
+            currentUser = foundUser; // Now we know the user
+            // UPDATED: Log with EmpID
+            await writeLog('login_success', { memberId: (currentUser.memberId || currentUser.EmpID), method: 'phone_verify' });
+            
+            closeModal('phone-verify-modal');
+            showScreen('loading-screen');
+            
+            // No need for setTimeout, just go to dashboard
+            goToDashboard();
+            phoneInput.value = ''; // Clear input
+            ambiguousUsers = []; // Clear ambiguity
+        }
+
+        // --- NEW: Firebase Logging Function ---
+        async function writeLog(action, details = {}) {
+            // FIX: Added the entire missing function body and rest of the file
+            if (!dbLogRef) {
+                console.warn("dbLogRef not initialized. Log skipped.");
+                return;
+            }
+            try {
+                await addDoc(dbLogRef, {
+                    action: action,
+                    timestamp: serverTimestamp(),
+                    userId: userId || 'anonymous', // Use Firebase auth user ID if available
+                    // UPDATED: Use EmpID if memberId doesn't exist
+                    memberId: currentUser ? (currentUser.memberId || currentUser.EmpID) : 'unknown',
+                    details: details,
+                    userAgent: navigator.userAgent
+                });
+            } catch (e) {
+                console.error("Failed to write log:", e);
+            }
+        }
+
+        // Add event listeners for PIN setup inputs (auto-tab and validation)
+        setPinInputs.forEach(input => {
+            input.addEventListener('keyup', handlePinInputGroup);
+        });
+        confirmPinInputs.forEach(input => {
+            input.addEventListener('keyup', handlePinInputGroup);
+        });
+
+
+        // --- NEW: Firebase Auth and App Initialization ---
+        async function initializeAuth() {
+            if (!auth) {
+                console.error("Auth is not initialized.");
+                showAlert("ข้อผิดพลาดร้ายแรง", "ไม่สามารถเริ่มระบบยืนยันตัวตนได้", true);
+                return;
+            }
+            try {
+                // START OF EXTERNAL DEPLOYMENT MODIFICATION 2: AUTH TOKEN (การยืนยันตัวตน)
+                //
+                // **CANVAS/INTERNAL USE (Current Setting):** ใช้ Token ที่ระบบ Canvas สร้างให้
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                    console.log("Signed in with custom token.");
+                } else {
+                    await signInAnonymously(auth);
+                    console.log("Signed in anonymously.");
+                }
+                /* // **EXTERNAL DEPLOYMENT (โค้ดเดิมที่ถูกเปลี่ยนกลับมา):**
+                await signInAnonymously(auth); 
+                console.log("Signed in anonymously.");
+                */
+                // END OF EXTERNAL DEPLOYMENT MODIFICATION 2
+            } catch (e) {
+                // Removed showAlert here as it was causing ReferenceError before elements were ready
+                console.error("Authentication failed:", e);
+            }
+
+            // Listener for auth state
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    console.log("User authenticated:", user.uid);
+                    userId = user.uid;
+                    
+                    // --- Define DB Collection References ---
+                    // START OF EXTERNAL DEPLOYMENT MODIFICATION 3: FIREBASE COLLECTION PATHS
+                    // (ส่วนที่ 3: เส้นทาง Collection ใน Firestore)
+                    // ----------------------------------------------------------------------
+                    // **CANVAS/INTERNAL USE (Current Setting):** ใช้เส้นทางตามโครงสร้าง Canvas
+                    //const publicDataPath = `artifacts/${appId}/public/data`; 
+                    const publicDataPath = ``; 
+                    dbUserRef = collection(db, `${publicDataPath}/TMBcoop_User`);
+                    dbLogRef = collection(db, `${publicDataPath}/TMBcoop_Log`);
+                    
+                    /* // **EXTERNAL DEPLOYMENT (โค้ดเดิมที่ถูกเปลี่ยนกลับมา):**
+                    dbUserRef = collection(db, 'TMBcoop_User');
+                    dbLogRef = collection(db, 'TMBcoop_Log');
+                    */
+                    // END OF EXTERNAL DEPLOYMENT MODIFICATION 3
+
+
+                    console.log("Firestore User Collection Path:", dbUserRef.path);
+                    console.log("Firestore Log Collection Path:", dbLogRef.path);
+
+                    // Now that auth is ready, show the welcome screen
+                    showScreen('welcome-screen');
+
+                } else {
+                    console.log("User is signed out.");
+                    userId = null;
+                    // Show alert only if Firebase was initialized (db exists)
+                    if (db) {
+                        showAlert("การยืนยันตัวตนล้มเหลว", "ไม่สามารถเชื่อมต่อระบบยืนยันตัวตนได้ กรุณารีเฟรช", true);
+                    } else {
+                        showAlert("ข้อผิดพลาดร้ายแรง", "ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้ กรุณาตรวจสอบ API Key", true);
+                    }
+                    showScreen('welcome-screen'); // Show welcome but functionality will fail
+                }
+            });
+        }
+
+        // --- Initialize ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // FIX: Check if auth is defined before initializing auth flow
+            if (auth) { 
+                initializeAuth();
+            } else {
+                // Firebase init failed earlier due to invalid config
+                console.log("DB not ready, auth skipped.");
+                // Show the error immediately if Firebase init failed in the try block
+                showAlert("ข้อผิดพลาดร้ายแรง", "ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้ กรุณาตรวจสอบ API Key", true);
+                showScreen('welcome-screen'); // Show welcome but functionality will fail
+            }
+        });
+
+        // --- Expose functions to global scope for HTML onclick attributes ---
+        window.goToPinLogin = goToPinLogin;
+        window.showScreen = showScreen;
+        window.logout = logout;
+        window.cancelPinFlow = cancelPinFlow;
+        window.handlePhoneVerify = handlePhoneVerify;
+        window.closeModal = closeModal;
+        window.cancelPinSetup = cancelPinSetup;
+        window.handlePinSave = handlePinSave;
+        // ------------------------------------------------------------------
+
+    </script>
+
+</body>
+</html>
