@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mockup Login/Registration ระบบสหกรณ์</title>
+    <title>TMBCoop</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -181,10 +181,6 @@
             <p class="text-xs text-gray-400 mb-8" style="margin-top:15px;">กรุณาเลือกเมนูเพื่อดำเนินการต่อ</p>
         </div>
 
-        <!-- ===== 1.5. หน้าจอเข้าสู่ระบบ (Login Form) ===== -->
-        <!-- REMOVED: This screen is no longer needed per user request -->
-        <!-- <div id="login-screen" class="screen bg-gradient-to-b from-sky-100 to-white"> ... </div> -->
-
         <!-- ===== 2. หน้าจอ Loading ===== -->
         <div id="loading-screen" class="screen bg-gradient-to-b from-sky-100 to-white">
             <div class="flex flex-col items-center">
@@ -253,6 +249,15 @@
                     ยกเลิก / กลับหน้าเข้าสู่ระบบ
                 </button>
             </form>
+            
+            <!-- ===== NEW: ตารางแสดงข้อมูลพนักงานที่ลงทะเบียนแล้ว ===== -->
+            <!-- 
+            (FIX) Removed this section per user request.
+            <div class="w-full max-w-xs sm:max-w-sm mt-8 p-4 bg-white rounded-lg shadow-md">
+...
+            </div>
+            -->
+            <!-- ========================================================= -->
         </div>
 
         <!-- ===== 4. หน้าจอ Dashboard (กรณีเข้าสู่ระบบสำเร็จ) ===== -->
@@ -268,15 +273,105 @@
                     </button>
                 </div>
             </header>
-            <div class-grow flex flex-col justify-center items-center w-full mt-20"> <!-- mt-20 to avoid header -->
-                <p class="text-base text-gray-600 mb-2">เข้าสู่ระบบสำเร็จ</p>
-                <h2 class="text-2xl font-bold text-blue-700 mb-6">สวัสดี, คุณสมชาย รักดี</h2>
-                <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-xs sm:max-w-sm text-left">
+            <!-- (FIX) ปรับ Layout ให้จัดชิดบน (justify-start) และเพิ่มช่องว่าง (pt-8) -->
+            <div class="flex-grow flex flex-col justify-start items-center w-full mt-20 pt-8"> <!-- mt-20 to avoid header -->
+                <!-- (FIX) ลบ "เข้าสู่ระบบสำเร็จ" ตามคำขอ -->
+                <!-- <p class="text-base text-gray-600 mb-2">เข้าสู่ระบบสำเร็จ</p> -->
+                
+                <!-- (FIX) ลดขนาด font เป็น text-xl และจัดชิดซ้าย (w-full max-w-...) -->
+                <h2 class="text-xl font-bold text-blue-700 mb-6 w-full max-w-xs sm:max-w-sm text-center">สวัสดี, คุณสมชาย รักดี</h2>
+
+                <!-- (FIX) ลบกล่อง "ยอดหุ้นสะสม" และ "เงินกู้คงเหลือ" ตามคำขอ -->
+                <!-- 
+                <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-xs sm:max-w-sm text-left mb-6">
                     <p class="text-xs text-gray-500">ยอดหุ้นสะสม</p>
                     <p class="text-xl font-bold text-blue-700">250,000.00 บาท</p>
                     <p class="mt-4 text-xs text-gray-500">เงินกู้คงเหลือ</p>
                     <p class="text-xl font-bold text-red-600">50,000.00 บาท</p>
                 </div>
+                -->
+                
+                <!-- ===== (FIX) Reverted 2 steps: UI/UX Menu ===== -->
+                <div class="w-full max-w-xs sm:max-w-sm">
+                    <!-- (FIX) Reverted 2 steps: Added "เมนูหลัก" header back -->
+                    <div class="space-y-3">
+                        
+                        <!-- (FIX) Reverted 2 steps: Menu Item 1 -->
+                        <a href="#" onclick="event.preventDefault(); alert('กำลังเปิด: รายงานดอกเบี้ยและเงินปันผล')" class="flex items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                            <svg class="w-8 h-8 text-blue-600 mr-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6A2.25 2.25 0 01.75 8.25v7.5a2.25 2.25 0 012.25 2.25h13.5A2.25 2.25 0 0118.75 18v-7.5a2.25 2.25 0 01-2.25-2.25A.75.75 0 0115 7.5V4.5m-11.25 0A2.25 2.25 0 015.25 3h1.5a2.25 2.25 0 012.25 2.25m-3.75 0h3.75m-3.75 0a2.25 2.25 0 00-2.25 2.25M15 4.5v.75A.75.75 0 0015.75 6A2.25 2.25 0 0018 8.25v7.5a2.25 2.25 0 002.25 2.25h1.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25A.75.75 0 0021 7.5V4.5m-1.5 0A2.25 2.25 0 0117.25 3h1.5a2.25 2.25 0 012.25 2.25m-3.75 0h3.75m-3.75 0a2.25 2.25 0 00-2.25 2.25m-5.25 6l-3-3m0 0l-3 3m3-3v6" />
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-gray-900 text-sm">รายงานดอกเบี้ยและเงินปันผล</p>
+                                <p class="text-left text-xs text-gray-500">ดูเอกสารย้อนหลัง (PDF)</p>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 ml-auto flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </a>
+                        
+                        <!-- (FIX) Reverted 2 steps: Menu Item 2 -->
+                        <a href="#" onclick="event.preventDefault(); alert('กำลังเปิด: การประชุมผู้ถือหุ้นประจำปี 2025')" class="flex items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                            <svg class="w-8 h-8 text-green-600 mr-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-gray-900 text-sm">วาระการประชุมผู้ถือหุ้นประจำปี 2025</p>
+                                <p class="text-left text-xs text-gray-500">เอกสารประกอบการประชุม</p>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 ml-auto flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </a>
+
+                        <!-- (FIX) Reverted 2 steps: Menu Item 3 -->
+                        <a href="#" onclick="event.preventDefault(); alert('กำลังเปิด: หนังสือรายงานผลประกอบการปี 2025')" class="flex items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                            <svg class="w-8 h-8 text-purple-600 mr-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" />
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-gray-900 text-sm">หนังสือรายงานผลประกอบการปี 2025</p>
+                                <p class="text-left text-xs text-gray-500">รายงานประจำปี (ดาวน์โหลด)</p>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 ml-auto flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </a>
+
+                        <!-- ===== (FIX) เพิ่มเมนูใหม่ 1: เลือกตั้งประธานสหกรณ์ ===== -->
+                        <a href="#" onclick="event.preventDefault(); alert('กำลังเปิด: เลือกตั้งประธานสหกรณ์ (1 ตำแหน่ง)')" class="flex items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                            <!-- Icon: user-circle -->
+                            <svg class="w-8 h-8 text-cyan-600 mr-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-gray-900 text-sm">เลือกตั้งประธานสหกรณ์ (1 ตำแหน่ง)</p>
+                                <p class="text-left text-xs text-gray-500">ดูรายชื่อและลงคะแนน</p>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 ml-auto flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </a>
+                        
+                        <!-- ===== (FIX) เพิ่มเมนูใหม่ 2: เลือกตั้งกรรมการสหกรณ์ ===== -->
+                        <a href="#" onclick="event.preventDefault(); alert('กำลังเปิด: เลือกตั้งกรรมการสหกรณ์ (6 ตำแหน่ง)')" class="flex items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                            <!-- Icon: users -->
+                            <svg class="w-8 h-8 text-indigo-600 mr-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.141-.902 2.25 2.25 0 001.071-1.894 2.25 2.25 0 00-1.071-1.894c-1.994-.716-4.306-.98-6.767-.98S5.994 13.92 4 14.636a2.25 2.25 0 00-1.071 1.894 2.25 2.25 0 001.071 1.894 9.337 9.337 0 004.141.902A9.38 9.38 0 0015 19.128zM15 9a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-gray-900 text-sm">เลือกตั้งกรรมการสหกรณ์ (6 ตำแหน่ง)</p>
+                                <p class="text-left text-xs text-gray-500">ดูรายชื่อและลงคะแนน</p>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 ml-auto flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </a>
+
+                    </div>
+                </div>
+                <!-- ============================================== -->
+
                 <!-- This button is just for simulation, real logout is the header icon -->
                 <button onclick="logout()" class="mt-8 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors text-sm">
                     จำลอง: กลับหน้า Login/Reg
@@ -426,6 +521,31 @@
     </div>
     <!-- ========================================================================= -->
 
+    <!-- ===== NEW: Lightbox (Modal) สำหรับการยืนยันตัวตน (Security Check) ===== -->
+    <div id="security-verify-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">ยืนยันตัวตน</h3>
+            <p class="text-sm text-gray-600 mb-4">เพื่อความปลอดภัย กรุณากรอกหมายเลขโทรศัพท์ที่ลงทะเบียนไว้เพื่อยืนยันตัวตนอีกครั้ง</p>
+            <div>
+                <label for="security-phone-number" class="block text-left text-xs font-medium text-gray-700 mb-1">หมายเลขโทรศัพท์</label>
+                <input type="tel" id="security-phone-number" class="form-input text-sm text-gray-900" placeholder="ตัวอย่าง: 081xxxxxxx" required>
+                 <p id="security-phone-error" class="text-red-500 text-xs mt-1 hidden text-left">หมายเลขโทรศัพท์ไม่ถูกต้อง</p>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <!-- ปุ่มยกเลิก (กลับหน้าแรก) -->
+                <button type="button" onclick="cancelPinFlow()" class="w-full bg-red-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-red-700 transition-colors text-sm">
+                    ยกเลิก
+                </button>
+                <!-- ปุ่มยืนยันตัวตน (เช็คเบอร์) -->
+                <button type="button" onclick="handleSecurityVerify()" class="w-full bg-green-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-green-700 transition-colors text-sm">
+                    ยืนยันตัวตน
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- ======================================================================= -->
+
+
     <!-- ===== NEW: Custom Alert Modal (FIX) ===== -->
     <div id="custom-alert-modal" class="modal">
         <div class="modal-content text-center">
@@ -446,10 +566,26 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, serverTimestamp, setLogLevel, limit, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        // FIX: Added signInWithCustomToken and onAuthStateChanged to imports
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"; 
+        import { getFirestore, collection, getDocs, query, where, serverTimestamp, setLogLevel, limit, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // (แก้ไข) เพิ่ม onAuthStateChanged ที่นี่
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"; 
 
+
+
+
+        //import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        // REMOVED: addDoc, setLogLevel imports as they are only used by writeLog
+        //import { getFirestore, collection, getDocs, query, where, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; // RE-ADDED serverTimestamp
+        // FIX: Added signInWithCustomToken and onAuthStateChanged to imports
+        //import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"; 
+
+        // START OF EXTERNAL DEPLOYMENT MODIFICATION 1: FIREBASE CONFIG
+        // (ส่วนที่ 1: การตั้งค่า Firebase Config)
+        // -----------------------------------------------------------
+        // **EXTERNAL DEPLOYMENT (Current Setting):**
+        // โค้ดนี้ถูกปรับให้ใช้งานภายนอกได้ง่ายที่สุด แต่คุณต้องเปลี่ยนค่า YOUR_... ให้เป็นค่าจริง
+
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
             apiKey: "AIzaSyAciknEYhZU7AwOdfYytC1t_AnW2Ee11us",
             authDomain: "faifah-ttb.firebaseapp.com",
@@ -458,30 +594,30 @@
             messagingSenderId: "842980876200",
             appId: "1:842980876200:web:f33bfad2ccbf263075079d",
             measurementId: "G-DFMSBDT6W8"
-        };
-        const appId = 'default-app-id'; // ใช้เป็นค่าเริ่มต้นเมื่อไม่มีตัวแปรจากระบบ
+};
+        const appId = 'default-app-id'; 
+        // END OF EXTERNAL DEPLOYMENT MODIFICATION 1
         
         let app, auth, db;
         let userId = null;
         let dbUserRef = null;
-        let dbLogRef = null;
+        // REMOVED: dbLogRef variable
 
         try {
-            // FIX: Remove try/catch block to prevent ReferenceError on initialization error
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            setLogLevel('Debug'); // Enable Firestore logging
             console.log("Firebase initialized successfully.");
         } catch (e) {
             console.error("Firebase initialization failed:", e);
-            // Removed showAlert to fix the ReferenceError issue
         }
 
         // --- Global State ---
         let currentPin = '';
         let currentUser = null; // Stores the user object {name, pin, phone, memberId, fbDocId}
         let ambiguousUsers = []; // Stores users found during duplicate PIN check
+        let registeredUserList = []; // NEW: Global list for the table
+        let pinLoginAttempts = 0; // (FIX) ใช้นับจำนวนครั้งที่กรอก PIN ผิด
         
         // --- Element Refs ---
         const pinDisplayDots = document.querySelectorAll('#pin-screen .pin-dot');
@@ -504,6 +640,11 @@
         const registerFullNameInput = document.getElementById('full-name');
         const registerPhoneInput = document.getElementById('phone');
         const registerSubmitButton = document.getElementById('register-submit-button');
+        
+        // NEW: Table Refs
+        // (FIX) Removed table refs as the table is removed
+        // const userListTableBody = document.getElementById('user-list-table-body');
+        // const userListStatus = document.getElementById('user-list-status');
 
         // --- Custom Alert ---
         const alertIcon = document.getElementById('custom-alert-icon');
@@ -529,7 +670,9 @@
         }
 
         // --- Navigation ---
-        function showScreen(screenId) {
+        // NEW: Intercept showScreen to call fetchUserList
+        const originalShowScreen = window.showScreen;
+        window.showScreen = function(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
             });
@@ -539,7 +682,7 @@
             if (screenId === 'pin-screen') {
                 resetPinDisplay(); // Resets PIN UI and error messages
             }
-            // NEW: Reset registration button when screen is shown
+            // NEW: Reset registration button and fetch list when screen is shown
             if (screenId === 'register-screen') {
                 document.getElementById('registration-form').reset(); // Also reset form
                 // Clear errors
@@ -547,21 +690,22 @@
                 document.getElementById('name-error').classList.add('hidden');
                 document.getElementById('phone-reg-error').classList.add('hidden');
                 checkRegistrationInputs(); // Reset button state
+                // (FIX) Removed table refresh as the table is removed
+                // fetchUserList(); // Fetch the user list for the table
             }
         }
         
         async function logout() {
-            if (currentUser) {
-                await writeLog('logout', { memberId: currentUser.memberId });
-            }
+            // REMOVED: writeLog call
             currentUser = null;
             currentPin = '';
+            pinLoginAttempts = 0; // (FIX) รีเซ็ตตัวนับเมื่อ Logout
             
             // Clear registration form
             document.getElementById('registration-form').reset();
             checkRegistrationInputs(); 
             
-            showScreen('welcome-screen');
+            window.showScreen('welcome-screen'); // Use window.showScreen for global access
         }
 
         // --- Modal Functions ---
@@ -581,6 +725,14 @@
                  document.getElementById('phone-number').value = '';
                  phoneError.classList.add('hidden');
                  ambiguousUsers = []; // Clear ambiguous users
+                 pinLoginAttempts = 0; // (FIX) รีเซ็ตตัวนับ
+            }
+            // (FIX) เพิ่ม Logic การปิดสำหรับ Modal ใหม่
+            if (modalId === 'security-verify-modal') {
+                resetPinDisplay();
+                document.getElementById('security-phone-number').value = '';
+                document.getElementById('security-phone-error').classList.add('hidden');
+                pinLoginAttempts = 0; // (FIX) รีเซ็ตตัวนับ
             }
             // NEW: Clear PIN setup modal on close
             if (modalId === 'set-pin-modal') {
@@ -596,7 +748,7 @@
         // This function cancels the entire PIN flow and returns to welcome screen
         async function cancelPinFlow() {
             closeModal('phone-verify-modal'); // Close modal if open
-            await writeLog('login_cancel');
+            // REMOVED: writeLog call
             await logout(); // Use logout to reset everything
         }
 
@@ -624,9 +776,6 @@
         }
 
 
-        // --- Login Form Logic ---
-        // REMOVED: All logic for 'login-form' is gone.
-
         // --- Registration Form Logic ---
         document.getElementById('registration-form').addEventListener('submit', async function(event) {
             event.preventDefault(); 
@@ -647,6 +796,7 @@
             phoneError.classList.add('hidden');
             
             let isValid = true;
+            let alreadyRegisteredError = false; // (FIX) Add flag for specific error
             
             // Get values
             // UPDATED: Changed variable names to match request
@@ -654,17 +804,26 @@
             const empName = fullNameInput.value.trim();
             const empPhone = phoneInput.value.trim();
             
+            // --- (FIX) ตรวจสอบและแปลง EmpID เป็นตัวเลขก่อน ---
+            const empIdNum = parseInt(empId, 10);
+            if (isNaN(empIdNum)) {
+                memberIdError.textContent = 'รหัสสมาชิกต้องเป็นตัวเลขเท่านั้น';
+                memberIdError.classList.remove('hidden');
+                // ไม่ต้องไปหน้า loading ถ้า ID ผิด
+                return; 
+            }
+            // --- จบส่วนแก้ไข ---
+
             // --- Firestore Check ---
-            showScreen('loading-screen');
-            // UPDATED: Log with new key
-            await writeLog('register_start', { attemptedEmpID: empId });
+            window.showScreen('loading-screen'); // Use window.showScreen
+            // REMOVED: writeLog call
 
             let userDoc = null;
             let userData = null;
 
             try {
-                // UPDATED: Query using "EmpID" field
-                const q = query(dbUserRef, where("EmpID", "==", empId));
+                // (FIX) UPDATED: Query using "EmpID" field with NUMBER type
+                const q = query(dbUserRef, where("EmpID", "==", empIdNum));
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
@@ -681,13 +840,15 @@
                         isValid = false;
                     }
                     // 3. Check if already registered
-                    else if (userData.pin !== null) {
-                        memberIdError.textContent = 'รหัสสมาชิกนี้ได้ลงทะเบียนเรียบร้อยแล้ว';
-                        memberIdError.classList.remove('hidden');
+                    // (FIX) Use != null to check for both null AND undefined
+                    // This ensures that if the 'pin' field doesn't exist (undefined), it's not counted as "already registered".
+                    else if (userData.pin != null) {
+                        // (FIX) Show lightbox instead of inline error
+                        showAlert('ลงทะเบียนซ้ำ', 'รหัสสมาชิกนี้ได้ทำการลงทะเบียนเรียบร้อยแล้ว ไม่สามารถลงทะเบียนซ้ำได้อีก', true);
                         isValid = false;
+                        alreadyRegisteredError = true; // Set flag
                     }
                     // 4. Check Phone (basic check)
-                    // UPDATED: Check empPhone variable
                     else if (empPhone.length < 9) {
                         phoneError.textContent = 'กรุณากรอกหมายเลขโทรศัพท์ให้ถูกต้อง';
                         phoneError.classList.remove('hidden');
@@ -703,23 +864,25 @@
             if (isValid && userDoc) {
                 // --- Validation Success ---
                 // 1. Set current user (include Firestore doc ID)
-                // UPDATED: Store EmpID and EmpPhone
-                currentUser = { ...userData, fbDocId: userDoc.id, EmpID: empId };
+                // UPDATED: Store EmpID (as number) and EmpPhone
+                currentUser = { ...userData, fbDocId: userDoc.id, EmpID: empIdNum };
                 currentUser.EmpPhone = empPhone; // Store phone from form
                 
                 // 2. Open the PIN Setup Modal
                 openModal('set-pin-modal');
-                showScreen('register-screen'); // Show form again with modal on top
+                window.showScreen('register-screen'); // Show form again with modal on top
             } else {
-                // Handle Registration Failure (EmpID or EmpName Mismatch, or not found)
-                if (!isValid && !memberIdError.classList.contains('hidden')) {
+                // Handle Registration Failure
+                if (alreadyRegisteredError) {
+                    // (NEW) Just show the register screen, the modal is already open
+                    window.showScreen('register-screen');
+                }
+                else if (!isValid && (!memberIdError.classList.contains('hidden') || !phoneError.classList.contains('hidden'))) {
                      // If error is already showing for pin or phone, stay on screen
-                    showScreen('register-screen');
+                    window.showScreen('register-screen');
                 } else {
                     // If validation failed due to EmpID/EmpName mismatch/not found
-                    await writeLog('register_fail', { reason: 'id_name_mismatch', attemptedEmpID: empId, attemptedEmpName: empName });
                     openModal('registration-error-modal');
-                    // We stay on loading screen until user closes modal, then user goes back to reg screen
                 }
             }
         }); 
@@ -754,15 +917,15 @@
 
         // NEW: Function to go to PIN login screen from welcome
         async function goToPinLogin() {
-            // Log the start of the login process
-            await writeLog('login_start');
+            // REMOVED: writeLog call
 
             pinTitle.textContent = 'กรุณาระบุ PIN 6 หลัก';
             pinSubtitle.textContent = 'เพื่อเข้าสู่ระบบ';
             currentUser = null; 
             ambiguousUsers = [];
             resetPinDisplay(); 
-            showScreen('pin-screen');
+            pinLoginAttempts = 0; // (FIX) รีเซ็ตตัวนับเมื่อเริ่ม Login
+            window.showScreen('pin-screen'); // Use window.showScreen
         }
 
         // จัดการการกดปุ่ม Numpad
@@ -796,7 +959,7 @@
         // REPLACED: checkPinLogin() is replaced with checkPinDirect()
         // This function finds user by PIN, instead of assuming currentUser
         async function checkPinDirect() {
-            showScreen('loading-screen');
+            window.showScreen('loading-screen'); // Use window.showScreen
             ambiguousUsers = []; // Clear previous check
             
             // 1. Find all users with this PIN from Firestore
@@ -804,36 +967,40 @@
                 const q = query(dbUserRef, where("pin", "==", currentPin));
                 const querySnapshot = await getDocs(q);
                 
+                // (FIX) Reverted 2 steps: Populate ambiguousUsers
                 querySnapshot.forEach(doc => {
                     ambiguousUsers.push({ ...doc.data(), fbDocId: doc.id });
                 });
 
                 if (ambiguousUsers.length === 0) {
                     // --- PIN Not Found in System ---
-                    await writeLog('login_pin_fail', { reason: 'pin_not_found', enteredPin: currentPin });
+                    // REMOVED: writeLog call
+                    pinLoginAttempts++; // (FIX) เพิ่มตัวนับเมื่อกรอกผิด
                     openModal('pin-error-modal');
-                    showScreen('pin-screen'); // Go back to PIN screen
+                    window.showScreen('pin-screen'); // Go back to PIN screen
                 } 
                 else if (ambiguousUsers.length === 1) {
                     // --- PIN is unique and correct ---
-                    currentUser = ambiguousUsers[0];
-                    // UPDATED: Log with EmpID if available
-                    await writeLog('login_success', { memberId: (currentUser.memberId || currentUser.EmpID), method: 'pin' });
-                    goToDashboard();
+                    
+                    // (FIX) Reverted 2 steps: Logic to ALWAYS show security modal
+                    // Removed: if (pinLoginAttempts > 0) { ... } else { ... }
+                    currentUser = ambiguousUsers[0]; // เก็บข้อมูล userไว้รอเช็ค
+                    openModal('security-verify-modal');
+                    window.showScreen('pin-screen'); // แสดง PIN screen ไว้ข้างหลัง
                 } 
                 else if (ambiguousUsers.length > 1) {
                     // --- PIN is duplicated ---
-                    await writeLog('login_pin_duplicate', { enteredPin: currentPin, count: ambiguousUsers.length });
+                    // REMOVED: writeLog call
                     currentUser = null; 
                     openModal('phone-verify-modal');
-                    showScreen('pin-screen'); // Show PIN screen behind modal
+                    window.showScreen('pin-screen'); // Show PIN screen behind modal
                 }
 
             } catch (e) {
                 console.error("Error checking PIN:", e);
-                await writeLog('login_pin_fail', { reason: 'db_error', error: e.message });
+                // REMOVED: writeLog call
                 showAlert("เกิดข้อผิดพลาด", "ไม่สามารถตรวจสอบ PIN ได้ กรุณาลองใหม่อีกครั้ง", true);
-                showScreen('pin-screen');
+                window.showScreen('pin-screen');
             }
         }
         
@@ -841,8 +1008,8 @@
         
         // Go to dashboard (helper function)
         function goToDashboard() {
-             document.querySelector('#dashboard-screen h2').textContent = `สวัสดี, คุณ${currentUser.name}`;
-             showScreen('dashboard-screen');
+             document.querySelector('#dashboard-screen h2').textContent = `สวัสดี, คุณ${currentUser.EmpName}`; // UPDATED to EmpName
+             window.showScreen('dashboard-screen'); // Use window.showScreen
              resetPinDisplay(); // Clear PIN for next login
         }
 
@@ -918,20 +1085,21 @@
             const newPin = getPinFromInputs(setPinGroup);
             
             // Save to Firebase
-            showScreen('loading-screen');
+            window.showScreen('loading-screen'); // Use window.showScreen
             try {
                 const userDocRef = doc(db, dbUserRef.path, currentUser.fbDocId);
-                // UPDATED: Save "EmpPhone" field
+                // UPDATED: Save EmpPhone and DateRegister
                 await updateDoc(userDocRef, {
                     pin: newPin,
-                    EmpPhone: currentUser.EmpPhone // Save the phone from registration form
+                    EmpPhone: currentUser.EmpPhone, // Save the phone from registration form
+                    DateRegister: serverTimestamp() // NEW: Save registration timestamp
                 });
 
                 // Update local user object
                 currentUser.pin = newPin;
+                currentUser.DateRegister = new Date(); // Update local object immediately
 
-                // UPDATED: Log with EmpID
-                await writeLog('register_complete', { memberId: currentUser.EmpID });
+                // REMOVED: writeLog call
                 
                 closeModal('set-pin-modal');
                 showAlert('ลงทะเบียนสำเร็จ', 'คุณได้ตั้งค่า PIN 6 หลักเรียบร้อยแล้ว');
@@ -939,16 +1107,58 @@
                 // After closing alert, go to dashboard
                 document.getElementById('custom-alert-modal').querySelector('button').onclick = () => {
                      closeModal('custom-alert-modal');
+                     goToDashboard(); // Go to dashboard after successful registration
                  };
 
             } catch (e) {
                 console.error("Error saving PIN:", e);
-                // UPDATED: Log with EmpID
-                await writeLog('register_fail', { memberId: currentUser.EmpID, error: e.message });
+                // REMOVED: writeLog call
                 showAlert("เกิดข้อผิดพลาด", "ไม่สามารถบันทึก PIN ได้ กรุณาลองใหม่อีกครั้ง", true);
-                showScreen('register-screen'); // Go back to reg screen
+                window.showScreen('register-screen'); // Go back to reg screen
+            }
+            // (FIX) Removed table refresh as the table is removed
+            // fetchUserList();
+        }
+        
+        // (FIX) เพิ่มฟังก์ชันสำหรับยืนยันตัวตน (Security Check)
+        async function handleSecurityVerify() {
+            const phoneInput = document.getElementById('security-phone-number');
+            const phone = phoneInput.value.trim();
+            const errorEl = document.getElementById('security-phone-error');
+            errorEl.classList.add('hidden'); // ซ่อน error เก่า
+
+            // ตรวจสอบเบอร์โทรกับ user ที่เราเก็บไว้
+            if (currentUser && phone === currentUser.EmpPhone) {
+                // --- ยืนยันตัวตนสำเร็จ ---
+                closeModal('security-verify-modal');
+                goToDashboard(); // ไปหน้า Dashboard
+            } else {
+                // --- ยืนยันตัวตนไม่สำเร็จ ---
+                // ปิด Modal ที่กรอกเบอร์
+                closeModal('security-verify-modal');
+                // แสดง Alert ว่าไม่ถูกต้อง
+                showAlert('ยืนยันตัวตนไม่สำเร็จ', 'หมายเลขโทรศัพท์ไม่ถูกต้อง กรุณาลองเข้าสู่ระบบใหม่อีกครั้ง', true);
+                // รีเซ็ต PIN เพื่อให้กรอกใหม่
+                resetPinDisplay();
+                pinLoginAttempts = 0; // รีเซ็ตตัวนับ
             }
         }
+
+        // NEW: Helper to format date for the table
+        // (FIX) Removed formatDate, fetchUserList, and renderUserList as the table is removed
+        /*
+        function formatDate(timestamp) {
+...
+        }
+        
+        async function fetchUserList() {
+...
+        }
+        
+        function renderUserList(list) {
+...
+        }
+        */
 
         // FIX: Re-added missing function
         async function handlePhoneVerify() {
@@ -962,7 +1172,7 @@
             const foundUser = ambiguousUsers.find(user => user.EmpPhone === phone);
 
             if (!foundUser) { 
-                await writeLog('login_phone_verify_fail', { enteredPhone: phone });
+                // REMOVED: writeLog call
                 phoneError.textContent = 'หมายเลขโทรศัพท์ไม่ถูกต้อง';
                 phoneError.classList.remove('hidden');
                 return;
@@ -970,11 +1180,10 @@
             
             // --- Phone is correct ---
             currentUser = foundUser; // Now we know the user
-            // UPDATED: Log with EmpID
-            await writeLog('login_success', { memberId: (currentUser.memberId || currentUser.EmpID), method: 'phone_verify' });
+            // REMOVED: writeLog call
             
             closeModal('phone-verify-modal');
-            showScreen('loading-screen');
+            window.showScreen('loading-screen'); // Use window.showScreen
             
             // No need for setTimeout, just go to dashboard
             goToDashboard();
@@ -982,27 +1191,7 @@
             ambiguousUsers = []; // Clear ambiguity
         }
 
-        // --- NEW: Firebase Logging Function ---
-        async function writeLog(action, details = {}) {
-            // FIX: Added the entire missing function body and rest of the file
-            if (!dbLogRef) {
-                console.warn("dbLogRef not initialized. Log skipped.");
-                return;
-            }
-            try {
-                await addDoc(dbLogRef, {
-                    action: action,
-                    timestamp: serverTimestamp(),
-                    userId: userId || 'anonymous', // Use Firebase auth user ID if available
-                    // UPDATED: Use EmpID if memberId doesn't exist
-                    memberId: currentUser ? (currentUser.memberId || currentUser.EmpID) : 'unknown',
-                    details: details,
-                    userAgent: navigator.userAgent
-                });
-            } catch (e) {
-                console.error("Failed to write log:", e);
-            }
-        }
+        // --- REMOVED: Firebase Logging Function (writeLog) ---
 
         // Add event listeners for PIN setup inputs (auto-tab and validation)
         setPinInputs.forEach(input => {
@@ -1023,17 +1212,18 @@
             try {
                 // START OF EXTERNAL DEPLOYMENT MODIFICATION 2: AUTH TOKEN (การยืนยันตัวตน)
                 //
-                // **CANVAS/INTERNAL USE (Current Setting):** ใช้ Token ที่ระบบ Canvas สร้างให้
+                // **EXTERNAL DEPLOYMENT (Current Setting):** ใช้ Anonymous Sign-in โดยตรง
+                await signInAnonymously(auth);
+                console.log("Signed in anonymously.");
+                
+                /* // โค้ด CANVAS เดิม (ที่ทำให้เกิดปัญหา):
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                     console.log("Signed in with custom token.");
                 } else {
                     await signInAnonymously(auth);
                     console.log("Signed in anonymously.");
-                }
-                /* // **EXTERNAL DEPLOYMENT (โค้ดเดิมที่ถูกเปลี่ยนกลับมา):**
-                await signInAnonymously(auth); 
-                console.log("Signed in anonymously.");
+                } 
                 */
                 // END OF EXTERNAL DEPLOYMENT MODIFICATION 2
             } catch (e) {
@@ -1051,24 +1241,21 @@
                     // START OF EXTERNAL DEPLOYMENT MODIFICATION 3: FIREBASE COLLECTION PATHS
                     // (ส่วนที่ 3: เส้นทาง Collection ใน Firestore)
                     // ----------------------------------------------------------------------
-                    // **CANVAS/INTERNAL USE (Current Setting):** ใช้เส้นทางตามโครงสร้าง Canvas
-                    //const publicDataPath = `artifacts/${appId}/public/data`; 
-                    const publicDataPath = ``; 
-                    dbUserRef = collection(db, `${publicDataPath}/TMBcoop_User`);
-                    dbLogRef = collection(db, `${publicDataPath}/TMBcoop_Log`);
+                    // **EXTERNAL DEPLOYMENT (Current Setting):** ชี้ไปที่ Root Collection โดยตรง
+                    dbUserRef = collection(db, 'TMBcoop_User'); 
                     
-                    /* // **EXTERNAL DEPLOYMENT (โค้ดเดิมที่ถูกเปลี่ยนกลับมา):**
-                    dbUserRef = collection(db, 'TMBcoop_User');
-                    dbLogRef = collection(db, 'TMBcoop_Log');
+                    /* // โค้ด CANVAS เดิม (ที่ทำให้เกิดปัญหา):
+                    const publicDataPath = `artifacts/${appId}/public/data`; 
+                    dbUserRef = collection(db, `${publicDataPath}/TMBcoop_User`); 
                     */
                     // END OF EXTERNAL DEPLOYMENT MODIFICATION 3
 
 
                     console.log("Firestore User Collection Path:", dbUserRef.path);
-                    console.log("Firestore Log Collection Path:", dbLogRef.path);
+                    // console.log("Firestore Log Collection Path:", dbLogRef.path); // REMOVED
 
                     // Now that auth is ready, show the welcome screen
-                    showScreen('welcome-screen');
+                    window.showScreen('welcome-screen'); // Use window.showScreen
 
                 } else {
                     console.log("User is signed out.");
@@ -1079,7 +1266,7 @@
                     } else {
                         showAlert("ข้อผิดพลาดร้ายแรง", "ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้ กรุณาตรวจสอบ API Key", true);
                     }
-                    showScreen('welcome-screen'); // Show welcome but functionality will fail
+                    window.showScreen('welcome-screen'); // Show welcome but functionality will fail
                 }
             });
         }
@@ -1094,19 +1281,20 @@
                 console.log("DB not ready, auth skipped.");
                 // Show the error immediately if Firebase init failed in the try block
                 showAlert("ข้อผิดพลาดร้ายแรง", "ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้ กรุณาตรวจสอบ API Key", true);
-                showScreen('welcome-screen'); // Show welcome but functionality will fail
+                window.showScreen('welcome-screen'); // Show welcome but functionality will fail
             }
         });
 
         // --- Expose functions to global scope for HTML onclick attributes ---
         window.goToPinLogin = goToPinLogin;
-        window.showScreen = showScreen;
+        // window.showScreen = showScreen; // Replaced by the intercepted function above
         window.logout = logout;
         window.cancelPinFlow = cancelPinFlow;
         window.handlePhoneVerify = handlePhoneVerify;
         window.closeModal = closeModal;
         window.cancelPinSetup = cancelPinSetup;
         window.handlePinSave = handlePinSave;
+        window.handleSecurityVerify = handleSecurityVerify; // (FIX) เพิ่มฟังก์ชันใหม่
         // ------------------------------------------------------------------
 
     </script>
