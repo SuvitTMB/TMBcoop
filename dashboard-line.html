@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ระบบบริหารจัดการงานประชุม</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Font (Sarabun) -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+        .hidden { display: none !important; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Lightbox/Modal Backdrop */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Toast Animation */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-enter { animation: slideInRight 0.3s ease-out forwards; }
+        
+        /* Winner Card Gradient Border */
+        .winner-card-border {
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            padding: 2px;
+            border-radius: 1rem;
+        }
+        
+        /* Compact Table Rows */
+        .table-compact td {
+            padding-top: 4px;
+            padding-bottom: 4px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col gap-3 w-80 pointer-events-none"></div>
+
+    <!-- Sidebar -->
+    <aside class="w-full md:w-64 bg-slate-800 text-white flex-shrink-0 flex flex-col h-screen overflow-y-auto z-20 shadow-xl">
+        <div class="p-6 border-b border-slate-700 flex items-center gap-3">
+            <div class="bg-blue-500 p-2 rounded-lg">
+                <i data-lucide="layout-dashboard" width="24" height="24"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg">Coop Admin</h1>
+                <p class="text-xs text-slate-400">ระบบจัดการงานประชุม</p>
+            </div>
+        </div>
+        
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <button onclick="window.app.switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-700 text-white transition-all hover:bg-slate-700">
+                <i data-lucide="pie-chart" width="20"></i> ภาพรวม (Dashboard)
+            </button>
+            <button onclick="window.app.switchTab('prizes')" id="nav-prizes" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all">
+                <i data-lucide="gift" width="20"></i> จัดการของรางวัล
+            </button>
+            <button onclick="window.app.switchTab('randomizer')" id="nav-randomizer" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all">
+                <i data-lucide="play-circle" width="20"></i> จับรางวัล (Randomizer)
+            </button>
+            <button onclick="window.app.switchTab('results')" id="nav-results" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all">
+                <i data-lucide="list-checks" width="20"></i> ประกาศผลรางวัล
+            </button>
+            <button onclick="window.app.switchTab('data')" id="nav-data" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all">
+                <i data-lucide="table" width="20"></i> ข้อมูลลงทะเบียน
+            </button>
+            
+            <div class="pt-4 mt-4 border-t border-slate-700">
+                <p class="px-4 text-xs text-slate-500 mb-2 font-bold">QR Code Management</p>
+                <button onclick="window.app.switchTab('qrcode-in')" id="nav-qrcode-in" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all">
+                    <i data-lucide="qr-code" width="20"></i> QR Code CheckIN
+                </button>
+                <button onclick="window.app.switchTab('qrcode-out')" id="nav-qrcode-out" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all">
+                    <i data-lucide="qr-code" width="20"></i> QR Code CheckOUT
+                </button>
+            </div>
+
+            <button onclick="window.app.switchTab('import')" id="nav-import" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all border-t border-slate-700 mt-2 pt-4">
+                <i data-lucide="database" width="20"></i> จัดการข้อมูล (Import)
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-slate-700">
+            <div class="bg-slate-900 rounded-xl p-4">
+                <p class="text-xs text-slate-500 mb-1">สถานะระบบ</p>
+                <div class="flex items-center gap-2">
+                    <div id="status-indicator" class="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span id="status-text" class="text-sm text-slate-400">Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Top Bar -->
+        <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 shadow-sm z-10">
+            <h2 id="page-title" class="text-xl font-bold text-slate-800">ภาพรวมระบบ</h2>
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-bold text-slate-700">ผู้ดูแลระบบ</p>
+                    <p class="text-xs text-slate-500" id="current-time">--:--:--</p>
+                </div>
+                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
+                    A
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto p-6 bg-slate-50 relative" id="main-scroll">
+            
+            <!-- VIEW 1: DASHBOARD OVERVIEW -->
+            <div id="view-dashboard" class="view-section space-y-6 fade-in-up">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                            <i data-lucide="users" width="60" height="60" class="text-blue-600"></i>
+                        </div>
+                        <p class="text-slate-500 text-sm font-medium">ลงทะเบียนเข้าทั้งหมด</p>
+                        <h3 id="stat-checkin" class="text-3xl font-bold text-slate-800 mt-2">0</h3>
+                        <p class="text-green-500 text-xs mt-2 flex items-center gap-1"><i data-lucide="arrow-up" width="12"></i> Update Real-time</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                            <i data-lucide="log-out" width="60" height="60" class="text-orange-600"></i>
+                        </div>
+                        <p class="text-slate-500 text-sm font-medium">ลงทะเบียนออกแล้ว</p>
+                        <h3 id="stat-checkout" class="text-3xl font-bold text-slate-800 mt-2">0</h3>
+                        <div class="w-full bg-orange-100 rounded-full h-1.5 mt-3">
+                            <div id="bar-checkout" class="bg-orange-500 h-1.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                            <i data-lucide="gift" width="60" height="60" class="text-purple-600"></i>
+                        </div>
+                        <p class="text-slate-500 text-sm font-medium">ได้รับรางวัลแล้ว</p>
+                        <h3 id="stat-rewarded" class="text-3xl font-bold text-slate-800 mt-2">0</h3>
+                        <p id="stat-eligible" class="text-slate-400 text-xs mt-2">จากผู้มีสิทธิ์ลุ้น 0 คน</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                            <i data-lucide="check-square" width="60" height="60" class="text-green-600"></i>
+                        </div>
+                        <p class="text-slate-500 text-sm font-medium">ยืนยันรับรางวัลแล้ว</p>
+                        <h3 id="stat-claimed" class="text-3xl font-bold text-slate-800 mt-2">0</h3>
+                    </div>
+                </div>
+
+                <!-- Charts & Recent Activity -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-lg text-slate-700 mb-4">สถิติการลงทะเบียน (Real-time)</h3>
+                        <div class="h-64">
+                            <canvas id="registrationChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-lg text-slate-700 mb-4">กิจกรรมล่าสุด</h3>
+                        <div id="recent-activity-list" class="space-y-4 max-h-64 overflow-y-auto pr-2">
+                            <!-- Activity Items injected here -->
+                            <div class="text-center text-slate-400 text-sm py-8">รอข้อมูล...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- NEW SECTION: Recent Registrations Table -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-center mb-4">
+                         <h3 class="font-bold text-lg text-slate-800">สมาชิกที่ลงทะเบียนล่าสุด</h3>
+                         <span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">50 รายการล่าสุด</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-slate-50 text-slate-500 font-medium">
+                                <tr>
+                                    <th class="px-4 py-3 rounded-l-lg bg-slate-50/50">รหัสสมาชิก (EmpMember)</th>
+                                    <th class="px-4 py-3 bg-slate-50/50">ชื่อ-นามสกุล (EmpName)</th>
+                                    <th class="px-4 py-3 bg-slate-50/50">Check-IN</th>
+                                    <th class="px-4 py-3 bg-slate-50/50">Check-OUT</th>
+                                    <th class="px-4 py-3 rounded-r-lg bg-slate-50/50">สถานะ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-recent-table" class="divide-y divide-slate-100">
+                                <tr><td colspan="5" class="text-center py-4 text-slate-400">กำลังโหลด...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: PRIZE MANAGEMENT -->
+            <div id="view-prizes" class="view-section hidden space-y-6 fade-in-up">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Form -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+                            <i data-lucide="plus-circle" width="20" class="text-indigo-600"></i> เพิ่ม/แก้ไข ของรางวัล
+                        </h3>
+                        <form id="prize-form" onsubmit="window.app.handlePrizeSubmit(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">ชื่อของรางวัล</label>
+                                <input type="text" id="prize-name" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-600 mb-1">รางวัลที่จะสุ่ม (ต่อรอบ)</label>
+                                    <input type="number" id="prize-qty" value="1" min="1" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-600 mb-1">จำนวนสิทธิ์ทั้งหมด</label>
+                                    <input type="number" id="prize-total" value="1" min="1" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 outline-none">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition">บันทึกข้อมูล</button>
+                        </form>
+                    </div>
+
+                    <!-- List -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-lg text-slate-800 mb-4">รายการของรางวัลทั้งหมด</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-slate-200 text-slate-700 font-bold">
+                                    <tr>
+                                        <th class="px-4 py-3 rounded-l-lg">ชื่อของรางวัล</th>
+                                        <th class="px-4 py-3 text-center">รางวัลที่จะสุ่ม</th>
+                                        <th class="px-4 py-3 text-center">จำนวนสิทธิ์ทั้งหมด</th>
+                                        <th class="px-4 py-3 text-right rounded-r-lg">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prize-list-body" class="divide-y divide-slate-100">
+                                    <tr><td colspan="4" class="text-center py-4 text-slate-400">กำลังโหลด...</td></tr>
+                                </tbody>
+                                <tfoot class="bg-slate-100 font-bold text-slate-700">
+                                    <tr>
+                                        <td class="px-4 py-3 text-right" colspan="2">รวมสิทธิ์ทั้งหมด:</td>
+                                        <td class="px-4 py-3 text-center text-indigo-600" id="total-prize-quota">0</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: RANDOMIZER SYSTEM -->
+            <div id="view-randomizer" class="view-section hidden space-y-6">
+                <!-- NEW STATS ROW FOR RANDOMIZER -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 border-l-4 border-blue-500">
+                        <p class="text-slate-500 text-xs font-medium">ผู้ลงทะเบียนทั้งหมด</p>
+                        <h3 id="rand-stat-total" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 border-l-4 border-slate-400">
+                        <p class="text-slate-500 text-xs font-medium">ยังไม่ได้รางวัล</p>
+                        <h3 id="rand-stat-noreward" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 border-l-4 border-purple-500">
+                        <p class="text-slate-500 text-xs font-medium">ได้รางวัลแล้ว</p>
+                        <h3 id="rand-stat-rewarded" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 border-l-4 border-green-500">
+                        <p class="text-slate-500 text-xs font-medium">รับรางวัลแล้ว</p>
+                        <h3 id="rand-stat-claimed" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+                    
+                    <!-- Left: Control Panel -->
+                    <div class="lg:col-span-4 space-y-6">
+                        <!-- Setup Card -->
+                        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-100">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+                                <div class="bg-indigo-100 p-2 rounded-lg text-indigo-600"><i data-lucide="settings-2" width="20"></i></div>
+                                ตั้งค่าการสุ่ม
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-600 mb-1">เลือกของรางวัล</label>
+                                    <select id="select-prize" onchange="window.app.onPrizeSelect()" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 outline-none bg-white">
+                                        <option value="">-- กรุณาเลือก --</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-600 mb-1">จำนวนผู้โชคดี (คน)</label>
+                                    <div class="flex items-center gap-4">
+                                        <input type="number" id="input-draw-qty" value="1" min="1" max="50" oninput="window.app.validateRandomizerInput()" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 outline-none font-mono text-center text-lg">
+                                        <span class="text-slate-400 text-sm whitespace-nowrap">คน / รอบ</span>
+                                    </div>
+                                    <p class="text-xs text-orange-500 mt-1 hidden" id="qty-warning">จำนวนสุ่มเกินกว่าของรางวัลที่เหลือ!</p>
+                                </div>
+
+                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-sm text-slate-500">คงเหลือในสต็อก</span>
+                                        <span id="label-stock-count" class="font-bold text-orange-600 text-lg">0</span>
+                                    </div>
+                                     <div class="flex justify-between items-center mb-1">
+                                        <span class="text-sm text-slate-500">ผู้มีสิทธิ์ลุ้นรางวัล</span>
+                                        <span id="label-eligible-count" class="font-bold text-indigo-600 text-lg">0</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-1.5">
+                                        <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 100%"></div>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-2">*เฉพาะผู้ที่สถานะไม่ว่างและยังไม่เคยได้รางวัล</p>
+                                </div>
+
+                                <!-- Disabled by default -->
+                                <button onclick="window.app.startRandomizer()" id="btn-start-random" disabled class="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all transform active:scale-95 flex items-center justify-center gap-2 text-lg opacity-50 cursor-not-allowed">
+                                    <i data-lucide="play" width="24" class="fill-current"></i> เริ่มสุ่มรางวัล
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Current Winners List (Mini) -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex-1">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-bold text-slate-700">ประวัติการแจกรางวัลล่าสุด</h3>
+                                <button onclick="window.app.clearHistoryLog()" class="text-xs text-red-500 hover:text-red-700">ล้างประวัติ</button>
+                            </div>
+                            <div id="history-log-list" class="space-y-2 max-h-[300px] overflow-y-auto">
+                                <!-- Logs -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Big Screen Display Area -->
+                    <div class="lg:col-span-8">
+                        <div class="bg-slate-900/20 rounded-3xl h-[600px] p-8 flex flex-col relative overflow-hidden shadow-2xl border-4 border-blue-600">
+                            
+                            <!-- Header inside screen -->
+                            <div class="relative z-10 flex justify-between items-start mb-8">
+                                <div>
+                                    <h1 id="screen-prize-title" class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800">
+                                    </h1>
+                                </div>
+                                <div class="bg-white/50 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10">
+                                    <span class="text-slate-600 text-xs uppercase tracking-wider">Status</span>
+                                    <div class="flex items-center gap-2">
+                                        <div id="screen-status-dot" class="w-2 h-2 bg-slate-500 rounded-full"></div>
+                                        <span id="screen-status-text" class="text-slate-800 font-mono text-sm">IDLE</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Display Grid -->
+                            <div id="screen-display-area" class="relative z-10 flex-1 grid grid-cols-1 content-center gap-4 overflow-y-auto custom-scroll-dark">
+                                <!-- Winner Cards will appear here -->
+                                <div class="text-center text-slate-600 flex flex-col items-center justify-center h-full">
+                                    <i data-lucide="gift" width="64" height="64" class="mb-4 opacity-20 text-slate-800"></i>
+                                    <p class="text-slate-800 font-bold">พร้อมสำหรับการจับรางวัล</p>
+                                </div>
+                            </div>
+
+                            <!-- Controls overlay (hidden during active) -->
+                            <div id="screen-overlay-controls" class="hidden absolute inset-0 bg-black/50 backdrop-blur-sm z-20 flex items-center justify-center">
+                                <div class="text-white text-center">
+                                    <div class="spinner mb-4 mx-auto"></div>
+                                    <h2 class="text-2xl font-bold">กำลังประมวลผล...</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 4: LIVE RESULTS -->
+            <div id="view-results" class="view-section hidden space-y-6 fade-in-up">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <!-- Monitor Stats -->
+                    <!-- 1. Total DB -->
+                    <div class="bg-gradient-to-br from-gray-600 to-gray-700 p-4 rounded-xl shadow-lg text-white">
+                        <p class="text-gray-200 text-xs">สมาชิกทั้งหมดในระบบ</p>
+                        <h3 id="monitor-total-db" class="text-2xl font-bold mt-1">0</h3>
+                    </div>
+
+                    <!-- 2. Registered (Status valid) -->
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-lg text-white">
+                        <p class="text-blue-100 text-xs">สมาชิกที่ลงทะเบียน (Active)</p>
+                        <h3 id="monitor-registered" class="text-2xl font-bold mt-1">0</h3>
+                    </div>
+
+                    <!-- 3. Draws -->
+                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 p-4 rounded-xl shadow-lg text-white">
+                        <p class="text-purple-100 text-xs">จำนวนรางวัลที่แจกแล้ว</p>
+                        <h3 id="monitor-draws" class="text-2xl font-bold mt-1">0</h3>
+                    </div>
+
+                    <!-- 4. Rewarded -->
+                    <div class="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-xl shadow-lg text-white">
+                        <p class="text-green-100 text-xs">สมาชิกที่ได้รางวัลแล้ว</p>
+                        <h3 id="monitor-rewarded" class="text-2xl font-bold mt-1">0</h3>
+                    </div>
+
+                    <!-- 5. No Reward -->
+                    <div class="bg-gradient-to-br from-slate-500 to-slate-600 p-4 rounded-xl shadow-lg text-white">
+                        <p class="text-slate-200 text-xs">สมาชิกที่ไม่ได้รางวัล</p>
+                        <h3 id="monitor-noreward" class="text-2xl font-bold mt-1">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100">
+                        <h3 class="font-bold text-lg text-slate-800">รายการผู้โชคดี (Real-time)</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-slate-200 text-slate-700 font-bold border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4">ลำดับ</th>
+                                    <th class="px-6 py-4">ชื่อ-นามสกุล</th>
+                                    <th class="px-6 py-4">รางวัลที่ได้</th>
+                                    <th class="px-6 py-4">เวลาที่สุ่มได้</th>
+                                    <th class="px-6 py-4">สถานะการรับรางวัล</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-table-body" class="divide-y divide-slate-100">
+                                <!-- Filled by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 5: DATA TABLE -->
+            <div id="view-data" class="view-section hidden space-y-6 fade-in-up">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-bold text-lg text-slate-800">ข้อมูลการลงทะเบียนทั้งหมด</h3>
+                        <div class="flex items-center gap-2">
+                             <select id="rows-per-page" onchange="window.app.changeRowsLimit(this.value)" class="bg-slate-50 border border-slate-200 text-slate-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2">
+                                <option value="20">20 แถว</option>
+                                <option value="50" selected>50 แถว</option>
+                                <option value="100">100 แถว</option>
+                                <option value="500">500 แถว</option>
+                                <option value="99999">ทั้งหมด</option>
+                             </select>
+                             <input type="text" id="search-data" placeholder="ค้นหาชื่อ..." class="px-4 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-100">
+                             <button class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-sm transition">
+                                <i data-lucide="download" width="16" class="inline mr-1"></i> Export CSV
+                             </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left table-compact">
+                            <thead class="bg-slate-200 text-slate-700 font-bold border-b border-slate-100 text-sm">
+                                <tr>
+                                    <th class="px-6 py-2">#</th>
+                                    <th class="px-6 py-2">ชื่อ-นามสกุล (EmpName)</th>
+                                    <th class="px-6 py-2">Check-In</th>
+                                    <th class="px-6 py-2">Check-Out</th>
+                                    <th class="px-6 py-2">ของรางวัล</th>
+                                    <th class="px-6 py-2">สถานะรับรางวัล</th>
+                                    <th class="px-6 py-2 text-right">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
+                                <!-- Data Rows -->
+                            </tbody>
+                        </table>
+                        
+                        <!-- Pagination Controls -->
+                        <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+                            <p class="text-xs text-slate-400" id="data-table-info">แสดงผล...</p>
+                            <div class="flex gap-2" id="pagination-controls">
+                                <button onclick="window.app.changePage(-1)" class="px-3 py-1 bg-white border border-slate-300 rounded-md text-xs hover:bg-slate-50 disabled:opacity-50" id="btn-prev">Previous</button>
+                                <span class="text-xs self-center font-bold text-slate-600" id="page-indicator">Page 1</span>
+                                <button onclick="window.app.changePage(1)" class="px-3 py-1 bg-white border border-slate-300 rounded-md text-xs hover:bg-slate-50 disabled:opacity-50" id="btn-next">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 6: IMPORT / MANAGE DATA -->
+            <div id="view-import" class="view-section hidden space-y-6 fade-in-up">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Import Card -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+                            <i data-lucide="upload-cloud" width="20" class="text-blue-600"></i> นำเข้าข้อมูล (JSON/CSV)
+                        </h3>
+                        <p class="text-sm text-slate-500 mb-4">
+                            รองรับไฟล์ JSON ที่มีฟิวด์ <code>citizenId</code> ระบบจะทำการแปลง Citizen ID เป็นรหัส Hash (SHA-256) โดยอัตโนมัติก่อนบันทึก
+                        </p>
+                        <div class="space-y-4">
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center hover:bg-slate-50 transition cursor-pointer" onclick="document.getElementById('file-upload').click()">
+                                <i data-lucide="file-up" width="40" class="mx-auto text-slate-400 mb-2"></i>
+                                <p class="text-sm font-medium text-slate-600">คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวางที่นี่</p>
+                                <p class="text-xs text-slate-400 mt-1">รองรับ .json, .csv</p>
+                                <input type="file" id="file-upload" class="hidden" accept=".json,.csv" onchange="window.app.handleFileSelect(event)">
+                            </div>
+                            <div id="file-info" class="hidden bg-blue-50 p-3 rounded-lg flex items-center justify-between text-sm text-blue-700">
+                                <span id="file-name">filename.json</span>
+                                <button onclick="window.app.clearFileSelection()" class="text-blue-500 hover:text-blue-700"><i data-lucide="x" width="16"></i></button>
+                            </div>
+                            <button onclick="window.app.processImport()" id="btn-import" disabled class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                เริ่มนำเข้าข้อมูล
+                            </button>
+                            <div id="import-progress" class="hidden w-full bg-slate-200 rounded-full h-2.5">
+                                <div id="import-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Database Management Card -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                         <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+                            <i data-lucide="database" width="20" class="text-slate-600"></i> ข้อมูลระบบ
+                        </h3>
+                        
+                        <div class="bg-slate-50 p-4 rounded-xl mb-6 flex justify-between items-center">
+                            <div>
+                                <p class="text-sm text-slate-500">จำนวนข้อมูลทั้งหมด (Records)</p>
+                                <h2 class="text-3xl font-bold text-slate-800 mt-1" id="manage-total-docs">0</h2>
+                            </div>
+                            <div class="bg-white p-3 rounded-full shadow-sm text-slate-400">
+                                <i data-lucide="hard-drive" width="24"></i>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-100 pt-6 space-y-4">
+                            <h4 class="font-bold text-red-600 mb-2 flex items-center gap-2"><i data-lucide="alert-octagon" width="18"></i> Danger Zone</h4>
+                            
+                            <!-- Reset Registration Status -->
+                             <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                                <p class="text-sm font-bold text-orange-800 mb-1">รีเซ็ตการลงทะเบียน (Reset Status)</p>
+                                <p class="text-xs text-orange-600 mb-3">ล้างสถานะ Check-In, Check-Out และการรับรางวัลทั้งหมด แต่เก็บข้อมูลรายชื่อพนักงานไว้</p>
+                                <button onclick="window.app.openResetModal()" class="w-full border border-orange-300 text-orange-700 hover:bg-orange-100 py-2 rounded-lg font-bold transition flex items-center justify-center gap-2 text-sm">
+                                    <i data-lucide="rotate-ccw" width="16"></i> รีเซ็ตสถานะ (Clear Transaction)
+                                </button>
+                            </div>
+
+                            <!-- Delete All Data -->
+                            <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                                <p class="text-sm font-bold text-red-800 mb-1">ลบข้อมูลทั้งหมด (Delete All)</p>
+                                <p class="text-xs text-red-600 mb-3">ลบข้อมูลพนักงานและการลงทะเบียนทั้งหมดออกจากระบบ ไม่สามารถกู้คืนได้</p>
+                                <button onclick="window.app.deleteAllData()" class="w-full border border-red-300 text-red-700 hover:bg-red-100 py-2 rounded-lg font-bold transition flex items-center justify-center gap-2 text-sm">
+                                    <i data-lucide="trash-2" width="16"></i> ลบข้อมูลทั้งหมด (Clear DB)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal: Edit Prize -->
+    <div id="edit-prize-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                <h3 class="text-lg font-bold text-slate-800">แก้ไขของรางวัล</h3>
+                <button onclick="window.app.closeEditPrizeModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" width="24"></i>
+                </button>
+            </div>
+            <form id="edit-prize-form" onsubmit="window.app.handlePrizeUpdate(event)" class="space-y-4">
+                <input type="hidden" id="edit-prize-id">
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">ชื่อของรางวัล</label>
+                    <input type="text" id="edit-prize-name" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">รางวัลที่จะสุ่ม (ต่อรอบ)</label>
+                        <input type="number" id="edit-prize-qty" min="1" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 outline-none">
+                    </div>
+                     <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">จำนวนสิทธิ์ทั้งหมด</label>
+                        <input type="number" id="edit-prize-total" min="1" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 outline-none">
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="window.app.closeEditPrizeModal()" class="flex-1 py-3 rounded-xl text-slate-600 bg-slate-100 hover:bg-slate-200 font-bold transition">ยกเลิก</button>
+                    <button type="submit" class="flex-1 py-3 rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 font-bold transition">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- General Modal (Alert Replacement) -->
+    <div id="general-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all scale-100 text-center">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                <i data-lucide="alert-circle" width="24"></i>
+            </div>
+            <h3 id="general-modal-title" class="text-lg font-bold text-slate-800 mb-2">แจ้งเตือน</h3>
+            <p id="general-modal-message" class="text-slate-500 text-sm mb-6">ข้อความแจ้งเตือน</p>
+            <button onclick="window.app.closeGeneralModal()" class="w-full py-2.5 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-900 transition">ตกลง</button>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="reset-confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all scale-100 text-center">
+            <div class="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 text-orange-600">
+                <i data-lucide="alert-triangle" width="32"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">ยืนยันการรีเซ็ต?</h3>
+            <p class="text-slate-500 text-sm mb-6">
+                ระบบจะล้างข้อมูลการลงทะเบียน (Check-In/Out) และประวัติการรับรางวัลทั้งหมด <br>
+                <span class="font-bold text-orange-600">แต่จะเก็บรายชื่อพนักงานไว้</span>
+            </p>
+            <div class="flex gap-3">
+                <button onclick="window.app.closeResetModal()" class="flex-1 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition">ยกเลิก</button>
+                <button onclick="window.app.confirmResetData()" class="flex-1 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition">ยืนยันรีเซ็ต</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Logic -->
+    <script type="module">
+const _0x4dd752=_0x1013;(function(_0x31ee16,_0x1e427c){const _0x37b95f=_0x1013,_0x303ebe=_0x31ee16();while(!![]){try{const _0xaa63a2=parseInt(_0x37b95f(0x144))/0x1+-parseInt(_0x37b95f(0x1d8))/0x2+parseInt(_0x37b95f(0xf1))/0x3*(-parseInt(_0x37b95f(0x1cf))/0x4)+parseInt(_0x37b95f(0x1b2))/0x5*(parseInt(_0x37b95f(0xd2))/0x6)+parseInt(_0x37b95f(0x18a))/0x7+-parseInt(_0x37b95f(0xcb))/0x8*(-parseInt(_0x37b95f(0xb7))/0x9)+-parseInt(_0x37b95f(0x116))/0xa;if(_0xaa63a2===_0x1e427c)break;else _0x303ebe['push'](_0x303ebe['shift']());}catch(_0x2214a3){_0x303ebe['push'](_0x303ebe['shift']());}}}(_0x4163,0xd767c));import{initializeApp}from'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';import{getAuth,signInAnonymously,signInWithCustomToken,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';import{getFirestore,collection,query,where,getDocs,updateDoc,doc,serverTimestamp,onSnapshot,addDoc,deleteDoc,writeBatch,deleteField}from'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';const TARGET_COLLECTION_NAME='tmb_coop',PRIZES_COLLECTION_NAME=_0x4dd752(0xbb),isSandboxEnv=typeof __firebase_config!==_0x4dd752(0x1c9);let firebaseConfig,finalCollectionPath,prizesCollectionPath;if(isSandboxEnv){firebaseConfig=JSON[_0x4dd752(0x157)](__firebase_config);const appId=typeof __app_id!==_0x4dd752(0x1c9)?__app_id:'default-app-id';finalCollectionPath=_0x4dd752(0x10b)+appId+_0x4dd752(0xf7),prizesCollectionPath='artifacts/'+appId+_0x4dd752(0xcf)+PRIZES_COLLECTION_NAME;}else firebaseConfig={'apiKey':_0x4dd752(0xb9),'authDomain':_0x4dd752(0xce),'databaseURL':_0x4dd752(0xdb),'projectId':_0x4dd752(0x1cd),'storageBucket':'ttb-register.firebasestorage.app','messagingSenderId':'1070273157855','appId':_0x4dd752(0x1be),'measurementId':_0x4dd752(0x1ee)},finalCollectionPath=TARGET_COLLECTION_NAME,prizesCollectionPath=PRIZES_COLLECTION_NAME;const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),state={'users':[],'prizes':[],'stats':{'checkin':0x0,'checkout':0x0,'rewarded':0x0,'claimed':0x0,'eligible':0x0,'totalDocs':0x0,'registered':0x0},'isDrawing':![],'fileToImport':null,'rowsPerPage':0x32,'currentPage':0x1};async function sha256(_0x4d8de1){const _0x5ab6d1=_0x4dd752,_0x1c0275=new TextEncoder()[_0x5ab6d1(0x1bd)](_0x4d8de1),_0x40bc2b=await crypto['subtle']['digest'](_0x5ab6d1(0x14e),_0x1c0275),_0x246f45=Array[_0x5ab6d1(0x1e0)](new Uint8Array(_0x40bc2b));return _0x246f45[_0x5ab6d1(0x1d9)](_0x24d08a=>_0x24d08a['toString'](0x10)[_0x5ab6d1(0x190)](0x2,'0'))[_0x5ab6d1(0xbe)]('');}window[_0x4dd752(0xea)]=window[_0x4dd752(0xea)]||{},window[_0x4dd752(0xea)][_0x4dd752(0x1f0)]=(_0x3b679f,_0x47ab86='success')=>{const _0x132d1e=_0x4dd752,_0x401b8f=document[_0x132d1e(0xe1)](_0x132d1e(0x146)),_0x498d76=document[_0x132d1e(0x1c1)](_0x132d1e(0x14f));let _0x3cfc8d,_0xdd3373;if(_0x47ab86==='success')_0x3cfc8d=_0x132d1e(0x10e),_0xdd3373=_0x132d1e(0xee);else _0x47ab86===_0x132d1e(0x18b)?(_0x3cfc8d=_0x132d1e(0xc3),_0xdd3373=_0x132d1e(0x19e)):(_0x3cfc8d='bg-white\x20border-l-4\x20border-blue-500\x20text-slate-700',_0xdd3373='<div\x20class=\x22text-blue-500\x22><i\x20data-lucide=\x22info\x22\x20width=\x2220\x22></i></div>');_0x498d76[_0x132d1e(0x102)]=_0x3cfc8d+_0x132d1e(0x154),_0x498d76['innerHTML']=_0x132d1e(0x1d4)+_0xdd3373+_0x132d1e(0x16f)+_0x3b679f+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22this.parentElement.remove()\x22\x20class=\x22text-slate-400\x20hover:text-slate-600\x22><i\x20data-lucide=\x22x\x22\x20width=\x2216\x22></i></button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',_0x401b8f['appendChild'](_0x498d76);if(window[_0x132d1e(0xe8)])lucide[_0x132d1e(0x110)]();setTimeout(()=>{const _0x54541c=_0x132d1e;_0x498d76[_0x54541c(0x182)][_0x54541c(0x1cc)]('opacity-0',_0x54541c(0x174)),setTimeout(()=>_0x498d76[_0x54541c(0x12b)](),0x12c);},0xbb8);},window['app'][_0x4dd752(0x189)]=(_0x4d852e,_0x484132)=>{const _0x4d7c52=_0x4dd752;document[_0x4d7c52(0xe1)]('general-modal-title')[_0x4d7c52(0xc6)]=_0x4d852e,document[_0x4d7c52(0xe1)](_0x4d7c52(0xff))[_0x4d7c52(0xc6)]=_0x484132,document[_0x4d7c52(0xe1)](_0x4d7c52(0xc8))[_0x4d7c52(0x182)][_0x4d7c52(0x12b)]('hidden');},window[_0x4dd752(0xea)][_0x4dd752(0x17d)]=()=>document[_0x4dd752(0xe1)](_0x4dd752(0xc8))[_0x4dd752(0x182)][_0x4dd752(0x1cc)](_0x4dd752(0x14a)),window[_0x4dd752(0xea)][_0x4dd752(0x120)]=()=>document[_0x4dd752(0xe1)](_0x4dd752(0xd3))['classList'][_0x4dd752(0x12b)](_0x4dd752(0x14a)),window[_0x4dd752(0xea)][_0x4dd752(0x1a3)]=()=>document[_0x4dd752(0xe1)](_0x4dd752(0xd3))['classList'][_0x4dd752(0x1cc)](_0x4dd752(0x14a)),window[_0x4dd752(0xea)][_0x4dd752(0x1bb)]=async()=>{const _0x39e105=_0x4dd752;window['app'][_0x39e105(0x1a3)]();const _0x520fb5=document[_0x39e105(0x151)]('#view-import\x20button[onclick*=\x22openResetModal\x22]'),_0x3c3732=_0x520fb5['innerHTML'];_0x520fb5[_0x39e105(0x13c)]=!![],_0x520fb5['innerText']=_0x39e105(0x184);try{const _0x343ea1=0x190;let _0x3dab89=0x0;const _0x70f8da=query(collection(db,finalCollectionPath)),_0x2dafc2=await getDocs(_0x70f8da),_0x6f4297=[];let _0x1f83f4=[];_0x2dafc2[_0x39e105(0x153)](_0xb3ef94=>{const _0x116ee5=_0x39e105;_0x1f83f4['push'](_0xb3ef94),_0x1f83f4[_0x116ee5(0x136)]>=_0x343ea1&&(_0x6f4297[_0x116ee5(0x19b)](_0x1f83f4),_0x1f83f4=[]);});if(_0x1f83f4[_0x39e105(0x136)]>0x0)_0x6f4297[_0x39e105(0x19b)](_0x1f83f4);for(const _0xd43df4 of _0x6f4297){const _0x47b1fe=writeBatch(db);_0xd43df4[_0x39e105(0x153)](_0x453665=>{const _0x89cadf=_0x39e105;_0x47b1fe[_0x89cadf(0x161)](_0x453665[_0x89cadf(0x109)],{'CheckIN':deleteField(),'CheckOUT':deleteField(),'status':deleteField(),'reward':deleteField(),'rewardTime':deleteField(),'rewardClaimTime':deleteField(),'deviceId':deleteField(),'deviceUserAgent':deleteField()});}),await _0x47b1fe[_0x39e105(0x191)](),_0x3dab89+=_0xd43df4[_0x39e105(0x136)];}window[_0x39e105(0xea)][_0x39e105(0x1f0)]('รีเซ็ตข้อมูลสำเร็จ\x20'+_0x3dab89+_0x39e105(0x1a1),_0x39e105(0xd0));}catch(_0x46237e){console['error'](_0x39e105(0x107),_0x46237e),window[_0x39e105(0xea)][_0x39e105(0x1f0)]('เกิดข้อผิดพลาดในการรีเซ็ต',_0x39e105(0x18b));}finally{_0x520fb5['disabled']=![],_0x520fb5[_0x39e105(0x1c2)]=_0x3c3732;}},window[_0x4dd752(0xea)][_0x4dd752(0x1f5)]=_0x4775b9=>{const _0x57780e=_0x4dd752;document[_0x57780e(0x1a5)](_0x57780e(0x13e))['forEach'](_0x4d4989=>_0x4d4989[_0x57780e(0x182)][_0x57780e(0x1cc)]('hidden')),document[_0x57780e(0xe1)](_0x57780e(0x1b8)+_0x4775b9)[_0x57780e(0x182)]['remove'](_0x57780e(0x14a)),document[_0x57780e(0x1a5)](_0x57780e(0x194))[_0x57780e(0x153)](_0x16f72d=>{const _0x319add=_0x57780e;_0x16f72d[_0x319add(0x182)][_0x319add(0x12b)](_0x319add(0xc4),'text-white'),_0x16f72d[_0x319add(0x182)]['add']('text-slate-400');});const _0x44031f=document[_0x57780e(0xe1)](_0x57780e(0x193)+_0x4775b9);_0x44031f[_0x57780e(0x182)][_0x57780e(0x12b)](_0x57780e(0x172)),_0x44031f[_0x57780e(0x182)]['add'](_0x57780e(0xc4),'text-white');let _0x4b924f=_0x57780e(0x1fd);if(_0x4775b9===_0x57780e(0x196))_0x4b924f=_0x57780e(0x1ed);if(_0x4775b9===_0x57780e(0xcc))_0x4b924f=_0x57780e(0x1aa);if(_0x4775b9==='results')_0x4b924f=_0x57780e(0xe5);if(_0x4775b9===_0x57780e(0xe9))_0x4b924f=_0x57780e(0x197);if(_0x4775b9===_0x57780e(0x199))_0x4b924f=_0x57780e(0x1b4);if(_0x4775b9==='qrcode-in')_0x4b924f='QR\x20Code\x20ลงทะเบียนเข้า';if(_0x4775b9===_0x57780e(0xbc))_0x4b924f='QR\x20Code\x20ลงทะเบียนออก';document[_0x57780e(0xe1)](_0x57780e(0x1a9))[_0x57780e(0xc6)]=_0x4b924f;},window[_0x4dd752(0xea)][_0x4dd752(0x10a)]=_0x506947=>{const _0x31b9a2=_0x4dd752;state['rowsPerPage']=parseInt(_0x506947),state['currentPage']=0x1,renderTable(state[_0x31b9a2(0x1de)]);},window[_0x4dd752(0xea)][_0x4dd752(0x15d)]=_0x2f04b0=>{const _0x23d732=_0x4dd752;state[_0x23d732(0x113)]+=_0x2f04b0,renderTable(state['users']);},window['app']['handleFileSelect']=_0x45576a=>{const _0x1592ae=_0x4dd752,_0x519813=_0x45576a[_0x1592ae(0x159)]['files'][0x0];_0x519813&&(state['fileToImport']=_0x519813,document[_0x1592ae(0xe1)]('file-name')[_0x1592ae(0xc6)]=_0x519813[_0x1592ae(0x1c4)],document['getElementById'](_0x1592ae(0x1ce))[_0x1592ae(0x182)][_0x1592ae(0x12b)](_0x1592ae(0x14a)),document[_0x1592ae(0xe1)](_0x1592ae(0x164))[_0x1592ae(0x13c)]=![]);},window['app']['clearFileSelection']=()=>{const _0x31a9ff=_0x4dd752;state[_0x31a9ff(0x14b)]=null,document[_0x31a9ff(0xe1)](_0x31a9ff(0x10f))[_0x31a9ff(0x101)]='',document['getElementById'](_0x31a9ff(0x1ce))[_0x31a9ff(0x182)]['add'](_0x31a9ff(0x14a)),document[_0x31a9ff(0xe1)](_0x31a9ff(0x164))[_0x31a9ff(0x13c)]=!![];},window[_0x4dd752(0xea)][_0x4dd752(0xc0)]=()=>{const _0x346125=_0x4dd752;if(!state[_0x346125(0x14b)])return;const _0x1037a7=state[_0x346125(0x14b)],_0x158500=new FileReader();document[_0x346125(0xe1)](_0x346125(0x164))[_0x346125(0x13c)]=!![],document['getElementById'](_0x346125(0x164))[_0x346125(0xc6)]=_0x346125(0x184),document['getElementById'](_0x346125(0x1dd))['classList']['remove']('hidden'),_0x158500['onload']=async _0x409dab=>{const _0x4c5edb=_0x346125;try{let _0x1b1f3c=[];const _0x136049=_0x409dab[_0x4c5edb(0x159)]['result'];_0x1037a7[_0x4c5edb(0x1c4)][_0x4c5edb(0x1f4)]('.csv')?_0x1b1f3c=csvToJson(_0x136049):_0x1b1f3c=JSON[_0x4c5edb(0x157)](_0x136049);if(!Array[_0x4c5edb(0x11d)](_0x1b1f3c))throw new Error(_0x4c5edb(0xf5));const _0x347b4d=_0x1b1f3c['length'];let _0x4970e8=0x0;const _0x5ceb95=0x190;for(let _0x48a840=0x0;_0x48a840<_0x347b4d;_0x48a840+=_0x5ceb95){const _0x56d9fb=_0x1b1f3c['slice'](_0x48a840,_0x48a840+_0x5ceb95),_0x2be933=writeBatch(db);for(const _0x1b695d of _0x56d9fb){if(_0x1b695d[_0x4c5edb(0x150)]){const _0x4e5da5=_0x1b695d[_0x4c5edb(0x150)]['toString']()['replace'](/-/g,'')[_0x4c5edb(0x137)](),_0x2e7f76=await sha256(_0x4e5da5),_0x1e4cb3=doc(collection(db,finalCollectionPath));_0x2be933[_0x4c5edb(0x1e2)](_0x1e4cb3,{..._0x1b695d,'citizenId':_0x2e7f76,'importedAt':serverTimestamp()});}}await _0x2be933['commit'](),_0x4970e8+=_0x56d9fb[_0x4c5edb(0x136)];const _0x356e01=_0x4970e8/_0x347b4d*0x64;document[_0x4c5edb(0xe1)](_0x4c5edb(0xef))[_0x4c5edb(0x11a)][_0x4c5edb(0x192)]=_0x356e01+'%';}window['app'][_0x4c5edb(0x1f0)]('นำเข้าข้อมูลสำเร็จ\x20'+_0x347b4d+_0x4c5edb(0x1a1),_0x4c5edb(0xd0)),window[_0x4c5edb(0xea)][_0x4c5edb(0x11e)]();}catch(_0x535290){console[_0x4c5edb(0x18b)](_0x535290),window[_0x4c5edb(0xea)][_0x4c5edb(0x1f0)]('เกิดข้อผิดพลาด:\x20'+_0x535290['message'],'error');}finally{document[_0x4c5edb(0xe1)](_0x4c5edb(0x164))['disabled']=![],document[_0x4c5edb(0xe1)]('btn-import')['innerText']=_0x4c5edb(0x1fe),document[_0x4c5edb(0xe1)](_0x4c5edb(0x1dd))[_0x4c5edb(0x182)]['add'](_0x4c5edb(0x14a));}},_0x158500[_0x346125(0x1c0)](_0x1037a7);},window[_0x4dd752(0xea)][_0x4dd752(0x18d)]=async()=>{const _0x1bd4af=_0x4dd752,_0x1146cc=prompt('พิมพ์\x20\x27DELETE\x27\x20เพื่อยืนยันการลบข้อมูลทั้งหมด');if(_0x1146cc!==_0x1bd4af(0x1d2))return;const _0x308c7a=document[_0x1bd4af(0x151)]('#view-import\x20button[onclick*=\x22deleteAll\x22]'),_0x321cf1=_0x308c7a[_0x1bd4af(0x1c2)];_0x308c7a[_0x1bd4af(0x13c)]=!![],_0x308c7a[_0x1bd4af(0xc6)]=_0x1bd4af(0x177);try{const _0x3db85f=query(collection(db,finalCollectionPath)),_0x4b3d50=await getDocs(_0x3db85f),_0x43c270=_0x4b3d50[_0x1bd4af(0x1ab)];if(_0x43c270===0x0){window[_0x1bd4af(0xea)][_0x1bd4af(0x1f0)](_0x1bd4af(0x173),_0x1bd4af(0xc5));return;}const _0x49e9dc=0x190,_0x310d2d=[];let _0x37c3e1=[];_0x4b3d50['forEach'](_0x2999e8=>{const _0x191802=_0x1bd4af;_0x37c3e1[_0x191802(0x19b)](_0x2999e8),_0x37c3e1['length']>=_0x49e9dc&&(_0x310d2d[_0x191802(0x19b)](_0x37c3e1),_0x37c3e1=[]);});if(_0x37c3e1[_0x1bd4af(0x136)]>0x0)_0x310d2d[_0x1bd4af(0x19b)](_0x37c3e1);for(const _0x3324c0 of _0x310d2d){const _0x34a6c9=writeBatch(db);_0x3324c0[_0x1bd4af(0x153)](_0x23317d=>_0x34a6c9[_0x1bd4af(0x183)](_0x23317d[_0x1bd4af(0x109)])),await _0x34a6c9[_0x1bd4af(0x191)]();}window[_0x1bd4af(0xea)]['showToast'](_0x1bd4af(0x121)+_0x43c270+_0x1bd4af(0x104),_0x1bd4af(0xd0));}catch(_0x370c3d){console[_0x1bd4af(0x18b)](_0x370c3d),window[_0x1bd4af(0xea)]['showToast'](_0x1bd4af(0x1bc),'error');}finally{_0x308c7a[_0x1bd4af(0x13c)]=![],_0x308c7a[_0x1bd4af(0x1c2)]=_0x321cf1;}},window['app']['deleteSingleData']=async _0x3f8726=>{const _0x1d922c=_0x4dd752;if(!confirm('ต้องการลบรายการนี้ใช่หรือไม่?'))return;try{await deleteDoc(doc(db,finalCollectionPath,_0x3f8726)),window[_0x1d922c(0xea)]['showToast'](_0x1d922c(0x1f9),'success');}catch(_0x22e94e){console['error'](_0x1d922c(0xe4),_0x22e94e),window[_0x1d922c(0xea)]['showToast'](_0x1d922c(0x12e),_0x1d922c(0x18b));}},window[_0x4dd752(0xea)][_0x4dd752(0x15a)]=async _0x2651cd=>{const _0x496f8d=_0x4dd752;_0x2651cd[_0x496f8d(0xf3)]();const _0x4f0b10=document[_0x496f8d(0xe1)]('prize-name')[_0x496f8d(0x101)][_0x496f8d(0x137)](),_0x3917f6=parseInt(document[_0x496f8d(0xe1)](_0x496f8d(0x1f6))[_0x496f8d(0x101)]),_0x53645d=parseInt(document[_0x496f8d(0xe1)](_0x496f8d(0x1df))['value']||0x1);if(!_0x4f0b10||_0x3917f6<0x1)return;try{await addDoc(collection(db,prizesCollectionPath),{'name':_0x4f0b10,'qtyPerDraw':_0x3917f6,'totalQty':_0x53645d,'createdAt':serverTimestamp()}),document[_0x496f8d(0xe1)](_0x496f8d(0x10d))[_0x496f8d(0x14d)](),window[_0x496f8d(0xea)][_0x496f8d(0x1f0)](_0x496f8d(0x129),'success');}catch(_0x11f3cc){console[_0x496f8d(0x18b)](_0x496f8d(0xb5),_0x11f3cc),window['app'][_0x496f8d(0x1f0)](_0x496f8d(0x117),_0x496f8d(0x18b));}},window[_0x4dd752(0xea)][_0x4dd752(0x179)]=(_0x41b7b6,_0x109d6d,_0x43931d,_0x24a549)=>{const _0x11a52c=_0x4dd752;document[_0x11a52c(0xe1)](_0x11a52c(0xd9))[_0x11a52c(0x101)]=_0x41b7b6,document[_0x11a52c(0xe1)](_0x11a52c(0x1a7))[_0x11a52c(0x101)]=_0x109d6d,document[_0x11a52c(0xe1)](_0x11a52c(0x15b))[_0x11a52c(0x101)]=_0x43931d,document[_0x11a52c(0xe1)](_0x11a52c(0xde))[_0x11a52c(0x101)]=_0x24a549||0x1,document[_0x11a52c(0xe1)](_0x11a52c(0xdc))['classList'][_0x11a52c(0x12b)](_0x11a52c(0x14a));},window['app'][_0x4dd752(0x17f)]=()=>{const _0x28142c=_0x4dd752;document[_0x28142c(0xe1)]('edit-prize-modal')[_0x28142c(0x182)][_0x28142c(0x1cc)](_0x28142c(0x14a));},window[_0x4dd752(0xea)][_0x4dd752(0x149)]=async _0x12950d=>{const _0x59a109=_0x4dd752;_0x12950d[_0x59a109(0xf3)]();const _0x5439a9=document[_0x59a109(0xe1)](_0x59a109(0xd9))[_0x59a109(0x101)],_0x53ed07=document['getElementById'](_0x59a109(0x1a7))[_0x59a109(0x101)][_0x59a109(0x137)](),_0x22fee5=parseInt(document['getElementById'](_0x59a109(0x15b))['value']),_0x376a3d=parseInt(document[_0x59a109(0xe1)](_0x59a109(0xde))[_0x59a109(0x101)]);if(!_0x5439a9||!_0x53ed07||_0x22fee5<0x1)return;try{await updateDoc(doc(db,prizesCollectionPath,_0x5439a9),{'name':_0x53ed07,'qtyPerDraw':_0x22fee5,'totalQty':_0x376a3d}),window[_0x59a109(0xea)][_0x59a109(0x17f)](),window['app'][_0x59a109(0x1f0)](_0x59a109(0x124),_0x59a109(0xd0));}catch(_0x3b8393){console[_0x59a109(0x18b)]('Update\x20Prize\x20Error',_0x3b8393),window[_0x59a109(0xea)]['showToast'](_0x59a109(0x1ae),_0x59a109(0x18b));}},window[_0x4dd752(0xea)]['deletePrize']=async _0x5ee1f3=>{const _0x278150=_0x4dd752;if(!confirm(_0x278150(0x180)))return;try{await deleteDoc(doc(db,prizesCollectionPath,_0x5ee1f3)),window['app'][_0x278150(0x1f0)](_0x278150(0xd5),_0x278150(0xd0));}catch(_0x174fe9){console[_0x278150(0x18b)](_0x278150(0x1db),_0x174fe9),window[_0x278150(0xea)][_0x278150(0x1f0)](_0x278150(0x12e),'error');}},window['app']['onPrizeSelect']=()=>{const _0x4e27dd=_0x4dd752,_0x1b4fd5=document[_0x4e27dd(0xe1)]('select-prize'),_0x1e60b2=_0x1b4fd5[_0x4e27dd(0xdd)][_0x1b4fd5[_0x4e27dd(0x143)]];if(!_0x1b4fd5[_0x4e27dd(0x101)]||!_0x1e60b2[_0x4e27dd(0xf4)]('data-qty')){document[_0x4e27dd(0xe1)]('btn-start-random')['disabled']=!![],document[_0x4e27dd(0xe1)](_0x4e27dd(0x119))[_0x4e27dd(0x182)]['add'](_0x4e27dd(0x106),_0x4e27dd(0x1e4));return;}const _0x552065=_0x1e60b2[_0x4e27dd(0x166)](_0x4e27dd(0x10c)),_0x449cef=parseInt(_0x1e60b2[_0x4e27dd(0x166)]('data-total')||0x0),_0x436339=_0x1e60b2[_0x4e27dd(0xfd)],_0x3c406f=state[_0x4e27dd(0x1de)]['filter'](_0x9e4bf6=>_0x9e4bf6['reward']===_0x436339)[_0x4e27dd(0x136)],_0x3ac76e=_0x449cef-_0x3c406f;document[_0x4e27dd(0xe1)]('input-draw-qty')[_0x4e27dd(0x101)]=_0x552065,document[_0x4e27dd(0xe1)]('label-stock-count')['innerText']=_0x3ac76e+_0x4e27dd(0x15e)+_0x449cef,document[_0x4e27dd(0xe1)](_0x4e27dd(0x1a8))[_0x4e27dd(0x1b5)]=_0x3ac76e>0x0?_0x3ac76e:0x0,window[_0x4e27dd(0xea)]['validateRandomizerInput']();},window[_0x4dd752(0xea)][_0x4dd752(0xe2)]=()=>{const _0x4ced3f=_0x4dd752,_0x26f737=document['getElementById'](_0x4ced3f(0xd4)),_0x13503c=document[_0x4ced3f(0xe1)](_0x4ced3f(0x1a8)),_0x24eb73=document[_0x4ced3f(0xe1)]('btn-start-random'),_0x5b66b4=_0x26f737[_0x4ced3f(0x101)],_0x3b921c=parseInt(_0x13503c['value']);if(!_0x5b66b4){_0x24eb73[_0x4ced3f(0x13c)]=!![],_0x24eb73[_0x4ced3f(0x182)][_0x4ced3f(0x1cc)](_0x4ced3f(0x106),_0x4ced3f(0x1e4));return;}const _0x621f0=_0x26f737['options'][_0x26f737[_0x4ced3f(0x143)]],_0x14dfe1=parseInt(_0x621f0[_0x4ced3f(0x166)]('data-total')||0x0),_0x431cb6=_0x621f0[_0x4ced3f(0xfd)],_0x11227b=state[_0x4ced3f(0x1de)]['filter'](_0x35e83=>_0x35e83['reward']===_0x431cb6)['length'],_0x565d48=_0x14dfe1-_0x11227b;_0x3b921c>0x0&&_0x3b921c<=_0x565d48?(_0x24eb73[_0x4ced3f(0x13c)]=![],_0x24eb73['classList'][_0x4ced3f(0x12b)](_0x4ced3f(0x106),_0x4ced3f(0x1e4)),document['getElementById']('qty-warning')['classList']['add'](_0x4ced3f(0x14a))):(_0x24eb73[_0x4ced3f(0x13c)]=!![],_0x24eb73['classList'][_0x4ced3f(0x1cc)](_0x4ced3f(0x106),_0x4ced3f(0x1e4)),_0x3b921c>_0x565d48&&(document[_0x4ced3f(0xe1)](_0x4ced3f(0x114))[_0x4ced3f(0xc6)]=_0x4ced3f(0xd1)+_0x565d48+')',document[_0x4ced3f(0xe1)](_0x4ced3f(0x114))[_0x4ced3f(0x182)][_0x4ced3f(0x12b)](_0x4ced3f(0x14a))));},window[_0x4dd752(0xea)][_0x4dd752(0x127)]=async()=>{const _0x587f4d=_0x4dd752;if(state[_0x587f4d(0x170)])return;const _0x52e15f=document['getElementById'](_0x587f4d(0xd4)),_0xb3eda1=_0x52e15f[_0x587f4d(0xdd)][_0x52e15f[_0x587f4d(0x143)]]?.[_0x587f4d(0xfd)],_0x51c495=parseInt(document['getElementById']('input-draw-qty')[_0x587f4d(0x101)]),_0x5d0615=parseInt(_0x52e15f['options'][_0x52e15f[_0x587f4d(0x143)]]['getAttribute'](_0x587f4d(0x118))),_0x54ec62=state[_0x587f4d(0x1de)]['filter'](_0x47229c=>_0x47229c[_0x587f4d(0x134)]===_0xb3eda1)[_0x587f4d(0x136)],_0x4d5c91=_0x5d0615-_0x54ec62;if(!_0xb3eda1)return window['app'][_0x587f4d(0x189)](_0x587f4d(0x18f),_0x587f4d(0x1fa));if(_0x51c495<0x1)return window[_0x587f4d(0xea)][_0x587f4d(0x189)](_0x587f4d(0x18f),_0x587f4d(0x17a));if(_0x51c495>_0x4d5c91)return window[_0x587f4d(0xea)]['showModal'](_0x587f4d(0x18f),_0x587f4d(0x11b)+_0x4d5c91+_0x587f4d(0x103)+_0x51c495+_0x587f4d(0x185));const _0x388142=state[_0x587f4d(0x1de)]['filter'](_0x1cd9bb=>_0x1cd9bb[_0x587f4d(0x1fc)]&&_0x1cd9bb[_0x587f4d(0x1fc)][_0x587f4d(0x137)]()!==''&&!_0x1cd9bb['reward']);if(_0x388142[_0x587f4d(0x136)]===0x0)return window[_0x587f4d(0xea)][_0x587f4d(0x189)](_0x587f4d(0x18f),'ไม่มีผู้มีสิทธิ์ลุ้นรางวัลเหลืออยู่');if(_0x388142[_0x587f4d(0x136)]<_0x51c495){if(!confirm(_0x587f4d(0x187)+_0x388142[_0x587f4d(0x136)]+_0x587f4d(0x152)))return;}state['isDrawing']=!![];const _0x18484c=document[_0x587f4d(0xe1)]('btn-start-random');_0x18484c[_0x587f4d(0x13c)]=!![],_0x18484c['classList'][_0x587f4d(0x1cc)](_0x587f4d(0x106),_0x587f4d(0x1e4)),document[_0x587f4d(0xe1)](_0x587f4d(0x156))[_0x587f4d(0xc6)]=_0xb3eda1,document[_0x587f4d(0xe1)](_0x587f4d(0x1ad))[_0x587f4d(0x1c2)]='',updateScreenStatus(_0x587f4d(0x1b0),_0x587f4d(0x1ba));const _0xe1212b=_0x388142[_0x587f4d(0x1f3)](()=>0.5-Math[_0x587f4d(0xed)]())[_0x587f4d(0x141)](0x0,_0x51c495);for(let _0x1ca460=0x0;_0x1ca460<_0xe1212b[_0x587f4d(0x136)];_0x1ca460++){const _0x54748d=_0xe1212b[_0x1ca460],_0x5024bf=createWinnerCard(_0x54748d,_0x1ca460+0x1,_0xb3eda1);document[_0x587f4d(0xe1)]('screen-display-area')[_0x587f4d(0xd6)](_0x5024bf);const _0x104906=document[_0x587f4d(0xe1)](_0x587f4d(0x1ad));_0x104906[_0x587f4d(0xe3)]=_0x104906[_0x587f4d(0x12f)],fireConfetti();try{await updateDoc(doc(db,finalCollectionPath,_0x54748d['id']),{'reward':_0xb3eda1,'rewardTime':serverTimestamp()}),addHistoryLog(_0xb3eda1,_0x54748d[_0x587f4d(0x150)]);}catch(_0x45ae85){console[_0x587f4d(0x18b)](_0x587f4d(0x18c),_0x45ae85);}_0x1ca460<_0xe1212b['length']-0x1&&await new Promise(_0x5ddf2f=>setTimeout(_0x5ddf2f,0xbb8));}state['isDrawing']=![],window[_0x587f4d(0xea)][_0x587f4d(0x1ef)](),updateScreenStatus(_0x587f4d(0x1e6),_0x587f4d(0x175)),window[_0x587f4d(0xea)][_0x587f4d(0x1f0)](_0x587f4d(0x128),_0x587f4d(0xd0));},window['app']['clearHistoryLog']=()=>{const _0x17c7cf=_0x4dd752;document[_0x17c7cf(0xe1)]('history-log-list')[_0x17c7cf(0x1c2)]='';};function csvToJson(_0x4b6d01){const _0xdd2159=_0x4dd752,_0x426155=_0x4b6d01['split']('\x0a'),_0x5d93f3=_0x426155[0x0][_0xdd2159(0x19f)](',')[_0xdd2159(0x1d9)](_0x35c20d=>_0x35c20d[_0xdd2159(0x137)]());return _0x426155['slice'](0x1)[_0xdd2159(0x1d9)](_0x39f58f=>{const _0x145125=_0xdd2159,_0x28ea40=_0x39f58f['split'](',');if(_0x28ea40[_0x145125(0x136)]<_0x5d93f3['length'])return null;return _0x5d93f3[_0x145125(0xbf)]((_0x419c14,_0x7df28a,_0x7d2aa6)=>{return _0x419c14[_0x7df28a]=_0x28ea40[_0x7d2aa6]?_0x28ea40[_0x7d2aa6]['trim']():'',_0x419c14;},{});})[_0xdd2159(0x178)](_0x5c9697=>_0x5c9697);}function createWinnerCard(_0x6c2b95,_0x3ddabd,_0x419bc2){const _0x48fada=_0x4dd752,_0x52a706=document[_0x48fada(0x1c1)](_0x48fada(0x14f));_0x52a706[_0x48fada(0x102)]=_0x48fada(0x122);const _0x4e2409=document['createElement']('div');_0x4e2409[_0x48fada(0x102)]='absolute\x20inset-0\x20bg-gradient-to-r\x20from-yellow-50\x20to-white\x20opacity-50\x20pointer-events-none',_0x52a706[_0x48fada(0xd6)](_0x4e2409);const _0x78b25d=_0x6c2b95[_0x48fada(0x150)][_0x48fada(0xcd)](0x0,0x4)+_0x48fada(0x188)+_0x6c2b95[_0x48fada(0x150)]['substring'](_0x6c2b95[_0x48fada(0x150)][_0x48fada(0x136)]-0x4),_0x31c550=_0x6c2b95[_0x48fada(0x1dc)]||_0x48fada(0xdf)+_0x78b25d,_0x2b3e33=document[_0x48fada(0x1c1)](_0x48fada(0x14f));return _0x2b3e33[_0x48fada(0x102)]='flex\x20items-center\x20gap-6\x20relative\x20z-10\x20w-full',_0x2b3e33[_0x48fada(0x1c2)]=_0x48fada(0x13a)+_0x3ddabd+_0x48fada(0xd7)+_0x31c550+_0x48fada(0xf9)+_0x419bc2+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22text-right\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22bg-green-100\x20p-2\x20rounded-full\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20data-lucide=\x22check\x22\x20class=\x22text-green-600\x20w-8\x20h-8\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',_0x52a706['appendChild'](_0x2b3e33),_0x52a706;}function addHistoryLog(_0x459f1b,_0xe75c0b){const _0x5e7673=_0x4dd752,_0x43650a=document[_0x5e7673(0xe1)](_0x5e7673(0x1d5)),_0x52b449=document['createElement'](_0x5e7673(0x14f));_0x52b449['className']=_0x5e7673(0x19c);const _0x2beeb2=new Date()['toLocaleTimeString'](_0x5e7673(0x1fb)),_0x3e9e86=_0xe75c0b[_0x5e7673(0xcd)](0x0,0x5)+_0x5e7673(0x188);_0x52b449['innerHTML']=_0x5e7673(0x168)+_0x2beeb2+']\x20'+_0x459f1b+_0x5e7673(0xb6)+_0x3e9e86+_0x5e7673(0x1ac),_0x43650a['prepend'](_0x52b449);}function updateScreenStatus(_0x3167fd,_0x50d8d6){const _0x26b9c8=_0x4dd752;document[_0x26b9c8(0xe1)](_0x26b9c8(0x1ec))['innerText']=_0x3167fd;const _0x18d74e=document[_0x26b9c8(0xe1)]('screen-status-dot');_0x18d74e['className']=_0x26b9c8(0x1d1)+_0x50d8d6+_0x26b9c8(0x200);}function fireConfetti(){const _0x2665f9=_0x4dd752;confetti({'particleCount':0x96,'spread':0x50,'origin':{'y':0.6},'colors':[_0x2665f9(0xfb),_0x2665f9(0x17e),'#FFFFFF'],'zIndex':0x270f});}function _0x4163(){const _0x261dae=['getHours','classList','delete','กำลังประมวลผล...','\x20คน','Online','มีผู้มีสิทธิ์เพียง\x20','...','showModal','10376485QnFZse','error','Update\x20Error','deleteAllData','ลงทะเบียนสำเร็จ','แจ้งเตือน','padStart','commit','width','nav-','.nav-item','btn-prev','randomizer','ข้อมูลลงทะเบียน','current-time','import','view-randomizer','push','text-xs\x20p-2\x20bg-slate-50\x20border-b\x20border-slate-100\x20flex\x20justify-between','stat-checkin','<div\x20class=\x22text-red-500\x22><i\x20data-lucide=\x22alert-circle\x22\x20width=\x2220\x22></i></div>','split','rewardClaimTime','\x20รายการ','Snapshot\x20error:','closeResetModal','checkin','querySelectorAll','<option\x20value=\x22\x22>--\x20กรุณาเลือก\x20--</option>','edit-prize-name','input-draw-qty','page-title','จัดการของรางวัล','size','</span>','screen-display-area','เกิดข้อผิดพลาดในการอัปเดต','CheckOUT','ACTIVE','text-green-400','5xyDKyL','rand-stat-noreward','จัดการข้อมูล\x20(Import)','max','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20py-4\x20font-bold\x20text-indigo-600\x22>','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20py-4\x20font-medium\x20text-slate-700\x22>','view-','manage-total-docs','bg-green-500','confirmResetData','เกิดข้อผิดพลาดในการลบ','encode','1:1070273157855:web:5c8120e1df27e233d8676a','\x20mt-0.5\x22><i\x20data-lucide=\x22','readAsText','createElement','innerHTML','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-4\x20py-3\x20text-center\x20text-slate-500\x22>','name','<span\x20class=\x22px-2\x20py-1\x20bg-orange-100\x20text-orange-700\x20rounded-full\x20text-xs\x22>Checked-Out</span>','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr\x20class=\x22bg-white\x20even:bg-slate-50\x20hover:bg-indigo-50\x20transition\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-4\x20py-3\x20font-mono\x20text-slate-600\x20text-xs\x22>','แสดงผล\x20','eligible','undefined','text-blue-500','registrationChart','add','ttb-register','file-info','314588nYuzFY','monitor-registered','w-2\x20h-2\x20rounded-full\x20','DELETE','checked-in','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','history-log-list','</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','rand-stat-rewarded','2903940HPvUnp','map','<span\x20class=\x22px-2\x20py-1\x20bg-green-100\x20text-green-700\x20rounded-full\x20text-xs\x20font-bold\x22>รับรางวัลแล้ว</span>','Delete\x20Prize\x20Error','EmpName','import-progress','users','prize-total','from','status-text','set','ลงทะเบียนเข้า','cursor-not-allowed','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr\x20class=\x22bg-white\x20even:bg-slate-50\x20hover:bg-indigo-50\x20transition\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-4\x20py-3\x20font-medium\x20text-slate-700\x22>','FINISHED','\x20จากทั้งหมด\x20','bg-red-500','min','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x22>','\x27)\x22\x20class=\x22text-red-400\x20hover:text-red-600\x20p-1\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20data-lucide=\x22trash-2\x22\x20width=\x2214\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','screen-status-text','ระบบสุ่มรางวัล','G-9DJLWJ5LQ1','onPrizeSelect','showToast',')\x22\x20class=\x22text-blue-500\x20hover:text-blue-700\x20mr-2\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20data-lucide=\x22edit-3\x22\x20width=\x2216\x22\x20class=\x22inline\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22window.app.deletePrize(\x27','<tr><td\x20colspan=\x224\x22\x20class=\x22text-center\x20py-4\x20text-slate-400\x22>ยังไม่มีข้อมูลของรางวัล</td></tr>','sort','endsWith','switchTab','prize-qty','user-plus','log-out','ลบข้อมูลสำเร็จ','กรุณาระบุชื่อของรางวัล','th-TH','status','ภาพรวมระบบ','เริ่มนำเข้าข้อมูล','status-indicator','\x20animate-pulse','\x20<span\x20class=\x22text-slate-400\x20font-normal\x22>(','Add\x20Prize\x20Error','</span>\x20<span\x20class=\x22font-mono\x20text-slate-500\x22>','459xQzZUj','rand-stat-claimed','AIzaSyAgWMzWcZPzyzoBu5eQzj2y59nKsxTWurQ','toLocaleString','coop_gift','qrcode-out','toDate','join','reduce','processImport','Page\x20','<span\x20class=\x22px-2\x20py-1\x20bg-red-100\x20text-red-700\x20rounded-full\x20text-xs\x20font-bold\x22>ยังไม่รับรางวัล</span>','bg-white\x20border-l-4\x20border-red-500\x20text-slate-700','bg-slate-700','info','innerText','ceil','general-modal','bar-checkout','CheckIN','240728vQayru','prizes','substring','ttb-register.firebaseapp.com','/public/data/','success','จำนวนสุ่มเกินกว่าของรางวัลที่เหลือ\x20(','3827772xOVUPN','reset-confirm-modal','select-prize','ลบของรางวัลสำเร็จ','appendChild','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex-1\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h3\x20class=\x22font-bold\x20text-2xl\x20text-slate-800\x20mb-1\x20leading-tight\x22>','datasets','edit-prize-id','btn-next','https://ttb-register-default-rtdb.asia-southeast1.firebasedate.app','edit-prize-modal','options','edit-prize-total','ID:\x20','replace','getElementById','validateRandomizerInput','scrollTop','Delete\x20Error','ประกาศผลรางวัล','line','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20py-4\x22>','lucide','data','app','rowsPerPage','totalDocs','random','<div\x20class=\x22text-green-500\x22><i\x20data-lucide=\x22check-circle\x22\x20width=\x2220\x22></i></div>','import-bar','data-table-info','3CIvKYd','total-prize-quota','preventDefault','hasAttribute','Format\x20Invalid:\x20Root\x20must\x20be\x20an\x20array','text-orange-500','/public/data/coop_registrations','<div\x20class=\x22text-center\x20text-slate-400\x20text-sm\x20py-8\x22>ยังไม่มีกิจกรรม</div>','</h3>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex\x20items-center\x20gap-2\x20text-indigo-600\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20data-lucide=\x22gift\x22\x20width=\x2216\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22font-semibold\x20text-lg\x22>','monitor-rewarded','#FFD700','<span\x20class=\x22text-slate-400\x20text-xs\x20italic\x22>ID:\x20','text','checkout','general-modal-message','recent-activity-list','value','className','\x20ชิ้น\x20ไม่พอสำหรับการสุ่ม\x20','\x20รายการ)','stat-eligible','opacity-50','Reset\x20Error','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-4\x20py-3\x20text-right\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22window.app.openEditPrizeModal(\x27','ref','changeRowsLimit','artifacts/','data-qty','prize-form','bg-white\x20border-l-4\x20border-green-500\x20text-slate-700','file-upload','createIcons','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20py-4\x20text-slate-500\x20font-mono\x20text-sm\x22>','<span\x20class=\x22px-2\x20py-1\x20bg-green-100\x20text-green-700\x20rounded-full\x20text-xs\x22>รับแล้ว</span>','currentPage','qty-warning','\x22\x20width=\x2216\x22></i></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22text-slate-600\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22font-medium\x22>','17738040kAEfGP','เกิดข้อผิดพลาดในการบันทึก','data-total','btn-start-random','style','ของรางวัลเหลือเพียง\x20','stat-checkout','isArray','clearFileSelection','\x27,\x20\x27','openResetModal','ลบข้อมูลทั้งหมดเรียบร้อย\x20(','winner-card-border\x20bg-white\x20p-6\x20rounded-2xl\x20flex\x20items-center\x20justify-between\x20text-slate-800\x20pop-in\x20mb-4\x20shadow-2xl\x20transform\x20transition-all\x20hover:scale-105\x20relative\x20overflow-hidden','<span\x20class=\x22px-2\x20py-1\x20bg-slate-100\x20text-slate-500\x20rounded-full\x20text-xs\x22>Unknown</span>','อัปเดตข้อมูลเรียบร้อย','Initialization\x20Error:','stat-rewarded','startRandomizer','การสุ่มเสร็จสิ้น!','บันทึกข้อมูลเรียบร้อย','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex\x20items-start\x20gap-3\x20text-sm\x20p-2\x20rounded-lg\x20bg-slate-50\x20hover:bg-slate-100\x20transition\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22','remove','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20font-medium\x20text-indigo-600\x20text-xs\x22>','date','ลบไม่สำเร็จ','scrollHeight','\x20of\x20','rewardTime','totalQty','...</span>','reward','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-4\x20py-3\x22>','length','trim','qtyPerDraw','dashboard-recent-table','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex-shrink-0\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22w-16\x20h-16\x20bg-gradient-to-br\x20from-yellow-300\x20to-yellow-500\x20text-white\x20rounded-full\x20flex\x20items-center\x20justify-center\x20font-black\x20text-2xl\x20shadow-md\x20border-4\x20border-white\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','results-table-body','disabled','\x22\x20data-total=\x22','.view-section','<span\x20class=\x22px-2\x20py-1\x20bg-green-100\x20text-green-700\x20rounded-full\x20text-xs\x22>Complete</span>','registered','slice','#4f46e5','selectedIndex','531763Afibpb','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr\x20class=\x22bg-white\x20even:bg-slate-50\x20hover:bg-indigo-50\x20transition\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20py-4\x20font-bold\x20text-slate-400\x22>','toast-container','<span\x20class=\x22text-slate-300\x22>-</span>','claimed','handlePrizeUpdate','hidden','fileToImport','stats','reset','SHA-256','div','citizenId','querySelector','\x20คน\x20ต้องการสุ่มทั้งหมดหรือไม่?','forEach','\x20p-4\x20rounded-lg\x20shadow-lg\x20flex\x20items-start\x20gap-3\x20toast-enter\x20pointer-events-auto\x20transform\x20transition-all\x20duration-300','จำนวนคนลงทะเบียนเข้า','screen-prize-title','parse','toLocaleTimeString','target','handlePrizeSubmit','edit-prize-qty','label-eligible-count','changePage','\x20/\x20','<tr><td\x20colspan=\x225\x22\x20class=\x22text-center\x20py-4\x20text-slate-400\x22>ยังไม่มีข้อมูลการลงทะเบียน</td></tr>','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20text-slate-600\x20text-xs\x22>','update','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr\x20class=\x22bg-white\x20even:bg-slate-50\x20hover:bg-indigo-50\x20transition\x20table-compact\x20text-sm\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20text-slate-500\x22>','type','btn-import','<option\x20value=\x22','getAttribute','จากผู้มีสิทธิ์ลุ้น\x20','<span>[','User\x20...','EmpMember','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20font-medium\x20text-slate-700\x20text-sm\x22>','rgba(79,\x2070,\x20229,\x200.1)','contains','\x27,\x20','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex-1\x20text-sm\x20font-medium\x22>','isDrawing','rewarded','text-slate-400','ไม่มีข้อมูลให้ลบ','translate-x-full','bg-blue-500','monitor-noreward','กำลังลบข้อมูล...','filter','openEditPrizeModal','จำนวนต้องมากกว่า\x200','UNKNOWN','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-4\x20py-3\x20text-slate-500\x20text-xs\x22>','closeGeneralModal','#FFA500','closeEditPrizeModal','ต้องการลบของรางวัลนี้ใช่หรือไม่?'];_0x4163=function(){return _0x261dae;};return _0x4163();}function processSnapshot(_0x47cbc6){const _0x31def7=_0x4dd752,_0x19b14b=[],_0x373962=[],_0x3357e4={'checkin':0x0,'checkout':0x0,'rewarded':0x0,'claimed':0x0,'eligible':0x0,'totalDocs':0x0,'registered':0x0};_0x3357e4[_0x31def7(0xec)]=_0x47cbc6['size'];const _0x31b88f={};_0x47cbc6[_0x31def7(0x153)](_0x2a0989=>{const _0x10948a=_0x31def7,_0x44f88c=_0x2a0989['data'](),_0x4dd01d={'id':_0x2a0989['id'],..._0x44f88c};_0x19b14b[_0x10948a(0x19b)](_0x4dd01d);if(_0x44f88c[_0x10948a(0xca)]){_0x3357e4[_0x10948a(0x1a4)]++;const _0x46a980=_0x44f88c[_0x10948a(0xca)][_0x10948a(0xbd)]?_0x44f88c[_0x10948a(0xca)]['toDate']():new Date(_0x44f88c[_0x10948a(0xca)]),_0x328256=_0x46a980[_0x10948a(0x181)]();_0x31b88f[_0x328256]=(_0x31b88f[_0x328256]||0x0)+0x1;}if(_0x44f88c['CheckOUT'])_0x3357e4['checkout']++;_0x44f88c['reward']&&(_0x3357e4[_0x10948a(0x171)]++,_0x373962[_0x10948a(0x19b)](_0x4dd01d));if(_0x44f88c[_0x10948a(0x1a0)])_0x3357e4[_0x10948a(0x148)]++;_0x44f88c[_0x10948a(0x1fc)]&&_0x44f88c[_0x10948a(0x1fc)]['trim']()!==''&&(_0x3357e4[_0x10948a(0x140)]++,!_0x44f88c[_0x10948a(0x134)]&&_0x3357e4[_0x10948a(0x1c8)]++);}),_0x19b14b['sort']((_0x6f2b59,_0x42231c)=>{const _0x8991c3=_0x31def7,_0x32e5d8=_0x6f2b59[_0x8991c3(0xca)]?_0x6f2b59['CheckIN'][_0x8991c3(0xbd)]?_0x6f2b59[_0x8991c3(0xca)][_0x8991c3(0xbd)]():new Date(_0x6f2b59[_0x8991c3(0xca)]):new Date(0x0),_0x24233a=_0x42231c[_0x8991c3(0xca)]?_0x42231c[_0x8991c3(0xca)][_0x8991c3(0xbd)]?_0x42231c['CheckIN']['toDate']():new Date(_0x42231c[_0x8991c3(0xca)]):new Date(0x0);return _0x24233a-_0x32e5d8;}),_0x373962[_0x31def7(0x1f3)]((_0x4c3d2e,_0x545c13)=>{const _0x15b456=_0x31def7,_0xa48a32=_0x4c3d2e[_0x15b456(0x131)]?_0x4c3d2e[_0x15b456(0x131)][_0x15b456(0xbd)]?_0x4c3d2e[_0x15b456(0x131)][_0x15b456(0xbd)]():new Date(_0x4c3d2e['rewardTime']):new Date(0x0),_0x174e85=_0x545c13[_0x15b456(0x131)]?_0x545c13[_0x15b456(0x131)][_0x15b456(0xbd)]?_0x545c13[_0x15b456(0x131)][_0x15b456(0xbd)]():new Date(_0x545c13[_0x15b456(0x131)]):new Date(0x0);return _0x174e85-_0xa48a32;}),state[_0x31def7(0x1de)]=_0x19b14b,state[_0x31def7(0x14c)]=_0x3357e4,updateDashboardUI(_0x3357e4,_0x31b88f),renderDashboardRecentTable(_0x19b14b),renderActivityFeed(_0x19b14b),renderTable(_0x19b14b),renderResultsTable(_0x373962,_0x3357e4),document[_0x31def7(0xe1)](_0x31def7(0x19a))[_0x31def7(0x182)][_0x31def7(0x16d)](_0x31def7(0x14a))===![]&&window[_0x31def7(0xea)][_0x31def7(0xe2)]();}function processPrizesSnapshot(_0x3626f9){const _0x1bc0e8=_0x4dd752,_0x110a75=[];_0x3626f9['forEach'](_0x366360=>{const _0x3d6324=_0x1013;_0x110a75[_0x3d6324(0x19b)]({'id':_0x366360['id'],..._0x366360[_0x3d6324(0xe9)]()});}),state[_0x1bc0e8(0xcc)]=_0x110a75,renderPrizeList(_0x110a75),renderPrizeOptions(_0x110a75);}function renderPrizeList(_0x163834){const _0x444c5e=_0x4dd752,_0xd0d864=document['getElementById']('prize-list-body'),_0xf190d8=document[_0x444c5e(0xe1)](_0x444c5e(0xf2)),_0x221275=_0x163834['reduce']((_0x1a918d,_0x36f5be)=>_0x1a918d+(parseInt(_0x36f5be[_0x444c5e(0x132)])||0x0),0x0);_0xf190d8[_0x444c5e(0xc6)]=_0x221275[_0x444c5e(0xba)]();if(_0x163834['length']===0x0){_0xd0d864['innerHTML']=_0x444c5e(0x1f2);return;}_0xd0d864['innerHTML']=_0x163834['map']((_0x430f1c,_0x689e)=>_0x444c5e(0x1e5)+_0x430f1c['name']+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-4\x20py-3\x20text-center\x20text-slate-500\x22>'+(_0x430f1c[_0x444c5e(0x138)]||0x1)+_0x444c5e(0x1c3)+(_0x430f1c[_0x444c5e(0x132)]||'-')+_0x444c5e(0x108)+_0x430f1c['id']+_0x444c5e(0x11f)+_0x430f1c[_0x444c5e(0x1c4)]+_0x444c5e(0x16e)+(_0x430f1c['qtyPerDraw']||0x1)+',\x20'+(_0x430f1c[_0x444c5e(0x132)]||0x1)+_0x444c5e(0x1f1)+_0x430f1c['id']+'\x27)\x22\x20class=\x22text-red-500\x20hover:text-red-700\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20data-lucide=\x22trash-2\x22\x20width=\x2216\x22\x20class=\x22inline\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20')[_0x444c5e(0xbe)]('');if(window[_0x444c5e(0xe8)])lucide[_0x444c5e(0x110)]();}function renderPrizeOptions(_0x40f2c0){const _0x5ca070=_0x4dd752,_0x54e79d=document['getElementById'](_0x5ca070(0xd4)),_0x30f42e=_0x54e79d[_0x5ca070(0x101)];_0x54e79d[_0x5ca070(0x1c2)]=_0x5ca070(0x1a6)+_0x40f2c0[_0x5ca070(0x1d9)](_0x457b88=>_0x5ca070(0x165)+_0x457b88['id']+'\x22\x20data-qty=\x22'+_0x457b88[_0x5ca070(0x138)]+_0x5ca070(0x13d)+(_0x457b88[_0x5ca070(0x132)]||0x270f)+'\x22>'+_0x457b88[_0x5ca070(0x1c4)]+'</option>')[_0x5ca070(0xbe)](''),_0x54e79d[_0x5ca070(0x101)]=_0x30f42e;}function _0x1013(_0xa641a6,_0x81fcf2){_0xa641a6=_0xa641a6-0xb4;const _0x416339=_0x4163();let _0x101369=_0x416339[_0xa641a6];return _0x101369;}function renderResultsTable(_0x395630,_0x4b88ae){const _0x2110f1=_0x4dd752;document[_0x2110f1(0xe1)]('monitor-total-db')['innerText']=_0x4b88ae[_0x2110f1(0xec)],document[_0x2110f1(0xe1)](_0x2110f1(0x1d0))['innerText']=_0x4b88ae['registered'],document[_0x2110f1(0xe1)]('monitor-draws')[_0x2110f1(0xc6)]=_0x4b88ae[_0x2110f1(0x171)],document['getElementById'](_0x2110f1(0xfa))[_0x2110f1(0xc6)]=_0x4b88ae[_0x2110f1(0x171)],document[_0x2110f1(0xe1)](_0x2110f1(0x176))['innerText']=_0x4b88ae[_0x2110f1(0x140)]-_0x4b88ae[_0x2110f1(0x171)],document[_0x2110f1(0xe1)]('rand-stat-total')[_0x2110f1(0xc6)]=_0x4b88ae['totalDocs'],document[_0x2110f1(0xe1)](_0x2110f1(0x1b3))[_0x2110f1(0xc6)]=_0x4b88ae[_0x2110f1(0x140)]-_0x4b88ae[_0x2110f1(0x171)],document[_0x2110f1(0xe1)](_0x2110f1(0x1d7))[_0x2110f1(0xc6)]=_0x4b88ae[_0x2110f1(0x171)],document[_0x2110f1(0xe1)](_0x2110f1(0xb8))[_0x2110f1(0xc6)]=_0x4b88ae['claimed'];const _0x49f55a=document[_0x2110f1(0xe1)](_0x2110f1(0x13b)),_0x50a965=[..._0x395630]['sort']((_0xa1de45,_0x49ac16)=>{const _0x38b6e1=_0x2110f1,_0x1e71e7=_0xa1de45[_0x38b6e1(0x131)]?_0xa1de45[_0x38b6e1(0x131)]['toDate']?_0xa1de45[_0x38b6e1(0x131)][_0x38b6e1(0xbd)]():new Date(_0xa1de45['rewardTime']):new Date(0x0),_0x1be621=_0x49ac16[_0x38b6e1(0x131)]?_0x49ac16['rewardTime'][_0x38b6e1(0xbd)]?_0x49ac16[_0x38b6e1(0x131)][_0x38b6e1(0xbd)]():new Date(_0x49ac16[_0x38b6e1(0x131)]):new Date(0x0);return _0x1be621-_0x1e71e7;});_0x49f55a[_0x2110f1(0x1c2)]=_0x50a965['map']((_0x69c760,_0x590a94)=>{const _0x5107f6=_0x2110f1,_0x1be169=_0x69c760[_0x5107f6(0x131)]?_0x69c760[_0x5107f6(0x131)]['toDate']?_0x69c760['rewardTime'][_0x5107f6(0xbd)]():new Date(_0x69c760['rewardTime']):new Date(),_0x5e1704=_0x69c760[_0x5107f6(0x1dc)]||_0x69c760[_0x5107f6(0x150)]['substring'](0x0,0xa)+_0x5107f6(0x188);let _0x47bc4a='';return _0x69c760[_0x5107f6(0x1a0)]?_0x47bc4a=_0x5107f6(0x1da):_0x47bc4a=_0x5107f6(0xc2),_0x5107f6(0x145)+(_0x590a94+0x1)+_0x5107f6(0x1b7)+_0x5e1704+_0x5107f6(0x1b6)+_0x69c760[_0x5107f6(0x134)]+_0x5107f6(0x111)+_0x1be169[_0x5107f6(0x158)](_0x5107f6(0x1fb))+_0x5107f6(0xe7)+_0x47bc4a+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';})[_0x2110f1(0xbe)]('');}function updateDashboardUI(_0x402541,_0x29ba2b){const _0x244e27=_0x4dd752;document['getElementById'](_0x244e27(0x19d))[_0x244e27(0xc6)]=_0x402541[_0x244e27(0x1a4)],document[_0x244e27(0xe1)](_0x244e27(0x11c))[_0x244e27(0xc6)]=_0x402541['checkout'],document[_0x244e27(0xe1)](_0x244e27(0x126))['innerText']=_0x402541[_0x244e27(0x171)],document[_0x244e27(0xe1)]('stat-claimed')[_0x244e27(0xc6)]=_0x402541[_0x244e27(0x148)],document[_0x244e27(0xe1)](_0x244e27(0x105))[_0x244e27(0xc6)]=_0x244e27(0x167)+_0x402541[_0x244e27(0x1c8)]+_0x244e27(0x185),document[_0x244e27(0xe1)](_0x244e27(0x15c))[_0x244e27(0xc6)]=_0x402541[_0x244e27(0x1c8)],document[_0x244e27(0xe1)](_0x244e27(0x1b9))[_0x244e27(0xc6)]=_0x402541['totalDocs'];const _0x11ab4e=_0x402541['checkin']>0x0?_0x402541[_0x244e27(0xfe)]/_0x402541[_0x244e27(0x1a4)]*0x64:0x0;document[_0x244e27(0xe1)](_0x244e27(0xc9))[_0x244e27(0x11a)][_0x244e27(0x192)]=_0x11ab4e+'%',updateChart(_0x29ba2b);}let mainChart=null;function updateChart(_0x5ab44b){const _0x331e9d=_0x4dd752,_0x543b41=document['getElementById'](_0x331e9d(0x1cb))['getContext']('2d'),_0x357139=Array[_0x331e9d(0x1e0)]({'length':0x18},(_0x377c66,_0x37f98a)=>_0x37f98a+':00'),_0x203e76=_0x357139[_0x331e9d(0x1d9)]((_0x848783,_0x353314)=>_0x5ab44b[_0x353314]||0x0);mainChart?(mainChart[_0x331e9d(0xe9)][_0x331e9d(0xd8)][0x0][_0x331e9d(0xe9)]=_0x203e76,mainChart[_0x331e9d(0x161)]()):mainChart=new Chart(_0x543b41,{'type':_0x331e9d(0xe6),'data':{'labels':_0x357139,'datasets':[{'label':_0x331e9d(0x155),'data':_0x203e76,'borderColor':_0x331e9d(0x142),'backgroundColor':_0x331e9d(0x16c),'fill':!![],'tension':0.4}]},'options':{'responsive':!![],'maintainAspectRatio':![],'plugins':{'legend':{'display':![]}},'scales':{'y':{'beginAtZero':!![],'ticks':{'stepSize':0x1,'precision':0x0}}}}});}function renderDashboardRecentTable(_0x68217d){const _0x5ea826=_0x4dd752,_0x249d2b=document[_0x5ea826(0xe1)](_0x5ea826(0x139)),_0x3e28af=_0x68217d[_0x5ea826(0x178)](_0x522e21=>_0x522e21[_0x5ea826(0xca)]||_0x522e21[_0x5ea826(0x1af)])[_0x5ea826(0x1f3)]((_0x2375b0,_0x1ba9cc)=>{const _0x511922=_0x5ea826;let _0x39d66d=0x0;const _0x10d6d2=_0x2375b0[_0x511922(0x1af)]?_0x2375b0[_0x511922(0x1af)][_0x511922(0xbd)]?_0x2375b0[_0x511922(0x1af)][_0x511922(0xbd)]():new Date(_0x2375b0['CheckOUT']):0x0,_0x5026dc=_0x2375b0[_0x511922(0xca)]?_0x2375b0['CheckIN']['toDate']?_0x2375b0[_0x511922(0xca)][_0x511922(0xbd)]():new Date(_0x2375b0[_0x511922(0xca)]):0x0;_0x39d66d=Math[_0x511922(0x1b5)](_0x10d6d2,_0x5026dc);let _0x15e51c=0x0;const _0x590496=_0x1ba9cc[_0x511922(0x1af)]?_0x1ba9cc[_0x511922(0x1af)][_0x511922(0xbd)]?_0x1ba9cc[_0x511922(0x1af)][_0x511922(0xbd)]():new Date(_0x1ba9cc['CheckOUT']):0x0,_0x2b1da5=_0x1ba9cc[_0x511922(0xca)]?_0x1ba9cc[_0x511922(0xca)][_0x511922(0xbd)]?_0x1ba9cc[_0x511922(0xca)][_0x511922(0xbd)]():new Date(_0x1ba9cc[_0x511922(0xca)]):0x0;return _0x15e51c=Math['max'](_0x590496,_0x2b1da5),_0x15e51c-_0x39d66d;})[_0x5ea826(0x141)](0x0,0x32);if(_0x3e28af[_0x5ea826(0x136)]===0x0){_0x249d2b['innerHTML']=_0x5ea826(0x15f);return;}_0x249d2b[_0x5ea826(0x1c2)]=_0x3e28af[_0x5ea826(0x1d9)](_0x3172ad=>{const _0x40224b=_0x5ea826,_0x21b280=_0x3172ad[_0x40224b(0xca)]?(_0x3172ad['CheckIN'][_0x40224b(0xbd)]?_0x3172ad[_0x40224b(0xca)][_0x40224b(0xbd)]():new Date(_0x3172ad['CheckIN']))[_0x40224b(0xba)]('th-TH'):'-',_0x39656b=_0x3172ad[_0x40224b(0x1af)]?(_0x3172ad[_0x40224b(0x1af)][_0x40224b(0xbd)]?_0x3172ad[_0x40224b(0x1af)]['toDate']():new Date(_0x3172ad[_0x40224b(0x1af)]))[_0x40224b(0xba)](_0x40224b(0x1fb)):'-',_0x4728d3=_0x3172ad[_0x40224b(0x1dc)]||_0x40224b(0x147);let _0x31a743=_0x40224b(0x123);if(_0x3172ad['status']===_0x40224b(0x1d3))_0x31a743='<span\x20class=\x22px-2\x20py-1\x20bg-blue-100\x20text-blue-700\x20rounded-full\x20text-xs\x22>Checked-In</span>';if(_0x3172ad[_0x40224b(0x1fc)]==='checked-out')_0x31a743=_0x40224b(0x1c5);if(_0x3172ad[_0x40224b(0x1fc)]===_0x40224b(0x18e))_0x31a743=_0x40224b(0x13f);return _0x40224b(0x1c6)+(_0x3172ad[_0x40224b(0x16a)]||'-')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-4\x20py-3\x20text-slate-700\x20font-medium\x22>'+_0x4728d3+_0x40224b(0x17c)+_0x21b280+_0x40224b(0x17c)+_0x39656b+_0x40224b(0x135)+_0x31a743+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';})['join']('');}function renderTable(_0x33f0d5){const _0x35d005=_0x4dd752,_0x590f1e=document[_0x35d005(0xe1)]('table-body'),_0x5c979b=document[_0x35d005(0xe1)](_0x35d005(0xf0)),_0x5f5d0e=Math[_0x35d005(0xc7)](_0x33f0d5[_0x35d005(0x136)]/state[_0x35d005(0xeb)])||0x1;if(state[_0x35d005(0x113)]>_0x5f5d0e)state[_0x35d005(0x113)]=_0x5f5d0e;if(state['currentPage']<0x1)state[_0x35d005(0x113)]=0x1;const _0x38ba75=(state[_0x35d005(0x113)]-0x1)*state[_0x35d005(0xeb)],_0x47b5ff=_0x38ba75+state[_0x35d005(0xeb)],_0x42beb6=_0x33f0d5[_0x35d005(0x141)](_0x38ba75,_0x47b5ff);_0x5c979b['innerText']=_0x35d005(0x1c7)+(_0x38ba75+0x1)+'-'+Math[_0x35d005(0x1e9)](_0x47b5ff,_0x33f0d5[_0x35d005(0x136)])+_0x35d005(0x1e7)+_0x33f0d5[_0x35d005(0x136)]+_0x35d005(0x1a1),renderPagination(_0x5f5d0e),_0x590f1e['innerHTML']=_0x42beb6[_0x35d005(0x1d9)]((_0x3f10a5,_0x570ec4)=>{const _0x55e703=_0x35d005,_0x430691=_0x3f10a5[_0x55e703(0xca)]?(_0x3f10a5[_0x55e703(0xca)][_0x55e703(0xbd)]?_0x3f10a5[_0x55e703(0xca)]['toDate']():new Date(_0x3f10a5[_0x55e703(0xca)]))['toLocaleString'](_0x55e703(0x1fb)):'-',_0x3b9c89=_0x3f10a5[_0x55e703(0x1af)]?(_0x3f10a5[_0x55e703(0x1af)]['toDate']?_0x3f10a5[_0x55e703(0x1af)]['toDate']():new Date(_0x3f10a5[_0x55e703(0x1af)]))['toLocaleString']('th-TH'):'-',_0x2f441f=_0x3f10a5['reward']||_0x55e703(0x147),_0x2d737d=_0x3f10a5[_0x55e703(0x1a0)]?_0x55e703(0x112):_0x3f10a5['reward']?'<span\x20class=\x22px-2\x20py-1\x20bg-yellow-100\x20text-yellow-700\x20rounded-full\x20text-xs\x22>รอรับ</span>':'-',_0x4b5577=_0x3f10a5['EmpName']||_0x55e703(0xfc)+_0x3f10a5[_0x55e703(0x150)][_0x55e703(0xcd)](0x0,0x6)+_0x55e703(0x133);return _0x55e703(0x162)+(_0x38ba75+_0x570ec4+0x1)+_0x55e703(0x16b)+_0x4b5577+_0x55e703(0x160)+_0x430691+_0x55e703(0x160)+_0x3b9c89+_0x55e703(0x12c)+_0x2f441f+_0x55e703(0x1ea)+_0x2d737d+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20text-right\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22window.app.deleteSingleData(\x27'+_0x3f10a5['id']+_0x55e703(0x1eb);})[_0x35d005(0xbe)]('');if(window[_0x35d005(0xe8)])lucide[_0x35d005(0x110)]();}function renderPagination(_0x541c3e){const _0x36e7c4=_0x4dd752,_0x385d5e=document[_0x36e7c4(0xe1)]('page-indicator'),_0x598807=document['getElementById'](_0x36e7c4(0x195)),_0x22d089=document[_0x36e7c4(0xe1)](_0x36e7c4(0xda));_0x385d5e['innerText']=_0x36e7c4(0xc1)+state[_0x36e7c4(0x113)]+_0x36e7c4(0x130)+_0x541c3e,_0x598807[_0x36e7c4(0x13c)]=state[_0x36e7c4(0x113)]<=0x1,_0x22d089['disabled']=state[_0x36e7c4(0x113)]>=_0x541c3e;}function renderActivityFeed(_0xdc1a0a){const _0x32823d=_0x4dd752,_0x1739e1=document[_0x32823d(0xe1)](_0x32823d(0x100));let _0xa04235=[];_0xdc1a0a[_0x32823d(0x153)](_0x8e46d8=>{const _0x3ba0da=_0x32823d,_0x2684c0=_0x8e46d8[_0x3ba0da(0x1dc)]||_0x3ba0da(0x169)+(_0x8e46d8[_0x3ba0da(0x150)]?_0x8e46d8[_0x3ba0da(0x150)][_0x3ba0da(0x141)](-0x4):_0x3ba0da(0x17b));_0x8e46d8[_0x3ba0da(0xca)]&&_0xa04235[_0x3ba0da(0x19b)]({'type':'in','date':_0x8e46d8['CheckIN'][_0x3ba0da(0xbd)]?_0x8e46d8[_0x3ba0da(0xca)][_0x3ba0da(0xbd)]():new Date(_0x8e46d8[_0x3ba0da(0xca)]),'name':_0x2684c0,'id':_0x8e46d8['id']}),_0x8e46d8['CheckOUT']&&_0xa04235[_0x3ba0da(0x19b)]({'type':'out','date':_0x8e46d8[_0x3ba0da(0x1af)][_0x3ba0da(0xbd)]?_0x8e46d8['CheckOUT']['toDate']():new Date(_0x8e46d8['CheckOUT']),'name':_0x2684c0,'id':_0x8e46d8['id']});}),_0xa04235[_0x32823d(0x1f3)]((_0x18e305,_0x5a4cdd)=>_0x5a4cdd[_0x32823d(0x12d)]-_0x18e305[_0x32823d(0x12d)]);const _0x4b00db=_0xa04235[_0x32823d(0x141)](0x0,0x32);if(_0x4b00db[_0x32823d(0x136)]===0x0){_0x1739e1[_0x32823d(0x1c2)]=_0x32823d(0xf8);return;}_0x1739e1[_0x32823d(0x1c2)]=_0x4b00db[_0x32823d(0x1d9)](_0x548720=>{const _0x1c98de=_0x32823d,_0x434944=_0x548720[_0x1c98de(0x12d)]['toLocaleDateString']('th-TH')+'\x20'+_0x548720[_0x1c98de(0x12d)][_0x1c98de(0x158)](_0x1c98de(0x1fb));let _0x240322=_0x1c98de(0x1f7),_0x1ef7e9=_0x1c98de(0x1ca),_0x5ed005=_0x1c98de(0x1e3);return _0x548720[_0x1c98de(0x163)]==='out'&&(_0x240322=_0x1c98de(0x1f8),_0x1ef7e9=_0x1c98de(0xf6),_0x5ed005='ลงทะเบียนออก'),_0x1c98de(0x12a)+_0x1ef7e9+_0x1c98de(0x1bf)+_0x240322+_0x1c98de(0x115)+_0x548720[_0x1c98de(0x1c4)]+_0x1c98de(0xb4)+_0x5ed005+')</span></p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22text-[10px]\x20text-slate-400\x22>'+_0x434944+_0x1c98de(0x1d6);})['join']('');if(window['lucide'])lucide['createIcons']();}setInterval(()=>{const _0x2e79dc=_0x4dd752;document[_0x2e79dc(0xe1)](_0x2e79dc(0x198))[_0x2e79dc(0xc6)]=new Date()[_0x2e79dc(0x158)](_0x2e79dc(0x1fb));},0x3e8);async function init(){const _0x5c1e59=_0x4dd752;try{typeof __initial_auth_token!==_0x5c1e59(0x1c9)&&__initial_auth_token?await signInWithCustomToken(auth,__initial_auth_token):await signInAnonymously(auth);document[_0x5c1e59(0xe1)](_0x5c1e59(0x1ff))[_0x5c1e59(0x182)][_0x5c1e59(0x12b)](_0x5c1e59(0x1e8)),document[_0x5c1e59(0xe1)]('status-indicator')['classList'][_0x5c1e59(0x1cc)](_0x5c1e59(0x1ba)),document[_0x5c1e59(0xe1)]('status-text')[_0x5c1e59(0xc6)]=_0x5c1e59(0x186),document[_0x5c1e59(0xe1)](_0x5c1e59(0x1e1))[_0x5c1e59(0x182)][_0x5c1e59(0xe0)](_0x5c1e59(0x172),_0x5c1e59(0x1b1));const _0x2f6f8e=query(collection(db,finalCollectionPath));onSnapshot(_0x2f6f8e,_0x55edc9=>{processSnapshot(_0x55edc9);},_0x7a391e=>{const _0x192538=_0x5c1e59;console[_0x192538(0x18b)](_0x192538(0x1a2),_0x7a391e);});const _0x2d0d32=query(collection(db,prizesCollectionPath));onSnapshot(_0x2d0d32,_0x21328e=>{processPrizesSnapshot(_0x21328e);});}catch(_0x1cc0dc){console[_0x5c1e59(0x18b)](_0x5c1e59(0x125),_0x1cc0dc);}}init();if(window[_0x4dd752(0xe8)])lucide['createIcons']();
+
+    </script>
+</body>
+</html>
