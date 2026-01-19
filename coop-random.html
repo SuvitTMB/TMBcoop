@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสุ่มของรางวัล - TMB-Coop</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Font (Sarabun) -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+
+        .winner-card-enter {
+            animation: cardSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+        @keyframes cardSlideIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .header-gradient {
+            background: linear-gradient(to right, #1e3a8a, #1d4ed8);
+        }
+
+        /* ปรับสีพื้นหลังด้านล่างตามคำขอ rgb(118 157 238) */
+        .main-bg {
+            background-color: rgb(118 157 238);
+        }
+
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        .prize-glow-light {
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="main-bg min-h-screen text-slate-700 flex flex-col overflow-hidden text-sm">
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-6 right-6 z-[200] flex flex-col gap-3 w-80 pointer-events-none text-sm"></div>
+
+    <!-- Header: Navigation & Control (Deep Blue Area) -->
+    <header class="p-6 header-gradient border-b border-blue-800 backdrop-blur-xl z-20 shadow-2xl">
+        <div class="max-w-[1600px] mx-auto flex flex-col xl:flex-row items-end gap-4 text-sm">
+            <!-- Branding -->
+            <div class="flex items-center gap-3 pr-6 border-r border-blue-700 hidden xl:flex self-center">
+                <div class="bg-white/10 p-2 rounded-xl border border-white/20 shadow-sm text-white">
+                    <i data-lucide="award" width="20" height="20"></i>
+                </div>
+                <span class="font-bold text-white whitespace-nowrap text-sm">TMB-Coop<br>LuckyDraw</span>
+            </div>
+
+            <!-- Prize Selection & Qty -->
+            <div class="flex-1 w-full flex flex-col md:flex-row gap-4 text-sm">
+                <div class="flex-1">
+                    <label class="block text-blue-100 font-medium mb-1.5 ml-1 text-sm">เลือกรายการของรางวัล</label>
+                    <select id="prize-select" onchange="window.app.updateStockInfo()" class="w-full bg-blue-950/50 border border-blue-700 text-white p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-400 transition shadow-inner">
+                        <option value="">-- กรุณาเลือกของรางวัล --</option>
+                    </select>
+                </div>
+                <div class="w-full md:w-32 text-sm">
+                    <label class="block text-blue-100 font-medium mb-1.5 ml-1 text-sm">จำนวนสุ่ม</label>
+                    <input type="number" id="draw-qty" value="1" min="1" oninput="window.app.onQtyChange()" class="w-full bg-blue-950/50 border border-blue-700 text-white p-2.5 rounded-xl text-center font-bold text-sm outline-none focus:ring-2 focus:ring-blue-400 transition">
+                </div>
+            </div>
+
+            <!-- Stats Boxes Row -->
+            <div class="flex flex-wrap gap-3 justify-center text-sm">
+                <div class="bg-blue-950/40 px-4 py-1.5 rounded-xl border border-blue-700/50 text-center min-w-[100px]">
+                    <span class="text-sm text-blue-300 uppercase font-bold">คงเหลือ</span><br>
+                    <span id="label-remaining" class="text-3xl font-black text-orange-400 leading-tight">0</span>
+                </div>
+                <div class="bg-blue-950/40 px-4 py-1.5 rounded-xl border border-blue-700/50 text-center min-w-[100px]">
+                    <span class="text-sm text-blue-300 uppercase font-bold">แจกแล้ว</span><br>
+                    <span id="label-drawn" class="text-3xl font-black text-blue-300 leading-tight">0</span>
+                </div>
+                <div class="bg-blue-950/40 px-4 py-1.5 rounded-xl border border-blue-700/50 text-center min-w-[100px]">
+                    <span class="text-sm text-blue-300 uppercase font-bold">ลงทะเบียน</span><br>
+                    <span id="label-total-members" class="text-3xl font-black text-white leading-tight">0</span>
+                </div>
+                <div class="bg-blue-950/40 px-4 py-1.5 rounded-xl border border-blue-700/50 text-center min-w-[100px]">
+                    <span class="text-sm text-blue-300 uppercase font-bold">ไม่ได้รางวัล</span><br>
+                    <span id="label-not-won" class="text-3xl font-black text-emerald-400 leading-tight">0</span>
+                </div>
+                <div class="bg-blue-950/40 px-4 py-1.5 rounded-xl border border-blue-700/50 text-center min-w-[100px]">
+                    <span class="text-sm text-blue-300 uppercase font-bold">ได้รางวัล</span><br>
+                    <span id="label-already-won" class="text-3xl font-black text-purple-400 leading-tight">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col overflow-hidden p-6 lg:p-8 max-w-7xl mx-auto w-full">
+        <!-- Title -->
+        <div class="mb-6 text-center">
+            <h2 id="current-prize-display" class="text-2xl font-black text-blue-900 uppercase tracking-tight">ระบบสุ่มรางวัล</h2>
+            <p id="prize-subtitle" class="text-white/80 text-sm font-bold tracking-wide uppercase mt-1">Ready for the draw</p>
+        </div>
+
+        <!-- Drawing Workspace -->
+        <div class="flex-1 bg-white/30 rounded-[2rem] p-6 lg:p-10 overflow-hidden flex flex-col relative shadow-inner border border-white/20 backdrop-blur-sm">
+            <!-- Results Container (2 Columns Grid) -->
+            <div id="results-container" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 content-start pr-2">
+                <!-- Initial Start UI -->
+                <div id="empty-state" class="col-span-full h-full flex flex-col items-center justify-center space-y-8 py-20 mt-20">
+                    <div class="relative">
+                        <div class="absolute -inset-10 bg-white/20 blur-3xl rounded-full animate-pulse"></div>
+                        <button onclick="window.app.startDraw()" id="btn-start-main" disabled class="relative px-12 py-5 bg-gradient-to-br from-blue-700 to-indigo-800 hover:from-blue-800 hover:to-indigo-900 text-white rounded-3xl font-black flex items-center gap-4 shadow-2xl disabled:opacity-40 disabled:grayscale transform transition hover:scale-105 active:scale-95 text-xl group">
+                            <i data-lucide="play" width="28" class="fill-current group-hover:rotate-12 transition-transform"></i> 
+                            คลิกเพื่อเริ่มสุ่มรางวัล
+                        </button>
+                    </div>
+                    <p class="text-white font-black tracking-[0.2em] uppercase text-xs opacity-60">Ready to find lucky winners</p>
+                </div>
+            </div>
+            
+            <!-- Summary Footer -->
+            <div id="results-footer" class="hidden mt-6 pt-4 border-t border-white/20 flex flex-col items-center gap-4 text-sm">
+                <p class="text-white font-bold italic">รายการสุ่มรอบปัจจุบันเสร็จสมบูรณ์</p>
+                <button onclick="window.app.clearDisplay()" class="px-8 py-3 bg-blue-800 text-white rounded-2xl transition flex items-center gap-3 font-bold uppercase tracking-tight shadow-xl hover:bg-blue-900 group border border-white/10">
+                    <i data-lucide="refresh-ccw" width="18" class="group-hover:rotate-180 transition-transform duration-500"></i> คลิกเพื่อทำการเริ่มต้นสุ่มของรางวัลใหม่
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Drawing Overlay -->
+    <div id="draw-overlay" class="hidden fixed inset-0 bg-blue-900/95 z-[250] flex items-center justify-center backdrop-blur-md">
+        <div class="text-center text-white">
+            <div class="relative mb-10">
+                <div class="w-36 h-36 border-[12px] border-white/10 border-t-white rounded-full animate-spin mx-auto shadow-[0_0_100px_rgba(255,255,255,0.2)]"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-blue-300">
+                    <i data-lucide="sparkles" width="48" height="48" class="animate-pulse text-white"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-black tracking-tighter mb-4 uppercase text-white">กำลังสุ่มรายชื่อ...</h3>
+            <p class="text-blue-200/60 text-xs font-light tracking-[0.3em] uppercase">Searching Winners</p>
+        </div>
+    </div>
+
+    <!-- Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        import { getFirestore, collection, query, updateDoc, doc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+        // APP CONFIG
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const isSandbox = typeof __firebase_config !== 'undefined';
+        const fbConfig = isSandbox ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyAgWMzWcZPzyzoBu5eQzj2y59nKsxTWurQ",
+            authDomain: "ttb-register.firebaseapp.com",
+            projectId: "ttb-register",
+            storageBucket: "ttb-register.firebasestorage.app",
+            messagingSenderId: "1070273157855",
+            appId: "1:1070273157855:web:5c8120e1df27e233d8676a"
+        };
+        const colRegis = isSandbox ? `artifacts/${appId}/public/data/coop_registrations` : 'tmb_coop';
+        const colGift = isSandbox ? `artifacts/${appId}/public/data/coop_gift` : 'coop_gift';
+
+        const app = initializeApp(fbConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const state = { users: [], prizes: [], isDrawing: false };
+
+        window.app = {
+            updateGeneralStats: () => {
+                const registeredUsers = state.users.filter(u => u.CheckIN);
+                const wonAnyPrize = registeredUsers.filter(u => u.reward && u.reward !== "").length;
+                const notWonYet = registeredUsers.length - wonAnyPrize;
+
+                const tEl = document.getElementById('label-total-members'); if(tEl) tEl.innerText = registeredUsers.length.toLocaleString();
+                const wEl = document.getElementById('label-already-won'); if(wEl) wEl.innerText = wonAnyPrize.toLocaleString();
+                const nEl = document.getElementById('label-not-won'); if(nEl) nEl.innerText = notWonYet.toLocaleString();
+            },
+
+            updateStockInfo: () => {
+                const select = document.getElementById('prize-select');
+                const title = document.getElementById('current-prize-display');
+                const btnMain = document.getElementById('btn-start-main');
+                const drawQtyInput = document.getElementById('draw-qty');
+                
+                const isSelected = select && select.value !== "";
+                if (btnMain) btnMain.disabled = !isSelected;
+
+                if (!isSelected) {
+                    document.getElementById('label-remaining').innerText = '0';
+                    document.getElementById('label-drawn').innerText = '0';
+                    title.innerText = 'ระบบสุ่มรางวัล';
+                    return;
+                }
+                
+                const opt = select.options[select.selectedIndex];
+                const prizeName = opt.text;
+                const total = parseInt(opt.getAttribute('data-total') || 0);
+                const defaultQty = parseInt(opt.getAttribute('data-qty') || 1);
+                const drawnThisPrize = state.users.filter(u => u.reward === prizeName).length;
+                const remaining = total - drawnThisPrize;
+
+                if (drawQtyInput) {
+                    drawQtyInput.value = Math.min(defaultQty, remaining > 0 ? remaining : 1);
+                }
+
+                document.getElementById('label-remaining').innerText = remaining.toLocaleString();
+                document.getElementById('label-drawn').innerText = drawnThisPrize.toLocaleString();
+                title.innerText = prizeName;
+                
+                window.app.clearDisplay();
+            },
+
+            onQtyChange: () => {
+                window.app.clearDisplay();
+            },
+
+            clearDisplay: () => {
+                const container = document.getElementById('results-container');
+                if (state.isDrawing || !container) return;
+                
+                container.innerHTML = `
+                    <div id="empty-state" class="col-span-full h-full flex flex-col items-center justify-center space-y-8 py-20 mt-20">
+                        <div class="relative">
+                            <div class="absolute -inset-10 bg-white/20 blur-3xl rounded-full animate-pulse"></div>
+                            <button onclick="window.app.startDraw()" id="btn-start-main" ${document.getElementById('prize-select').value ? '' : 'disabled'} class="relative px-12 py-5 bg-gradient-to-br from-blue-700 to-indigo-800 hover:from-blue-800 hover:to-indigo-900 text-white rounded-3xl font-black flex items-center gap-4 shadow-2xl disabled:opacity-40 disabled:grayscale transform transition hover:scale-105 active:scale-95 text-xl group text-sm">
+                                <i data-lucide="play" width="28" class="fill-current group-hover:rotate-12 transition-transform"></i> 
+                                คลิกเพื่อเริ่มสุ่มรางวัล
+                            </button>
+                        </div>
+                        <p class="text-white font-black tracking-[0.2em] uppercase text-xs opacity-60">Ready to find lucky winners</p>
+                    </div>
+                `;
+                document.getElementById('results-footer').classList.add('hidden');
+                lucide.createIcons();
+            },
+
+            startDraw: async () => {
+                const s = document.getElementById('prize-select');
+                const qtyInput = document.getElementById('draw-qty');
+                if (!s || !s.value) return;
+                
+                const qty = parseInt(qtyInput.value);
+                const prizeName = s.options[s.selectedIndex].text;
+                const remaining = parseInt(document.getElementById('label-remaining').innerText.replace(/,/g, ''));
+                
+                if (qty > remaining) return window.app.showToast(`จำนวนรางวัลคงเหลือไม่พอสำหรับการสุ่มครั้งนี้`, "error");
+
+                const eligible = state.users.filter(u => u.CheckIN && !u.reward);
+                if (eligible.length === 0) return window.app.showToast("ไม่มีผู้มีสิทธิ์คงเหลือในระบบลงทะเบียน", "error");
+                
+                state.isDrawing = true;
+                const btnMain = document.getElementById('btn-start-main');
+                if(btnMain) btnMain.disabled = true;
+                
+                document.getElementById('draw-overlay').classList.remove('hidden');
+                await new Promise(r => setTimeout(r, 2000));
+                document.getElementById('draw-overlay').classList.add('hidden');
+
+                const container = document.getElementById('results-container');
+                container.innerHTML = ''; 
+
+                const winners = eligible.sort(() => Math.random() - 0.5).slice(0, qty);
+
+                for (let i = 0; i < winners.length; i++) {
+                    const w = winners[i];
+                    if (i > 0) await new Promise(r => setTimeout(r, 2000));
+
+                    const card = document.createElement('div');
+                    // เพิ่มวงกลมตัวเลข (i+1) และรักษาฟอนต์เดิม (ชื่อ text-2xl, รางวัล text-base)
+                    card.className = "winner-card-enter bg-white border-0 px-8 rounded-2xl flex items-center justify-between transition-all card-shadow h-[70px] relative overflow-hidden group";
+                    card.innerHTML = `
+                        <div class="flex items-center gap-6 min-w-0">
+                            <div class="flex-shrink-0 w-11 h-11 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-md border-2 border-white/20">${i + 1}</div>
+                            <div class="truncate">
+                                <h3 class="text-2xl font-black text-slate-800 truncate leading-tight">${w.EmpName || 'ไม่ระบุชื่อ'}</h3>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0 ml-6 text-right">
+                            <span class="text-base font-bold text-blue-700 bg-blue-50/80 px-5 py-1.5 rounded-full uppercase tracking-tighter shadow-sm border border-blue-100">${prizeName}</span>
+                        </div>
+                    `;
+
+                    container.appendChild(card);
+                    container.scrollTop = container.scrollHeight;
+
+                    await updateDoc(doc(db, colRegis, w.id), { reward: prizeName, rewardTime: serverTimestamp() });
+                    confetti({ particleCount: 25, spread: 60, origin: { y: 0.8 }, colors: ['#1d4ed8', '#1e40af', '#3b82f6', '#ffffff'] });
+                }
+
+                state.isDrawing = false;
+                document.getElementById('results-footer').classList.remove('hidden');
+                lucide.createIcons();
+            },
+
+            showToast: (msg, type='success') => {
+                const c = document.getElementById('toast-container');
+                const t = document.createElement('div');
+                t.className = `p-4 rounded-2xl shadow-2xl border-l-4 ${type==='success'?'bg-white border-green-500 text-slate-700':'bg-white border-red-500 text-slate-700'} fade-in-up flex justify-between items-center gap-4 text-xs font-bold`;
+                t.innerHTML = `<span>${msg}</span><button onclick="this.parentElement.remove()"><i data-lucide="x" width="14"></i></button>`;
+                if(c) c.appendChild(t); 
+                lucide.createIcons();
+                setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 3000);
+            }
+        };
+
+        async function init() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+                else await signInAnonymously(auth);
+                
+                document.getElementById('status-indicator')?.classList.replace('bg-red-500', 'bg-green-500');
+                const stText = document.getElementById('status-text');
+                if (stText) {
+                    stText.innerText = "Online";
+                    stText.classList.replace('text-slate-400', 'text-blue-100');
+                }
+
+                onSnapshot(query(collection(db, colGift)), (snap) => {
+                    const prizes = [];
+                    snap.forEach(d => prizes.push({ id: d.id, ...d.data() }));
+                    state.prizes = prizes;
+                    const select = document.getElementById('prize-select');
+                    if (select) {
+                        const current = select.value;
+                        select.innerHTML = '<option value="">-- กรุณาเลือกรายการของรางวัล --</option>' + 
+                            prizes.map(p => `<option value="${p.id}" data-total="${p.totalQty}" data-qty="${p.qtyPerDraw}">${p.name}</option>`).join('');
+                        select.value = current;
+                    }
+                });
+
+                onSnapshot(query(collection(db, colRegis)), (snap) => {
+                    const users = [];
+                    snap.forEach(d => users.push({ id: d.id, ...d.data() }));
+                    state.users = users;
+                    window.app.updateGeneralStats();
+                    
+                    const select = document.getElementById('prize-select');
+                    if (select && select.value) {
+                        const opt = select.options[select.selectedIndex];
+                        const prizeName = opt.text;
+                        const total = parseInt(opt.getAttribute('data-total') || 0);
+                        const drawnThisPrize = state.users.filter(u => u.reward === prizeName).length;
+                        document.getElementById('label-remaining').innerText = (total - drawnThisPrize).toLocaleString();
+                        document.getElementById('label-drawn').innerText = drawnThisPrize.toLocaleString();
+                    }
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        init();
+        lucide.createIcons();
+    </script>
+</body>
+</html>
