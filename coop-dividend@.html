@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Font (Sarabun) -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+        .hidden { display: none !important; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        
+        .content-indent { text-indent: 3rem; }
+        .report-card { @apply bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in relative z-20 w-full max-w-lg mx-auto border border-slate-100; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen pb-10">
+
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-6 rounded-b-[2.5rem] shadow-lg mb-8 relative overflow-hidden" style="height: 180px;">
+        <div class="absolute top-0 right-0 opacity-10 transform translate-x-10 -translate-y-10">
+            <i data-lucide="calculator" width="150" height="150"></i>
+        </div>
+        
+        <div class="relative z-10 flex flex-col items-center">
+            <div class="bg-white/20 p-3 rounded-full mb-3 backdrop-blur-sm">
+                <i data-lucide="file-text" width="32" height="32" class="text-white"></i>
+            </div>
+            <h1 class="text-xl font-bold text-center">รายงานเงินปันผลประจำปี 2025</h1>
+            <p class="text-blue-100 text-sm mt-1 text-center font-light text-balance">สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด</p>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="px-2 sm:px-4 max-w-lg mx-auto -mt-10">
+        
+        <!-- Search Form Screen -->
+        <div id="screen-form" class="bg-white rounded-2xl shadow-xl p-6 border border-slate-100 relative z-20">
+            <form id="registration-form" class="space-y-6 pt-2">
+                <div class="text-center">
+                    <div>
+                        <label for="idCard" class="block text-sm font-semibold text-gray-700 mb-2">
+                            เลขบัตรประจำตัวประชาชน
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="idCard"
+                                placeholder="x-xxxx-xxxxx-xx-x"
+                                class="w-full text-xl font-mono tracking-wide p-4 rounded-xl border-2 border-gray-200 bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-center"
+                                inputmode="numeric"
+                                maxlength="17"
+                                autocomplete="off"
+                            />
+                            <i id="icon-check-valid" data-lucide="check-circle" class="hidden absolute right-4 top-1/2 transform -translate-y-1/2 text-green-500 w-6 h-6 animate-fade-in"></i>
+                        </div>
+                        <div class="flex justify-between items-center mt-2 px-1">
+                            <p id="id-helper-text" class="text-xs text-gray-400 font-medium">กรุณากรอกตัวเลขให้ครบ 13 หลัก</p>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-gray-400 uppercase font-bold">จำนวน:</span>
+                                <p id="id-counter" class="text-[10px] font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">0 / 13</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-blue-50 text-blue-800 rounded-xl text-xs flex gap-3 items-start mt-6 text-left border border-blue-100 leading-relaxed">
+                        <i data-lucide="info" class="w-5 h-5 shrink-0 text-blue-600"></i>
+                        <span>ระบบตรวจสอบรายงานเงินปันผลประจำปี 2568 สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด</span>
+                    </div>
+                </div>
+
+                <button
+                    type="submit"
+                    id="btn-submit"
+                    disabled
+                    class="w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+                >
+                    <span id="btn-text">ตรวจสอบข้อมูล</span>
+                    <i id="btn-loader" data-lucide="loader-2" class="hidden animate-spin"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Result Screen (Consolidated View) -->
+        <div id="screen-success" class="hidden report-card">
+            
+            <div class="p-6 space-y-4 text-sm text-gray-800 leading-relaxed overflow-y-auto max-h-[80vh]">
+                <p style="margin-top:25px;">เรียน <span id="res-name-1" class="font-bold underline text-blue-700"></span></p>
+                <p class="font-bold text-gray-900 underline decoration-blue-200 text-base">เรื่อง ขอเชิญประชุมใหญ่สามัญประจำปี 2568</p>
+                
+                <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-3">
+                    <p class="content-indent">
+                        ด้วยสหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด ได้กำหนดให้มีการจัดประชุมใหญ่สามัญ ประจำปี 2568 ใน<b>วันพฤหัสบดีที่ 12 กุมภาพันธ์ 2569</b> ณ ห้องประชุมออดิทอเรียม ชั้น 7 ธนาคารทหารไทยธนชาต (สำนักพหลโยธิน) เลขที่ 3000 ถนนพหลโยธิน แขวงจอมพล เขตจตุจักร กรุงเทพมหานคร 
+                    </p>
+                    <p class="content-indent">
+                        โดยให้สมาชิกลงทะเบียนเข้าร่วมประชุมตั้งแต่ เวลา 11.00 น. และเริ่มการประชุมเวลา 11.30 น. เพื่อรับทราบผลการดำเนินงานของสหกรณ์และพิจารณาอนุมัติเรื่องต่าง ๆ โดยขอให้สมาชิกเตรียมบัตรประชาชนหรือสำเนาบัตรมาด้วย สำหรับใช้ลงทะเบียนเข้าร่วมประชุม
+                    </p>
+                </div>
+                
+                <ul class="list-disc ml-8 space-y-1 font-medium text-slate-700 italic">
+                    <li>ภายในงานจะมีการจับสลากเป็นเงินสด 50 รางวัล ๆ ละ 500 บาท</li>
+                    <li>ในวันดังกล่าว สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด จะปิดทำการและงดทำธุรกรรมทุกประเภทเพื่อจัดการประชุมใหญ่สามัญประจำปี 2568</li>
+                </ul>
+
+                <p class="content-indent">
+                    พร้อมนี้สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด จะประกาศจ่ายเงินปันผล ประจำปี 2568 ในอัตราร้อยละ 4.75 เงินเฉลี่ยคืนดอกเบี้ยเงินกู้อัตราร้อยละ 10.00 และเงินค่าสมนาคุณ 120 บาท ซึ่งสหกรณ์จะโอนเงินดังกล่าว หลังจากได้รับอนุมัติจากที่ประชุมใหญ่แล้ว ในวันที่ <b>12 กุมภาพันธ์ 2569</b>
+                </p>
+
+                <!-- Dividend Information Box (กรอบข้อความแสดงผลเงินปันผล) -->
+                <div class="bg-blue-50 p-5 rounded-2xl border border-blue-200 mt-6 shadow-sm">
+                    <p class="font-bold text-blue-900 mb-2">โดย <span id="res-name-2" class="underline decoration-blue-400"></span> เลขที่สมาชิก <span id="res-member-id" class="font-mono italic"></span> จะได้รับเงิน ดังนี้</p>
+                    
+                    <div class="space-y-3 border-t border-blue-200 pt-4 mt-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">เงินปันผล:</span>
+                            <div class="text-right font-bold text-blue-700 text-base"><span id="res-dividend">0.00</span> บาท</div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">เงินเฉลี่ยคืน:</span>
+                            <div class="text-right font-bold text-blue-700 text-base"><span id="res-moneyback">0.00</span> บาท</div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">เงินค่าสมนาคุณ:</span>
+                            <div class="text-right font-bold text-blue-700 text-base"><span id="res-gratuity">0.00</span> บาท</div>
+                        </div>
+                        <div class="flex justify-between items-center border-t border-blue-300 pt-3 mt-1">
+                            <span class="text-blue-900 font-bold text-base">รวมสุทธิทั้งหมด:</span>
+                            <div class="text-right font-bold text-blue-900 text-base"><span id="res-total">0.00</span> บาท</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 bg-gray-50 border-t border-gray-100">
+                <button onclick="window.app.resetForm()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-semibold hover:bg-slate-900 transition shadow-lg flex items-center justify-center gap-2">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> กลับสู่หน้าลงทะเบียน
+                </button>
+            </div>
+        </div>
+
+        <!-- Not Found / Error Screens -->
+        <div id="screen-not-found" class="hidden bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full text-center animate-fade-in relative z-20 mx-auto border border-slate-100">
+            <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="user-x" class="text-amber-600 w-10 h-10"></i>
+            </div>
+            <h2 class="text-xl font-bold text-amber-700 mb-2">ไม่พบข้อมูลสมาชิก</h2>
+            <p class="text-gray-600 mb-6 text-sm leading-relaxed">
+                ไม่พบเลขบัตรประชาชนนี้ในฐานข้อมูลประจำปี 2568 <br/>
+                กรุณาตรวจสอบความถูกต้อง หรือติดต่อเจ้าหน้าที่สหกรณ์
+            </p>
+            <button onclick="window.app.resetForm()" class="w-full bg-amber-500 text-white py-3 rounded-xl font-semibold hover:bg-amber-600 transition shadow-lg shadow-amber-200">
+                ตกลง
+            </button>
+        </div>
+
+        <div id="screen-error" class="hidden bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full text-center animate-fade-in relative z-20 mx-auto border border-slate-100">
+            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="alert-triangle" class="text-red-600 w-10 h-10"></i>
+            </div>
+            <h2 class="text-xl font-bold text-red-700 mb-2 text-center">เกิดข้อผิดพลาด</h2>
+            <p id="error-message" class="text-gray-600 mb-6 text-sm text-center font-medium">การเชื่อมต่อล้มเหลว กรุณาลองใหม่อีกครั้ง</p>
+            <button onclick="window.app.resetForm()" class="w-full bg-slate-200 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-300 transition">
+                กลับไปหน้าหลัก
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <p class="text-center text-gray-400 text-[10px] mt-8 uppercase tracking-widest leading-relaxed">
+            COOP DIVIDEND SYSTEM 2568 <br/>
+            © สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด
+        </p>
+    </main>
+
+    <!-- Firebase and Application Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, updateDoc, doc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const TARGET_COLLECTION_NAME = 'tmb_coop_dividend';
+        const isSandboxEnv = typeof __firebase_config !== 'undefined';
+        let firebaseConfig;
+        let finalCollectionPath;
+
+        if (isSandboxEnv) {
+            firebaseConfig = JSON.parse(__firebase_config);
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            finalCollectionPath = `/artifacts/${appId}/public/data/${TARGET_COLLECTION_NAME}`; 
+        } else {
+            firebaseConfig = {
+                apiKey: "AIzaSyAgWMzWcZPzyzoBu5eQzj2y59nKsxTWurQ",
+                authDomain: "ttb-register.firebaseapp.com",
+                databaseURL: "https://ttb-register-default-rtdb.asia-southeast1.firebasedate.app",
+                projectId: "ttb-register",
+                storageBucket: "ttb-register.firebasestorage.app",
+                messagingSenderId: "1070273157855",
+                appId: "1:1070273157855:web:5c8120e1df27e233d8676a"
+            };
+            finalCollectionPath = TARGET_COLLECTION_NAME;
+        }
+
+        const state = { user: null, idCard: '', currentMember: null };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- SHA-256 Encoding ---
+        async function sha256(message) {
+            try {
+                const msgBuffer = new TextEncoder().encode(message);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+            } catch (e) {
+                console.error("Hash error:", e);
+                return null;
+            }
+        }
+
+        // --- Number Format x,xxx.xx ---
+        const formatMoney = (val) => {
+            const num = Number(val || 0);
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
+        window.app = {
+            resetForm: () => {
+                const screens = ['screen-success', 'screen-not-found', 'screen-error', 'screen-form'];
+                screens.forEach(id => document.getElementById(id).classList.add('hidden'));
+                document.getElementById('screen-form').classList.remove('hidden');
+                
+                document.getElementById('idCard').value = '';
+                state.idCard = '';
+                state.currentMember = null;
+                
+                const btn = document.getElementById('btn-submit');
+                btn.disabled = true;
+                btn.className = "w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed shadow-none";
+                document.getElementById('icon-check-valid').classList.add('hidden');
+                document.getElementById('idCard').classList.remove('border-blue-500', 'bg-blue-50/30');
+                document.getElementById('id-counter').innerText = '0 / 13';
+                document.getElementById('id-counter').className = 'text-[10px] font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full';
+                document.getElementById('idCard').focus();
+            }
+        };
+
+        function populateMemberData(data) {
+            const empname = data.empname || data.EmpName || "สมาชิก";
+            // แสดงชื่อสมาชิกโดยไม่มีคำว่า "คุณ" นำหน้าตามสั่ง
+            document.getElementById('res-name-1').innerText = empname;
+            document.getElementById('res-name-2').innerText = empname;
+            document.getElementById('res-member-id').innerText = data.memberId || "-";
+            
+            // ใช้ฟังก์ชัน formatMoney เพื่อจัดรูปแบบตัวเลข x,xxx.xx
+            document.getElementById('res-dividend').innerText = formatMoney(data.dividend);
+            document.getElementById('res-moneyback').innerText = formatMoney(data.moneyback);
+            document.getElementById('res-gratuity').innerText = formatMoney(data.gratuity);
+            document.getElementById('res-total').innerText = formatMoney(data.netpayment);
+        }
+
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) { console.error("Auth init failed", e); }
+        }
+
+        onAuthStateChanged(auth, (u) => { state.user = u; });
+
+        function handleIdInput(e) {
+            let raw = e.target.value.replace(/[^0-9]/g, '');
+            if (raw.length > 13) raw = raw.slice(0, 13);
+            
+            let formatted = '';
+            if (raw.length > 0) {
+                formatted += raw.substring(0, 1);
+                if (raw.length > 1) {
+                    formatted += '-' + raw.substring(1, 5);
+                    if (raw.length > 5) {
+                        formatted += '-' + raw.substring(5, 10);
+                        if (raw.length > 10) {
+                            formatted += '-' + raw.substring(10, 12);
+                            if (raw.length > 12) {
+                                formatted += '-' + raw.substring(12, 13);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            state.idCard = formatted;
+            e.target.value = formatted;
+            
+            const btn = document.getElementById('btn-submit');
+            const icon = document.getElementById('icon-check-valid');
+            const counter = document.getElementById('id-counter');
+            counter.innerText = `${raw.length} / 13`;
+            
+            if (raw.length === 13) {
+                 e.target.classList.add('border-blue-500', 'bg-blue-50/30');
+                 icon.classList.remove('hidden');
+                 btn.disabled = false;
+                 btn.className = "w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2 bg-blue-600 text-white shadow-blue-200 hover:bg-blue-700";
+                 counter.className = 'text-[10px] font-mono text-white bg-green-500 px-2 py-0.5 rounded-full';
+            } else {
+                 e.target.classList.remove('border-blue-500', 'bg-blue-50/30');
+                 icon.classList.add('hidden');
+                 btn.disabled = true;
+                 btn.className = "w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed shadow-none";
+                 counter.className = 'text-[10px] font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full';
+            }
+        }
+
+        async function submitForm(e) {
+            e.preventDefault();
+            if (!state.user) {
+                await initAuth();
+                if (!state.user) return;
+            }
+
+            const btn = document.getElementById('btn-submit');
+            const btnText = document.getElementById('btn-text');
+            const btnLoader = document.getElementById('btn-loader');
+            
+            btn.disabled = true;
+            btnText.innerText = "กำลังตรวจสอบ...";
+            btnLoader.classList.remove('hidden');
+
+            try {
+                const rawIdText = String(state.idCard.replace(/-/g, ''));
+                const hashId = await sha256(rawIdText);
+                
+                if (!hashId) throw new Error("Encryption failed");
+
+                const q = query(collection(db, finalCollectionPath), where("citizenId", "==", hashId));
+                const snap = await getDocs(q);
+
+                if (!snap.empty) {
+                    const memberDoc = snap.docs[0];
+                    const docRef = doc(db, finalCollectionPath, memberDoc.id);
+                    
+                    // บันทึกวันที่และเวลาลงในฟิลด์ DateLogin เมื่อตรวจสอบสำเร็จ
+                    await updateDoc(docRef, { "DateLogin": serverTimestamp() });
+                    
+                    state.currentMember = { id: memberDoc.id, ...memberDoc.data() };
+                    populateMemberData(state.currentMember);
+                    document.getElementById('screen-form').classList.add('hidden');
+                    document.getElementById('screen-success').classList.remove('hidden');
+                } else {
+                    document.getElementById('screen-form').classList.add('hidden');
+                    document.getElementById('screen-not-found').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error("Submission error:", err);
+                document.getElementById('error-message').innerText = "เกิดข้อผิดพลาด: " + err.message;
+                document.getElementById('screen-form').classList.add('hidden');
+                document.getElementById('screen-error').classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btnText.innerText = "ตรวจสอบข้อมูล";
+                btnLoader.classList.add('hidden');
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        document.getElementById('registration-form').addEventListener('submit', submitForm);
+        document.getElementById('idCard').addEventListener('input', handleIdInput);
+        window.addEventListener('load', () => {
+            document.getElementById('idCard').focus();
+            initAuth();
+            if (window.lucide) lucide.createIcons();
+        });
+
+    </script>
+</body>
+</html>
