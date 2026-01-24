@@ -20,9 +20,11 @@
     <style>
         body { font-family: 'Sarabun', sans-serif; }
         .hidden { display: none !important; }
+        
         /* Custom Animations */
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        
         @keyframes bounce-slow { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(0); } }
         .animate-bounce-slow { animation: bounce-slow 2s infinite; }
         
@@ -30,12 +32,23 @@
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
+        
+        .input-focus:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Modal Backdrop Fade */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-10">
+<body class="bg-slate-100 min-h-screen pb-10">
 
     <!-- Header Section -->
-    <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-6 rounded-b-[2.5rem] shadow-lg mb-8 relative overflow-hidden">
+    <div class="bg-gradient-to-r from-blue-800 to-indigo-900 text-white p-6 rounded-b-[2.5rem] shadow-xl mb-8 relative overflow-hidden">
         <div class="absolute top-0 right-0 opacity-10 transform translate-x-10 -translate-y-10">
             <i data-lucide="shield-check" width="150" height="150"></i>
         </div>
@@ -45,50 +58,47 @@
                 <i data-lucide="calendar" width="32" height="32" class="text-white"></i>
             </div>
             <h1 class="text-xl font-bold text-center">ประชุมใหญ่สามัญประจำปี 2568</h1>
-            <p class="text-blue-100 text-sm mt-1">สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด</p>
+            <p class="text-blue-100 text-sm mt-1 text-center">สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด</p>
         </div>
     </div>
 
     <!-- Main Content Container -->
-    <main class="px-2 sm:px-4 max-w-lg mx-auto -mt-10">
+    <main class="px-4 max-w-lg mx-auto -mt-10">
         
         <!-- Registration Form Screen -->
-        <div id="screen-form" class="bg-white rounded-2xl shadow-xl p-6 border border-slate-100 relative z-20">
-            
+        <div id="screen-form" class="bg-white rounded-2xl shadow-2xl p-6 border border-slate-200 relative z-20">
             <form id="registration-form" class="space-y-6 pt-2">
-                <center>
-                <!-- Single Input ID Card -->
-                <div>
-                    <label for="idCard" class="block text-sm font-semibold text-gray-700 mb-2">
-                        เลขบัตรประจำตัวประชาชน
-                    </label>
-                    <div class="relative">
-                        <input
-                            type="text"
-                            id="idCard"
-                            placeholder="x-xxxx-xxxxx-xx-x"
-                            class="w-full text-xl font-mono tracking-wide p-4 rounded-xl border-2 border-gray-200 bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-center"
-                            inputmode="numeric"
-                            maxlength="17"
-                        />
-                        <i id="icon-check-valid" data-lucide="check-circle" class="hidden absolute right-4 top-1/2 transform -translate-y-1/2 text-green-500 w-6 h-6 animate-fade-in"></i>
+                <div class="text-center">
+                    <div>
+                        <label for="idCard" class="block text-sm font-semibold text-gray-700 mb-2 text-center">
+                            เลขบัตรประจำตัวประชาชน
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="idCard"
+                                placeholder="x-xxxx-xxxxx-xx-x"
+                                class="w-full text-xl font-mono tracking-widest p-4 rounded-xl border-2 border-gray-300 bg-white outline-none transition-all text-center input-focus"
+                                inputmode="numeric"
+                                maxlength="17"
+                            />
+                            <i id="icon-check-valid" data-lucide="check-circle" class="hidden absolute right-4 top-1/2 transform -translate-y-1/2 text-green-500 w-6 h-6 animate-fade-in"></i>
+                        </div>
+                        <p class="text-xm text-gray-500 mt-2">กรุณากรอกตัวเลข 13 หลักให้ครบถ้วน</p>
                     </div>
-                    <p class="text-xs text-gray-400 mt-2 ml-1">กรุณากรอกตัวเลข 13 หลักให้ครบถ้วน</p>
+
+                    <!-- Info Box -->
+                    <div class="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs flex gap-3 items-start mt-6 text-left">
+                        <i data-lucide="info" class="w-5 h-5 shrink-0 text-amber-600"></i>
+                        <span class="leading-relaxed">ผู้ที่เข้าร่วมประชุมสหกรณ์ออมทรัพย์ฯ ประจำปี 2568 จนครบวาระการประชุม จะได้รับรางวัลค่าตอบแทนการประชุม 200 บาท</span>
+                    </div>
                 </div>
 
-                <!-- Info Box -->
-                <div class="p-3 bg-blue-50 text-blue-800 rounded-lg text-xs flex gap-2 items-start" style="margin-top:25px; text-align: left;">
-                    <i data-lucide="info" class="w-4 h-4 shrink-0 mt-0.5"></i>
-                    <span>ผู้ที่จะได้รับรางวัลค่าตอบแทนการประชุม 200 บาท<br>จะต้องลงทะเบียนเข้า และลงทะเบียนออก เท่านั้น</span>
-                </div>
-                </center>
-
-                <!-- Submit Button -->
                 <button
                     type="submit"
                     id="btn-submit"
                     disabled
-                    class="w-full py-3 rounded-lg font-semibold text-base shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+                    class="w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed"
                 >
                     <span id="btn-text">ตรวจสอบ / ลงทะเบียน</span>
                     <i id="btn-loader" data-lucide="loader-2" class="hidden animate-spin"></i>
@@ -97,101 +107,105 @@
         </div>
 
         <!-- Success Screen -->
-        <div id="screen-success" class="hidden bg-white rounded-2xl shadow-xl p-8 w-full text-center animate-fade-in relative z-20">
+        <div id="screen-success" class="hidden bg-white rounded-2xl shadow-2xl p-8 w-full text-center animate-fade-in relative z-20 border border-blue-100">
             <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i data-lucide="check-circle" class="text-green-600 w-10 h-10"></i>
+                <i data-lucide="user-check" class="text-green-600 w-10 h-10"></i>
             </div>
             
-            <!-- EmpName above Success Title -->
-            <h3 id="success-user-name" class="text-lg font-bold text-blue-600 mb-1 hidden"></h3>
-            <h2 id="success-title" class="text-xl font-bold text-gray-800 mb-1">ลงทะเบียนสำเร็จ</h2>
-            <p id="success-checkin-datetime" class="text-blue-600 font-medium mb-6 text-xs">--/--/---- --:--</p>
+            <!-- User Info Section -->
+            <div class="mb-4">
+                <h3 id="success-user-name" class="text-2xl font-bold text-blue-800 mb-1"></h3>
+                <h2 id="success-title" class="text-lg font-medium text-gray-600">ลงทะเบียนสำเร็จ</h2>
+                <p id="success-checkin-datetime" class="text-blue-500 font-semibold text-xs mt-1">--/--/---- --:--</p>
+            </div>
             
-            <!-- Reward Box -->
-            <div class="bg-blue-50 border border-blue-100 rounded-xl p-5 mb-6 text-left shadow-sm">
-                <!-- Reward Content Area (Dynamic) -->
-                <div id="reward-area" class="py-2 text-center">
-                    <!-- Default state: Gift Icon and waiting message -->
-                    <div id="reward-waiting" class="space-y-3">
-                        <div class="flex justify-center">
-                            <i data-lucide="package" class="w-16 h-16 text-blue-400 animate-bounce-slow"></i>
+            <!-- Dynamic Content Area -->
+            <div id="status-content-area" class="mb-8">
+                <!-- First Time Flow: Voting Card -->
+                <div id="flow-first-time" class="hidden space-y-4">
+                    <div id="voting-status-box" class="bg-indigo-700 text-white p-6 rounded-2xl shadow-inner" style="margin-top:20px;">
+                        <div id="voting-box-content">
+                            <p class="text-lg font-bold">ขอให้สมาชิกติดต่อเจ้าหน้าที่</p>
+                            <p class="text-sm mt-2 leading-relaxed">เพื่อขอบัตรเลือกตั้งกรรมการ <br>สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด</p>
                         </div>
-                        <p class="text-blue-800 font-bold">ลุ้นรางวัลพิเศษ 50 รางวัล</p>
-                        <p class="text-xs text-gray-500 italic">ระบบจะแสดงผลที่นี่หากท่านได้รับรางวัล</p>
                     </div>
+                    
+                    <!-- Warning Message below the box -->
+                    <p id="voting-warning" class="text-red-600 text-xm">คำเตือน<br>ห้ามออกจากหน้านี้หากยังไม่ได้รับบัตรเลือกตั้ง<br>เมื่อออกไปแล้วจะไม่สามารถรับบัตรเลือกตั้งได้</p>
+                    
+                    <div class="pt-4 space-y-3">
+                        <button id="btn-confirm-voting" onclick="window.app.confirmVotingCard()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 shadow-lg transition-all active:scale-95">
+                            คลิกเพื่อ ยืนยันการรับบัตรเลือกตั้ง
+                        </button>
+                        <p id="staff-hint" class="text-xs text-red-500 tracking-wider">
+                            *** คลิกยืนยันเมื่อท่านได้รับบัตรเลือกตั้งแล้วท่านั้น ***
+                        </p>
+                    </div>
+                </div>
 
-                    <!-- Winner state: Congratulations message (Updated: Removed yellow styling) -->
-                    <div id="reward-winner" class="hidden space-y-4 p-4 rounded-xl animate-fade-in">
-                        <div class="flex justify-center">
-                            <i data-lucide="party-popper" class="w-12 h-12 text-yellow-500"></i>
-                        </div>
-                        <div class="text-sm">
-                            <p class="text-gray-700">ขอแสดงความยินดีกับคุณ</p>
-                            <p id="winner-name" class="font-bold text-lg text-blue-800"></p>
-                            <p class="mt-2 text-gray-600">ได้รับรางวัลเป็น</p>
-                            <p id="winner-prize" class="font-bold text-xl text-indigo-700"></p>
-                        </div>
-                        
-                        <div id="reward-action-area">
-                            <button id="btn-claim-reward" onclick="window.app.claimReward()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 shadow-md transition-all active:scale-95">
-                                ยืนยันการรับรางวัล
-                            </button>
-                            <p id="reward-claimed-time" class="hidden text-xs text-green-600 font-medium mt-2">
-                                <i data-lucide="check" class="inline w-3 h-3"></i> ยืนยันรับรางวัลแล้วเมื่อ:<br><span>-</span>
-                            </p>
+                <!-- Returning Flow: Visit Counter -->
+                <div id="flow-returning" class="hidden">
+                    <div class="bg-blue-50 border-2 border-blue-200 p-8 rounded-2xl">
+                        <p class="text-gray-500 text-sm">คุณเข้ามาทำรายการเป็น</p>
+                        <div class="flex items-baseline justify-center gap-2 mt-1">
+                            <span id="login-count-text" class="text-5xl font-black text-blue-700">0</span>
+                            <span class="text-xl font-bold text-blue-700">ครั้ง</span>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <button onclick="window.app.resetForm()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+            <!-- Navigation Button -->
+            <button id="btn-back-main" onclick="window.app.resetForm()" class="hidden w-full bg-slate-800 text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-900 transition shadow-xl">
                 กลับสู่หน้าหลัก
             </button>
         </div>
 
+        <!-- Lightbox / Modal for Confirmation -->
+        <div id="modal-confirm" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 modal-backdrop animate-fade-in">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 text-center animate-fade-in">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="help-circle" class="text-blue-600 w-8 h-8"></i>
+                </div>
+                <div id="modal-content" class="mb-8">
+                    <p id="modal-user-name" class="text-xl font-bold text-gray-800 mb-1"></p>
+                    <p class="text-gray-600 leading-relaxed">ขอยืนยันการรับบัตรเลือกตั้ง เรียบร้อยแล้ว</p>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <button id="btn-modal-submit" onclick="window.app.finalConfirmVoting()" class="w-full bg-blue-500 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition active:scale-95">
+                        ยืนยันการรับบัตรเลือกตั้ง
+                    </button>
+                    <button onclick="window.app.closeModal()" class="w-full bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-800 transition">
+                        ยกเลิกรายการ
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Error Screen -->
-        <div id="screen-error-device" class="hidden bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center animate-fade-in relative z-20">
+        <div id="screen-error-device" class="hidden bg-white rounded-2xl shadow-xl p-8 w-full text-center animate-fade-in relative z-20 border-2 border-red-50">
             <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i data-lucide="alert-triangle" class="text-red-600 w-10 h-10"></i>
+                <i data-lucide="alert-circle" class="text-red-600 w-10 h-10"></i>
             </div>
             <h2 class="text-xl font-bold text-red-700 mb-2">ไม่สามารถดำเนินการได้</h2>
             <p id="error-msg-text" class="text-gray-600 mb-6 text-sm">
                 เกิดข้อผิดพลาดในการประมวลผล กรุณาลองใหม่อีกครั้ง
             </p>
-            
             <button onclick="window.location.reload()" class="w-full bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition">
                 ตกลง
-            </button>
-        </div>
-
-        <!-- Not Found Screen -->
-        <div id="screen-not-found" class="hidden bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center animate-fade-in relative z-20">
-            <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i data-lucide="user-x" class="text-amber-600 w-10 h-10"></i>
-            </div>
-            <h2 class="text-xl font-bold text-amber-700 mb-2">ไม่มีข้อมูลในระบบ</h2>
-            <p class="text-gray-600 mb-6 text-sm">
-                ไม่พบเลขบัตรประชาชนนี้ในฐานข้อมูล <br/>
-                กรุณาตรวจสอบความถูกต้อง
-            </p>
-            <button onclick="window.app.resetForm()" class="w-full bg-amber-500 text-white py-3 rounded-xl font-semibold hover:bg-amber-600 transition shadow-lg shadow-amber-200">
-                ปิด
             </button>
         </div>
 
         <!-- Footer -->
         <p class="text-center text-gray-400 text-xs mt-8">
             ระบบลงทะเบียนสมาชิกสหกรณ์ <br/>
-            ©2026 สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด
+            © 2026 สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย จำกัด
         </p>
     </main>
 
     <!-- Firebase and Application Logic -->
     <script type="module">
-const _0x3b1ad5=_0x5a67;(function(_0x4c83fe,_0x384b6b){const _0x3a825c=_0x5a67,_0x21b842=_0x4c83fe();while(!![]){try{const _0x483724=-parseInt(_0x3a825c(0xc9))/0x1*(parseInt(_0x3a825c(0xc8))/0x2)+parseInt(_0x3a825c(0xcc))/0x3+-parseInt(_0x3a825c(0x7b))/0x4*(parseInt(_0x3a825c(0x8e))/0x5)+parseInt(_0x3a825c(0xd4))/0x6*(parseInt(_0x3a825c(0x8a))/0x7)+-parseInt(_0x3a825c(0xc2))/0x8*(parseInt(_0x3a825c(0x81))/0x9)+-parseInt(_0x3a825c(0x83))/0xa*(-parseInt(_0x3a825c(0x6f))/0xb)+parseInt(_0x3a825c(0x8f))/0xc;if(_0x483724===_0x384b6b)break;else _0x21b842['push'](_0x21b842['shift']());}catch(_0x2911f3){_0x21b842['push'](_0x21b842['shift']());}}}(_0x3e2f,0xf0e5c));import{initializeApp}from'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';import{getAuth,signInAnonymously,onAuthStateChanged,signInWithCustomToken}from'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';import{getFirestore,collection,addDoc,updateDoc,doc,serverTimestamp,query,where,getDocs,onSnapshot}from'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';const TARGET_COLLECTION_NAME=_0x3b1ad5(0x9e),isSandboxEnv=typeof __firebase_config!==_0x3b1ad5(0x98);let firebaseConfig,finalCollectionPath;if(isSandboxEnv){firebaseConfig=JSON[_0x3b1ad5(0x95)](__firebase_config);const appId=typeof __app_id!==_0x3b1ad5(0x98)?__app_id:_0x3b1ad5(0x77);finalCollectionPath='artifacts/'+appId+_0x3b1ad5(0xaf);}else firebaseConfig={'apiKey':_0x3b1ad5(0x84),'authDomain':_0x3b1ad5(0xa5),'databaseURL':'https://ttb-register-default-rtdb.asia-southeast1.firebasedate.app','projectId':_0x3b1ad5(0xd9),'storageBucket':_0x3b1ad5(0x76),'messagingSenderId':_0x3b1ad5(0xdb),'appId':_0x3b1ad5(0xab),'measurementId':_0x3b1ad5(0x88)},finalCollectionPath=TARGET_COLLECTION_NAME;const state={'user':null,'idCard':'','currentDocId':null,'unsubscribe':null,'hasFiredFireworks':![]},app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);function fireCongratulations(){const _0x27f18e=_0x3b1ad5,_0x3b612d=0x5*0x3e8,_0x14c5f6=Date[_0x27f18e(0xc7)]()+_0x3b612d,_0x4e843e={'startVelocity':0x1e,'spread':0x168,'ticks':0x3c,'zIndex':0x2710};function _0x5d022b(_0x1425b8,_0x539ed7){const _0x46fdd9=_0x27f18e;return Math[_0x46fdd9(0x87)]()*(_0x539ed7-_0x1425b8)+_0x1425b8;}const _0x515a08=setInterval(function(){const _0x5dd3c8=_0x27f18e,_0x45c389=_0x14c5f6-Date['now']();if(_0x45c389<=0x0)return clearInterval(_0x515a08);const _0x9cc517=0x32*(_0x45c389/_0x3b612d);confetti(Object['assign']({},_0x4e843e,{'particleCount':_0x9cc517,'origin':{'x':_0x5d022b(0.1,0.3),'y':Math['random']()-0.2}})),confetti(Object[_0x5dd3c8(0xda)]({},_0x4e843e,{'particleCount':_0x9cc517,'origin':{'x':_0x5d022b(0.7,0.9),'y':Math[_0x5dd3c8(0x87)]()-0.2}}));},0xfa);}async function sha256(_0x5144c6){const _0x5a2068=_0x3b1ad5,_0x26c22c=new TextEncoder()[_0x5a2068(0xc5)](_0x5144c6),_0x310853=await crypto[_0x5a2068(0x72)]['digest']('SHA-256',_0x26c22c),_0x2584e4=Array[_0x5a2068(0x97)](new Uint8Array(_0x310853)),_0x5219f4=_0x2584e4['map'](_0x567ada=>_0x567ada['toString'](0x10)[_0x5a2068(0x79)](0x2,'0'))[_0x5a2068(0x9d)]('');return _0x5219f4;}function getDeviceId(){const _0x4ef4f1=_0x3b1ad5,_0x4a2f86='coop_device_identifier';let _0x3de312=localStorage[_0x4ef4f1(0xd1)](_0x4a2f86);return!_0x3de312&&(_0x3de312=_0x4ef4f1(0xac)+Date['now']()['toString'](0x24)+Math[_0x4ef4f1(0x87)]()['toString'](0x24)[_0x4ef4f1(0xc6)](0x2,0x9),localStorage['setItem'](_0x4a2f86,_0x3de312)),_0x3de312;}window[_0x3b1ad5(0xc4)]={'resetForm':()=>{const _0x3faa49=_0x3b1ad5;state[_0x3faa49(0xd5)]&&(state['unsubscribe'](),state[_0x3faa49(0xd5)]=null);state[_0x3faa49(0x8b)]=![];const _0x557857=['screen-success',_0x3faa49(0x91),_0x3faa49(0xce)];_0x557857[_0x3faa49(0xd2)](_0x12a69e=>document[_0x3faa49(0x86)](_0x12a69e)[_0x3faa49(0x71)]['add']('hidden')),document[_0x3faa49(0x86)](_0x3faa49(0x70))[_0x3faa49(0x71)]['remove']('hidden'),document[_0x3faa49(0x86)](_0x3faa49(0xbe))[_0x3faa49(0x71)]['add'](_0x3faa49(0xca)),document[_0x3faa49(0x86)](_0x3faa49(0xae))[_0x3faa49(0x71)][_0x3faa49(0xbb)](_0x3faa49(0xca)),document['getElementById'](_0x3faa49(0xb2))['classList'][_0x3faa49(0xc3)]('hidden');const _0x48ba01=document[_0x3faa49(0x86)](_0x3faa49(0x96));_0x48ba01[_0x3faa49(0xad)]='',state[_0x3faa49(0x96)]='',state['currentDocId']=null;const _0x2bab9d=document['getElementById']('btn-submit'),_0x3ed57a=document[_0x3faa49(0x86)]('btn-text'),_0x2d2e61=document[_0x3faa49(0x86)](_0x3faa49(0xa3));_0x3ed57a['innerText']=_0x3faa49(0x75),_0x2d2e61[_0x3faa49(0x71)][_0x3faa49(0xc3)](_0x3faa49(0xca)),_0x2bab9d[_0x3faa49(0xb3)]=!![],_0x2bab9d[_0x3faa49(0x71)][_0x3faa49(0xc3)](_0x3faa49(0xa0),_0x3faa49(0xcd),'cursor-not-allowed','shadow-none'),_0x2bab9d[_0x3faa49(0x71)][_0x3faa49(0xbb)]('bg-blue-600',_0x3faa49(0xcb),'hover:bg-blue-700',_0x3faa49(0xb1));const _0x329a6b=document['getElementById'](_0x3faa49(0x6d));_0x329a6b[_0x3faa49(0x71)][_0x3faa49(0xc3)](_0x3faa49(0xca)),_0x48ba01[_0x3faa49(0x71)][_0x3faa49(0xbb)]('border-blue-500',_0x3faa49(0xc1)),_0x48ba01[_0x3faa49(0x71)][_0x3faa49(0xc3)](_0x3faa49(0xdd),_0x3faa49(0x7c)),_0x48ba01['focus']();},'claimReward':async()=>{const _0x4c2b5a=_0x3b1ad5;if(!state['currentDocId'])return;const _0x307d2f=document[_0x4c2b5a(0x86)]('btn-claim-reward');_0x307d2f[_0x4c2b5a(0xb3)]=!![],_0x307d2f[_0x4c2b5a(0x99)]='กำลังบันทึก...';try{await updateDoc(doc(db,finalCollectionPath,state[_0x4c2b5a(0xa4)]),{'ConfirmReward':serverTimestamp()});}catch(_0x3c33b2){console[_0x4c2b5a(0xa2)](_0x4c2b5a(0xb4),_0x3c33b2),_0x307d2f['disabled']=![],_0x307d2f[_0x4c2b5a(0x99)]='ยืนยันการรับรางวัล\x20(ลองใหม่)';}}};function startRewardListener(_0x45530b){const _0x432c32=_0x3b1ad5;if(state[_0x432c32(0xd5)])state[_0x432c32(0xd5)]();state['unsubscribe']=onSnapshot(doc(db,finalCollectionPath,_0x45530b),_0x52b731=>{const _0xb5edf2=_0x432c32;if(_0x52b731[_0xb5edf2(0x9c)]()){const _0x1cea86=_0x52b731[_0xb5edf2(0xb7)](),_0x120e44=document[_0xb5edf2(0x86)]('reward-waiting'),_0x4609f9=document[_0xb5edf2(0x86)](_0xb5edf2(0xb2));if(_0x1cea86[_0xb5edf2(0x9a)]){_0x120e44[_0xb5edf2(0x71)][_0xb5edf2(0xc3)](_0xb5edf2(0xca)),_0x4609f9['classList'][_0xb5edf2(0xbb)]('hidden'),document[_0xb5edf2(0x86)](_0xb5edf2(0xa9))[_0xb5edf2(0x99)]=_0x1cea86[_0xb5edf2(0xc0)]||_0xb5edf2(0xd6),document[_0xb5edf2(0x86)]('winner-prize')['innerText']=_0x1cea86[_0xb5edf2(0x9a)];const _0x50638e=document[_0xb5edf2(0x86)](_0xb5edf2(0x8d)),_0x1ad1cc=document[_0xb5edf2(0x86)](_0xb5edf2(0xbd));!state[_0xb5edf2(0x8b)]&&(fireCongratulations(),state[_0xb5edf2(0x8b)]=!![]);if(_0x1cea86[_0xb5edf2(0x7e)]){_0x50638e[_0xb5edf2(0x71)][_0xb5edf2(0xc3)](_0xb5edf2(0xca)),_0x1ad1cc['classList'][_0xb5edf2(0xbb)](_0xb5edf2(0xca));const _0x24f22a=_0x1cea86['ConfirmReward'][_0xb5edf2(0x93)]?_0x1cea86[_0xb5edf2(0x7e)]['toDate']():new Date(_0x1cea86['ConfirmReward']);_0x1ad1cc['querySelector']('span')[_0xb5edf2(0x99)]=_0x24f22a[_0xb5edf2(0x6e)]('th-TH');}else _0x50638e[_0xb5edf2(0x71)][_0xb5edf2(0xbb)](_0xb5edf2(0xca)),_0x50638e[_0xb5edf2(0xb3)]=![],_0x50638e[_0xb5edf2(0x99)]='ยืนยันการรับรางวัล',_0x1ad1cc[_0xb5edf2(0x71)][_0xb5edf2(0xc3)](_0xb5edf2(0xca));}else _0x120e44['classList']['remove'](_0xb5edf2(0xca)),_0x4609f9[_0xb5edf2(0x71)][_0xb5edf2(0xc3)](_0xb5edf2(0xca));}},_0x5072db=>{const _0x1e82e=_0x432c32;console[_0x1e82e(0xa2)](_0x1e82e(0xb8),_0x5072db);});}function updateSuccessUI(_0x21f72c,_0x398247,_0x4713fa,_0x14b9ce){const _0x42fe40=_0x3b1ad5;document['getElementById'](_0x42fe40(0x80))[_0x42fe40(0x99)]=_0x398247?'ลงทะเบียนสำเร็จ':'ท่านได้ลงทะเบียนไปแล้ว',document[_0x42fe40(0x86)](_0x42fe40(0xb9))['innerText']=_0x42fe40(0xcf)+_0x21f72c;const _0x3c0e2e=document[_0x42fe40(0x86)]('success-user-name');_0x4713fa?(_0x3c0e2e['innerText']=_0x4713fa,_0x3c0e2e['classList'][_0x42fe40(0xbb)](_0x42fe40(0xca))):_0x3c0e2e[_0x42fe40(0x71)]['add']('hidden'),document[_0x42fe40(0x86)]('screen-form')[_0x42fe40(0x71)]['add'](_0x42fe40(0xca)),document['getElementById'](_0x42fe40(0x89))[_0x42fe40(0x71)][_0x42fe40(0xbb)]('hidden'),startRewardListener(_0x14b9ce);}async function initAuth(){const _0x1f25e1=_0x3b1ad5;try{typeof __initial_auth_token!=='undefined'&&__initial_auth_token?await signInWithCustomToken(auth,__initial_auth_token):await signInAnonymously(auth);}catch(_0x9b418c){console[_0x1f25e1(0xa2)](_0x1f25e1(0xba),_0x9b418c);}}onAuthStateChanged(auth,_0x1c9c61=>{const _0x492d98=_0x3b1ad5;state[_0x492d98(0x9b)]=_0x1c9c61;});function _0x5a67(_0x59fde3,_0x32e875){_0x59fde3=_0x59fde3-0x6d;const _0x3e2fe2=_0x3e2f();let _0x5a67e8=_0x3e2fe2[_0x59fde3];return _0x5a67e8;}function handleIdInput(_0x1b01b7){const _0x28909f=_0x3b1ad5;let _0x1d44e6=_0x1b01b7['target'][_0x28909f(0xad)][_0x28909f(0xaa)](/[^0-9]/g,'');if(_0x1d44e6[_0x28909f(0xa6)]>0xd)_0x1d44e6=_0x1d44e6[_0x28909f(0xd8)](0x0,0xd);let _0x54b230=_0x1d44e6;if(_0x1d44e6[_0x28909f(0xa6)]>0x1)_0x54b230=_0x1d44e6[_0x28909f(0xd8)](0x0,0x1)+'-'+_0x1d44e6[_0x28909f(0xd8)](0x1);if(_0x1d44e6[_0x28909f(0xa6)]>0x5)_0x54b230=_0x54b230[_0x28909f(0xd8)](0x0,0x6)+'-'+_0x54b230[_0x28909f(0xd8)](0x6);if(_0x1d44e6[_0x28909f(0xa6)]>0xa)_0x54b230=_0x54b230[_0x28909f(0xd8)](0x0,0xc)+'-'+_0x54b230[_0x28909f(0xd8)](0xc);if(_0x1d44e6[_0x28909f(0xa6)]>0xc)_0x54b230=_0x54b230[_0x28909f(0xd8)](0x0,0xf)+'-'+_0x54b230['slice'](0xf);state[_0x28909f(0x96)]=_0x54b230,document[_0x28909f(0x86)](_0x28909f(0x96))['value']=_0x54b230;const _0x1f123b=document[_0x28909f(0x86)](_0x28909f(0x6d)),_0x39a519=document['getElementById']('idCard');_0x1d44e6[_0x28909f(0xa6)]===0xd?(_0x39a519[_0x28909f(0x71)][_0x28909f(0xc3)](_0x28909f(0x9f),_0x28909f(0xc1)),_0x39a519[_0x28909f(0x71)][_0x28909f(0xbb)]('border-gray-200','bg-white'),_0x1f123b['classList']['remove'](_0x28909f(0xca))):(_0x39a519[_0x28909f(0x71)][_0x28909f(0xbb)]('border-blue-500',_0x28909f(0xc1)),_0x39a519[_0x28909f(0x71)][_0x28909f(0xc3)](_0x28909f(0xdd),'bg-white'),_0x1f123b[_0x28909f(0x71)][_0x28909f(0xc3)](_0x28909f(0xca))),validateForm();}function _0x3e2f(){const _0x394c8b=['602061tUnNPX','text-gray-400','screen-not-found','ลงทะเบียนเมื่อ:\x20','input','getItem','forEach','checked-in','13602VmTbLQ','unsubscribe','สมาชิก','btn-submit','slice','ttb-register','assign','1070273157855','toLocaleDateString','border-gray-200','status','addEventListener','icon-check-valid','toLocaleString','11QTFVhD','screen-form','classList','subtle','btn-text','preventDefault','ตรวจสอบ\x20/\x20ลงทะเบียน','ttb-register.firebasestorage.app','default-app-id','เกิดข้อผิดพลาดในการส่งข้อมูล:\x20','padStart','error-msg-text','1040tpPYxl','bg-white','toLocaleTimeString','ConfirmReward','hover:bg-blue-700','success-title','5085819isDVzL','th-TH','12210230UsWrUX','AIzaSyAgWMzWcZPzyzoBu5eQzj2y59nKsxTWurQ','submit','getElementById','random','G-9DJLWJ5LQ1','screen-success','1785kOZxGb','hasFiredFireworks','createIcons','btn-claim-reward','33020owUjCr','25671696JEgoiP','lucide','screen-error-device','message','toDate','empty','parse','idCard','from','undefined','innerText','reward','user','exists','join','tmb_coop','border-blue-500','bg-gray-200','bg-blue-600','error','btn-loader','currentDocId','ttb-register.firebaseapp.com','length','registration-form','cursor-not-allowed','winner-name','replace','1:1070273157855:web:5c8120e1df27e233d8676a','DEV-','value','reward-waiting','/public/data/coop_registrations','shadow-none','shadow-blue-200','reward-winner','disabled','Claim\x20reward\x20error:','deviceId','innerHTML','data','Listener\x20error:','success-checkin-datetime','Auth\x20failed','remove','CheckIN','reward-claimed-time','success-user-name','กำลังตรวจสอบ...','EmpName','bg-blue-50/30','8SvLkXa','add','app','encode','substr','now','1740512xuLRzO','1irwbwt','hidden','text-white'];_0x3e2f=function(){return _0x394c8b;};return _0x3e2f();}function validateForm(){const _0x33bd2a=_0x3b1ad5,_0x2fa476=state['idCard'][_0x33bd2a(0xaa)](/-/g,''),_0x37bdec=_0x2fa476[_0x33bd2a(0xa6)]===0xd,_0x7e0bc3=document[_0x33bd2a(0x86)](_0x33bd2a(0xd7));_0x37bdec?(_0x7e0bc3[_0x33bd2a(0xb3)]=![],_0x7e0bc3[_0x33bd2a(0x71)][_0x33bd2a(0xbb)](_0x33bd2a(0xa0),_0x33bd2a(0xcd),_0x33bd2a(0xa8),_0x33bd2a(0xb0)),_0x7e0bc3[_0x33bd2a(0x71)][_0x33bd2a(0xc3)](_0x33bd2a(0xa1),_0x33bd2a(0xcb),_0x33bd2a(0x7f),_0x33bd2a(0xb1))):(_0x7e0bc3[_0x33bd2a(0xb3)]=!![],_0x7e0bc3[_0x33bd2a(0x71)][_0x33bd2a(0xc3)](_0x33bd2a(0xa0),_0x33bd2a(0xcd),_0x33bd2a(0xa8),_0x33bd2a(0xb0)),_0x7e0bc3[_0x33bd2a(0x71)][_0x33bd2a(0xbb)](_0x33bd2a(0xa1),_0x33bd2a(0xcb),_0x33bd2a(0x7f),_0x33bd2a(0xb1)));}async function submitForm(_0xb16673){const _0x5f50db=_0x3b1ad5;_0xb16673[_0x5f50db(0x74)]();if(!state[_0x5f50db(0x9b)])return;const _0x4f3607=document[_0x5f50db(0x86)](_0x5f50db(0xd7)),_0x12bf31=document[_0x5f50db(0x86)](_0x5f50db(0x73)),_0x132b1f=document[_0x5f50db(0x86)](_0x5f50db(0xa3));_0x4f3607[_0x5f50db(0xb3)]=!![],_0x12bf31[_0x5f50db(0x99)]=_0x5f50db(0xbf),_0x132b1f['classList'][_0x5f50db(0xbb)](_0x5f50db(0xca));try{const _0x3712a7=getDeviceId(),_0x5ced03=state[_0x5f50db(0x96)][_0x5f50db(0xaa)](/-/g,''),_0x167448=await sha256(_0x5ced03),_0x3f68fa=query(collection(db,finalCollectionPath),where('citizenId','==',_0x167448)),_0x248726=await getDocs(_0x3f68fa);if(!_0x248726[_0x5f50db(0x94)]){const _0x54e1d4=_0x248726['docs'][0x0],_0x5874c1=_0x54e1d4[_0x5f50db(0xb7)]();state['currentDocId']=_0x54e1d4['id'];const _0x3c6928={};let _0x358525=![];_0x5874c1['deviceId']!==_0x3712a7&&(_0x3c6928[_0x5f50db(0xb5)]=_0x3712a7,_0x358525=!![]);let _0xc2529e='',_0x4a6667=![];const _0x3e6cf8=!_0x5874c1[_0x5f50db(0xbc)];if(_0x3e6cf8){_0x3c6928['CheckIN']=serverTimestamp(),_0x3c6928[_0x5f50db(0xde)]=_0x5f50db(0xd3),_0x4a6667=!![],_0x358525=!![];const _0x8ad7bc=new Date();_0xc2529e=_0x8ad7bc[_0x5f50db(0xdc)](_0x5f50db(0x82))+'\x20'+_0x8ad7bc[_0x5f50db(0x7d)](_0x5f50db(0x82));}else{const _0x3feea0=_0x5874c1['CheckIN']['toDate']?_0x5874c1['CheckIN'][_0x5f50db(0x93)]():new Date(_0x5874c1[_0x5f50db(0xbc)]);_0xc2529e=_0x3feea0[_0x5f50db(0xdc)](_0x5f50db(0x82))+'\x20'+_0x3feea0[_0x5f50db(0x7d)](_0x5f50db(0x82));}_0x358525&&await updateDoc(doc(db,finalCollectionPath,_0x54e1d4['id']),_0x3c6928),updateSuccessUI(_0xc2529e,_0x4a6667,_0x5874c1[_0x5f50db(0xc0)],_0x54e1d4['id']);}else{const _0x20d44c=await addDoc(collection(db,finalCollectionPath),{'citizenId':_0x167448,'deviceId':_0x3712a7,'CheckIN':serverTimestamp(),'status':_0x5f50db(0xd3)});state['currentDocId']=_0x20d44c['id'];const _0x71e6e=new Date(),_0x4b8b6f=_0x71e6e[_0x5f50db(0xdc)](_0x5f50db(0x82))+'\x20'+_0x71e6e[_0x5f50db(0x7d)](_0x5f50db(0x82));updateSuccessUI(_0x4b8b6f,!![],null,_0x20d44c['id']);}}catch(_0x269a61){console[_0x5f50db(0xa2)]('Submit\x20Error:',_0x269a61),document['getElementById'](_0x5f50db(0x7a))[_0x5f50db(0xb6)]=_0x5f50db(0x78)+_0x269a61[_0x5f50db(0x92)],document[_0x5f50db(0x86)]('screen-form')['classList']['add'](_0x5f50db(0xca)),document[_0x5f50db(0x86)](_0x5f50db(0x91))[_0x5f50db(0x71)][_0x5f50db(0xbb)](_0x5f50db(0xca));}finally{_0x4f3607[_0x5f50db(0xb3)]=![],_0x12bf31[_0x5f50db(0x99)]=_0x5f50db(0x75),_0x132b1f['classList'][_0x5f50db(0xc3)](_0x5f50db(0xca)),validateForm();}}document[_0x3b1ad5(0x86)](_0x3b1ad5(0xa7))[_0x3b1ad5(0xdf)](_0x3b1ad5(0x85),submitForm),document[_0x3b1ad5(0x86)](_0x3b1ad5(0x96))[_0x3b1ad5(0xdf)](_0x3b1ad5(0xd0),handleIdInput),window[_0x3b1ad5(0xdf)]('load',()=>{const _0x4bb247=_0x3b1ad5;document['getElementById'](_0x4bb247(0x96))['focus']();}),initAuth();if(window[_0x3b1ad5(0x90)])lucide[_0x3b1ad5(0x8c)]();
-
+const _0x407488=_0x4a9e;(function(_0x4f1f3b,_0xb6ac85){const _0x1ea795=_0x4a9e,_0x2fcf6e=_0x4f1f3b();while(!![]){try{const _0x1329c3=-parseInt(_0x1ea795(0x1a2))/0x1*(-parseInt(_0x1ea795(0x1bc))/0x2)+-parseInt(_0x1ea795(0x1e2))/0x3*(-parseInt(_0x1ea795(0x197))/0x4)+parseInt(_0x1ea795(0x1aa))/0x5+parseInt(_0x1ea795(0x18e))/0x6+-parseInt(_0x1ea795(0x1ef))/0x7+-parseInt(_0x1ea795(0x1c3))/0x8*(-parseInt(_0x1ea795(0x1cd))/0x9)+-parseInt(_0x1ea795(0x19e))/0xa;if(_0x1329c3===_0xb6ac85)break;else _0x2fcf6e['push'](_0x2fcf6e['shift']());}catch(_0x29f00c){_0x2fcf6e['push'](_0x2fcf6e['shift']());}}}(_0x2097,0x782d8));import{initializeApp}from'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';import{getAuth,signInAnonymously,onAuthStateChanged,signInWithCustomToken}from'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';import{getFirestore,collection,addDoc,updateDoc,doc,serverTimestamp,query,where,getDocs,increment}from'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';const TARGET_COLLECTION_NAME=_0x407488(0x1f0),isSandboxEnv=typeof __firebase_config!==_0x407488(0x1b2);let firebaseConfig,finalCollectionPath;if(isSandboxEnv){firebaseConfig=JSON['parse'](__firebase_config);const appId=typeof __app_id!=='undefined'?__app_id:_0x407488(0x1e6);finalCollectionPath='artifacts/'+appId+_0x407488(0x199);}else firebaseConfig={'apiKey':_0x407488(0x188),'authDomain':_0x407488(0x1a9),'databaseURL':_0x407488(0x1b1),'projectId':_0x407488(0x18d),'storageBucket':_0x407488(0x185),'messagingSenderId':_0x407488(0x1c2),'appId':'1:1070273157855:web:5c8120e1df27e233d8676a','measurementId':'G-9DJLWJ5LQ1'},finalCollectionPath=TARGET_COLLECTION_NAME;const state={'user':null,'idCard':'','currentDocId':null,'empName':''},app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);async function sha256(_0x3e00a0){const _0x452e69=_0x407488,_0x486af4=new TextEncoder()[_0x452e69(0x1a6)](_0x3e00a0),_0x47a70e=await crypto[_0x452e69(0x1d3)][_0x452e69(0x1a7)](_0x452e69(0x1bb),_0x486af4),_0x1023ec=Array[_0x452e69(0x1c5)](new Uint8Array(_0x47a70e)),_0x3cdbf5=_0x1023ec[_0x452e69(0x1be)](_0x5d1006=>_0x5d1006[_0x452e69(0x1cc)](0x10)[_0x452e69(0x18b)](0x2,'0'))['join']('');return _0x3cdbf5;}function getDeviceId(){const _0x2a231a=_0x407488,_0x2c3436=_0x2a231a(0x1de);let _0x419a02=localStorage[_0x2a231a(0x194)](_0x2c3436);return!_0x419a02&&(_0x419a02=_0x2a231a(0x1d1)+Date[_0x2a231a(0x1d5)]()[_0x2a231a(0x1cc)](0x24)+Math[_0x2a231a(0x1cf)]()[_0x2a231a(0x1cc)](0x24)[_0x2a231a(0x1ec)](0x2,0x9),localStorage['setItem'](_0x2c3436,_0x419a02)),_0x419a02;}window[_0x407488(0x193)]={'resetForm':()=>{const _0x294397=_0x407488,_0x2ae92b=['screen-success',_0x294397(0x1b5),'modal-confirm'];_0x2ae92b[_0x294397(0x195)](_0x967d2=>document[_0x294397(0x181)](_0x967d2)[_0x294397(0x1eb)][_0x294397(0x1d0)](_0x294397(0x19d))),document['getElementById'](_0x294397(0x19f))[_0x294397(0x1eb)]['remove']('hidden');const _0x4561ab=document[_0x294397(0x181)](_0x294397(0x184));_0x4561ab[_0x294397(0x1df)]='',state[_0x294397(0x184)]='',state['currentDocId']=null,state[_0x294397(0x1d4)]='';const _0x4be630=document[_0x294397(0x181)](_0x294397(0x1e7));_0x4be630[_0x294397(0x19b)]=!![],_0x4be630[_0x294397(0x1eb)][_0x294397(0x1d0)](_0x294397(0x1ba),_0x294397(0x1c8)),_0x4be630[_0x294397(0x1eb)]['remove'](_0x294397(0x1ae),_0x294397(0x187)),document[_0x294397(0x181)](_0x294397(0x1c0))[_0x294397(0x1eb)][_0x294397(0x1ca)](_0x294397(0x189)),document[_0x294397(0x181)](_0x294397(0x1d8))['innerHTML']=_0x294397(0x1ea),document[_0x294397(0x181)](_0x294397(0x1cb))[_0x294397(0x1eb)][_0x294397(0x1ca)](_0x294397(0x19d)),document[_0x294397(0x181)](_0x294397(0x1cb))[_0x294397(0x19b)]=![],document['getElementById'](_0x294397(0x1f2))[_0x294397(0x1eb)][_0x294397(0x1ca)](_0x294397(0x19d)),document[_0x294397(0x181)](_0x294397(0x1e3))['classList']['remove'](_0x294397(0x19d)),document['getElementById'](_0x294397(0x1e1))[_0x294397(0x1eb)][_0x294397(0x1d0)](_0x294397(0x19d)),_0x4561ab[_0x294397(0x1eb)]['remove'](_0x294397(0x1c1),_0x294397(0x1db)),_0x4561ab[_0x294397(0x1eb)][_0x294397(0x1d0)]('border-gray-300',_0x294397(0x1f1)),_0x4561ab[_0x294397(0x1ee)]();},'closeModal':()=>{const _0x5bd721=_0x407488;document['getElementById'](_0x5bd721(0x1ac))[_0x5bd721(0x1eb)][_0x5bd721(0x1d0)](_0x5bd721(0x19d));},'confirmVotingCard':()=>{const _0x588733=_0x407488;document[_0x588733(0x181)](_0x588733(0x1e0))['innerText']=state[_0x588733(0x1d4)],document['getElementById']('modal-confirm')['classList'][_0x588733(0x1ca)](_0x588733(0x19d));},'finalConfirmVoting':async()=>{const _0x162388=_0x407488;if(!state[_0x162388(0x1c6)])return;const _0x5ceaf9=document[_0x162388(0x181)]('btn-modal-submit');_0x5ceaf9[_0x162388(0x19b)]=!![],_0x5ceaf9[_0x162388(0x191)]=_0x162388(0x1b6);try{const _0x4e3a1c=new Date();await updateDoc(doc(db,finalCollectionPath,state[_0x162388(0x1c6)]),{'ConfirmVotingCard':serverTimestamp(),'CardPoll':'รับบัตรเลือกตั้ง'}),window[_0x162388(0x193)][_0x162388(0x18c)](),document['getElementById'](_0x162388(0x1c0))['classList'][_0x162388(0x1ca)](_0x162388(0x189)),document['getElementById'](_0x162388(0x1d8))[_0x162388(0x1a1)]=_0x162388(0x186)+state[_0x162388(0x1d4)]+_0x162388(0x1c4)+_0x4e3a1c['toLocaleDateString'](_0x162388(0x198))+'\x20'+_0x4e3a1c[_0x162388(0x19c)](_0x162388(0x198))+_0x162388(0x1d9),document['getElementById'](_0x162388(0x1f2))[_0x162388(0x1eb)]['add'](_0x162388(0x19d)),document['getElementById']('btn-confirm-voting')[_0x162388(0x1eb)][_0x162388(0x1d0)](_0x162388(0x19d)),document[_0x162388(0x181)]('voting-warning')[_0x162388(0x1eb)][_0x162388(0x1d0)](_0x162388(0x19d)),document[_0x162388(0x181)](_0x162388(0x192))[_0x162388(0x1eb)][_0x162388(0x1ca)]('hidden'),confetti({'particleCount':0xc8,'spread':0x50,'origin':{'y':0.6}});}catch(_0x2a83e7){console['error'](_0x162388(0x1b4),_0x2a83e7),_0x5ceaf9[_0x162388(0x19b)]=![],_0x5ceaf9[_0x162388(0x191)]=_0x162388(0x18f);}}};function _0x4a9e(_0x2500b8,_0x11e091){_0x2500b8=_0x2500b8-0x181;const _0x2097de=_0x2097();let _0x4a9eb6=_0x2097de[_0x2500b8];return _0x4a9eb6;}function showSuccess(_0x46915f,_0x929ba9){const _0x529961=_0x407488;state[_0x529961(0x1d4)]=_0x46915f[_0x529961(0x1b8)]||_0x529961(0x182);const _0x4716bf=document[_0x529961(0x181)](_0x529961(0x1a3));_0x4716bf[_0x529961(0x191)]=state[_0x529961(0x1d4)];const _0xfec796=document['getElementById'](_0x529961(0x1ce)),_0x2860e0=new Date();_0xfec796[_0x529961(0x191)]=_0x529961(0x1a8)+_0x2860e0[_0x529961(0x1d7)](_0x529961(0x198))+'\x20'+_0x2860e0['toLocaleTimeString'](_0x529961(0x198));const _0x125823=document[_0x529961(0x181)](_0x529961(0x1d6)),_0x4f75ca=document[_0x529961(0x181)](_0x529961(0x1e4)),_0x3f81b6=document[_0x529961(0x181)](_0x529961(0x192));_0x929ba9?(_0x125823['classList'][_0x529961(0x1ca)](_0x529961(0x19d)),_0x4f75ca[_0x529961(0x1eb)][_0x529961(0x1d0)](_0x529961(0x19d)),_0x3f81b6[_0x529961(0x1eb)]['add'](_0x529961(0x19d))):(_0x125823['classList'][_0x529961(0x1d0)](_0x529961(0x19d)),_0x4f75ca[_0x529961(0x1eb)][_0x529961(0x1ca)]('hidden'),document[_0x529961(0x181)](_0x529961(0x1a5))['innerText']=_0x46915f[_0x529961(0x196)],_0x3f81b6[_0x529961(0x1eb)][_0x529961(0x1ca)](_0x529961(0x19d)));document[_0x529961(0x181)](_0x529961(0x19f))[_0x529961(0x1eb)][_0x529961(0x1d0)]('hidden'),document['getElementById'](_0x529961(0x1b3))[_0x529961(0x1eb)][_0x529961(0x1ca)](_0x529961(0x19d));if(window[_0x529961(0x1b7)])lucide['createIcons']();}async function submitForm(_0x14501e){const _0x54ec0f=_0x407488;_0x14501e['preventDefault']();if(!state[_0x54ec0f(0x183)])return;const _0x66bc1b=document['getElementById'](_0x54ec0f(0x1e7)),_0x39d67e=document[_0x54ec0f(0x181)](_0x54ec0f(0x1af)),_0xc0c0c2=document[_0x54ec0f(0x181)](_0x54ec0f(0x1c7));_0x66bc1b[_0x54ec0f(0x19b)]=!![],_0x39d67e['innerText']=_0x54ec0f(0x19a),_0xc0c0c2[_0x54ec0f(0x1eb)][_0x54ec0f(0x1ca)](_0x54ec0f(0x19d));try{const _0x49f5da=getDeviceId(),_0x56bf0b=state[_0x54ec0f(0x184)]['replace'](/-/g,''),_0x40e52a=await sha256(_0x56bf0b),_0x369827=query(collection(db,finalCollectionPath),where(_0x54ec0f(0x1a0),'==',_0x40e52a)),_0x30dbc5=await getDocs(_0x369827);if(!_0x30dbc5[_0x54ec0f(0x18a)]){const _0x2d8321=_0x30dbc5[_0x54ec0f(0x1e5)][0x0],_0xc0a68d=_0x2d8321['data']();state[_0x54ec0f(0x1c6)]=_0x2d8321['id'];const _0x55e18e=(_0xc0a68d[_0x54ec0f(0x196)]||0x0)+0x1,_0x49d6b8={'TimeLogin':increment(0x1),'deviceId':_0x49f5da};!_0xc0a68d['CheckIN']&&(_0x49d6b8['CheckIN']=serverTimestamp(),_0x49d6b8['status']=_0x54ec0f(0x1dd));await updateDoc(doc(db,finalCollectionPath,_0x2d8321['id']),_0x49d6b8);const _0xb5d9b1={..._0xc0a68d,'TimeLogin':_0x55e18e};showSuccess(_0xb5d9b1,_0x55e18e===0x1);}else{const _0x35a07e=await addDoc(collection(db,finalCollectionPath),{'citizenId':_0x40e52a,'deviceId':_0x49f5da,'CheckIN':serverTimestamp(),'TimeLogin':0x1,'status':_0x54ec0f(0x1dd)});state['currentDocId']=_0x35a07e['id'],showSuccess({'TimeLogin':0x1},!![]);}}catch(_0x9067d9){console[_0x54ec0f(0x1d2)]('Submit\x20Error:',_0x9067d9),document[_0x54ec0f(0x181)](_0x54ec0f(0x1a4))[_0x54ec0f(0x191)]='เกิดข้อผิดพลาด:\x20'+_0x9067d9[_0x54ec0f(0x1ad)],document['getElementById']('screen-form')[_0x54ec0f(0x1eb)]['add'](_0x54ec0f(0x19d)),document[_0x54ec0f(0x181)](_0x54ec0f(0x1b5))[_0x54ec0f(0x1eb)][_0x54ec0f(0x1ca)]('hidden');}finally{_0x66bc1b[_0x54ec0f(0x19b)]=![],_0x39d67e[_0x54ec0f(0x191)]=_0x54ec0f(0x1bd),_0xc0c0c2[_0x54ec0f(0x1eb)][_0x54ec0f(0x1d0)](_0x54ec0f(0x19d));}}function handleIdInput(_0xde0c59){const _0x45913f=_0x407488;let _0x2bb704=_0xde0c59[_0x45913f(0x1b0)][_0x45913f(0x1df)][_0x45913f(0x1ed)](/[^0-9]/g,'');if(_0x2bb704[_0x45913f(0x1e8)]>0xd)_0x2bb704=_0x2bb704['slice'](0x0,0xd);let _0x42eb98=_0x2bb704;if(_0x2bb704['length']>0x1)_0x42eb98=_0x2bb704[_0x45913f(0x190)](0x0,0x1)+'-'+_0x2bb704['slice'](0x1);if(_0x2bb704[_0x45913f(0x1e8)]>0x5)_0x42eb98=_0x42eb98[_0x45913f(0x190)](0x0,0x6)+'-'+_0x42eb98[_0x45913f(0x190)](0x6);if(_0x2bb704[_0x45913f(0x1e8)]>0xa)_0x42eb98=_0x42eb98[_0x45913f(0x190)](0x0,0xc)+'-'+_0x42eb98['slice'](0xc);if(_0x2bb704[_0x45913f(0x1e8)]>0xc)_0x42eb98=_0x42eb98[_0x45913f(0x190)](0x0,0xf)+'-'+_0x42eb98[_0x45913f(0x190)](0xf);state[_0x45913f(0x184)]=_0x42eb98,_0xde0c59[_0x45913f(0x1b0)][_0x45913f(0x1df)]=_0x42eb98;const _0x28601f=document[_0x45913f(0x181)](_0x45913f(0x1e7)),_0x1589fd=document[_0x45913f(0x181)](_0x45913f(0x1e1));_0x2bb704[_0x45913f(0x1e8)]===0xd?(_0x28601f['disabled']=![],_0x28601f[_0x45913f(0x1eb)]['add'](_0x45913f(0x1ae),_0x45913f(0x187),_0x45913f(0x1bf)),_0x28601f[_0x45913f(0x1eb)][_0x45913f(0x1ca)](_0x45913f(0x1ba),_0x45913f(0x1c8)),_0x1589fd[_0x45913f(0x1eb)][_0x45913f(0x1ca)]('hidden'),_0xde0c59[_0x45913f(0x1b0)][_0x45913f(0x1eb)][_0x45913f(0x1d0)]('border-blue-500',_0x45913f(0x1db))):(_0x28601f[_0x45913f(0x19b)]=!![],_0x28601f[_0x45913f(0x1eb)][_0x45913f(0x1ca)](_0x45913f(0x1ae),_0x45913f(0x187),_0x45913f(0x1bf)),_0x28601f['classList']['add']('bg-gray-200',_0x45913f(0x1c8)),_0x1589fd[_0x45913f(0x1eb)][_0x45913f(0x1d0)](_0x45913f(0x19d)),_0xde0c59[_0x45913f(0x1b0)][_0x45913f(0x1eb)]['remove'](_0x45913f(0x1c1),_0x45913f(0x1db)));}async function initAuth(){const _0x252db1=_0x407488;try{typeof __initial_auth_token!==_0x252db1(0x1b2)&&__initial_auth_token?await signInWithCustomToken(auth,__initial_auth_token):await signInAnonymously(auth);}catch(_0x2fc851){console['error'](_0x252db1(0x1c9),_0x2fc851);}}onAuthStateChanged(auth,_0x365da2=>{state['user']=_0x365da2;}),document[_0x407488(0x181)]('registration-form')[_0x407488(0x1e9)](_0x407488(0x1b9),submitForm),document['getElementById'](_0x407488(0x184))[_0x407488(0x1e9)](_0x407488(0x1ab),handleIdInput),window[_0x407488(0x1e9)](_0x407488(0x1da),()=>{const _0x475342=_0x407488;document[_0x475342(0x181)](_0x475342(0x184))[_0x475342(0x1ee)]();if(window['lucide'])lucide[_0x475342(0x1dc)]();}),initAuth();function _0x2097(){const _0x5ed627=['text-gray-400','Auth\x20Error','remove','btn-confirm-voting','toString','6634134xYpkem','success-checkin-datetime','random','add','DEV-','error','subtle','empName','now','flow-first-time','toLocaleDateString','voting-box-content','</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','load','bg-blue-50/30','createIcons','checked-in','coop_device_identifier','value','modal-user-name','icon-check-valid','23163nRSyhY','voting-warning','flow-returning','docs','default-app-id','btn-submit','length','addEventListener','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22text-lg\x20font-bold\x22>ขอให้สมาชิกติดต่อเจ้าหน้าที่</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22text-sm\x20mt-2\x20leading-relaxed\x22>เพื่อขอบัตรเลือกตั้งกรรมการ\x20<br>สหกรณ์ออมทรัพย์พนักงานธนาคารทหารไทย\x20จำกัด</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','classList','substr','replace','focus','2373910YMpoDF','tmb_coop','bg-white','staff-hint','getElementById','สมาชิกสหกรณ์','user','idCard','ttb-register.firebasestorage.app','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22text-xl\x20font-bold\x22>','text-white','AIzaSyAgWMzWcZPzyzoBu5eQzj2y59nKsxTWurQ','animate-pulse','empty','padStart','closeModal','ttb-register','535524JqEyMK','ยืนยัน\x20(ลองใหม่อีกครั้ง)','slice','innerText','btn-back-main','app','getItem','forEach','TimeLogin','476CKEPyA','th-TH','/public/data/coop_registrations','กำลังประมวลผล...','disabled','toLocaleTimeString','hidden','22781320moLmvs','screen-form','citizenId','innerHTML','111022BsnJeR','success-user-name','error-msg-text','login-count-text','encode','digest','ลงทะเบียนเมื่อ:\x20','ttb-register.firebaseapp.com','2380775vSkvLw','input','modal-confirm','message','bg-blue-700','btn-text','target','https://ttb-register-default-rtdb.asia-southeast1.firebasedate.app','undefined','screen-success','Confirm\x20voting\x20error:','screen-error-device','ได้รับบัตรเลือกตั้งแล้ว','lucide','EmpName','submit','bg-gray-200','SHA-256','16NUFxCf','ตรวจสอบ\x20/\x20ลงทะเบียน','map','shadow-blue-200','voting-status-box','border-blue-500','1070273157855','8SCrSHz','</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22text-lg\x20mt-1\x20font-semibold\x22>ขอยืนยันการรับบัตรเลือกตั้งแล้ว</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22text-sm\x20mt-2\x20opacity-90\x22>เมื่อ\x20','from','currentDocId','btn-loader'];_0x2097=function(){return _0x5ed627;};return _0x2097();}
     </script>
 </body>
-
 </html>
-
