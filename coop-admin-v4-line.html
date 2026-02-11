@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ระบบบริหารจัดการงานประชุม</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Font (Sarabun) -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+        .hidden { display: none !important; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .toast-enter { animation: slideInRight 0.3s ease-out forwards; }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Table Compact styling */
+        .table-compact thead tr { height: 50px; }
+        .table-compact tbody tr { height: 45px; font-size: 0.95rem; }
+        .table-compact tbody tr:nth-child(even) { background-color: #f8fafc; }
+        .table-compact td, .table-compact th { vertical-align: middle; padding-left: 0.75rem; padding-right: 0.75rem; }
+
+        /* Specific height for live results table (40px) */
+        .table-results tbody tr { height: 40px !important; }
+        .table-results tbody td { 
+            height: 40px !important; 
+            padding-top: 0 !important; 
+            padding-bottom: 0 !important; 
+            font-size: 0.85rem; 
+            line-height: 1.2;
+        }
+
+        .sortable-header { cursor: pointer; user-select: none; transition: background 0.2s; }
+        .sortable-header:hover { background-color: rgba(0,0,0,0.05); }
+
+        .custom-scroll-dark::-webkit-scrollbar { width: 6px; }
+        .custom-scroll-dark::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
+        .custom-scroll-dark::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-6 right-6 z-[100] flex flex-col gap-3 w-80 pointer-events-none"></div>
+
+    <!-- Sidebar -->
+    <aside class="w-full md:w-64 bg-slate-800 text-white flex-shrink-0 flex flex-col h-screen overflow-y-auto z-20 shadow-xl">
+        <div class="p-6 border-b border-slate-700 flex items-center gap-3">
+            <div class="bg-blue-500 p-2 rounded-lg">
+                <i data-lucide="layout-dashboard" width="24" height="24"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg">Coop Admin</h1>
+                <p class="text-xs text-slate-400">ระบบจัดการงานประชุม</p>
+            </div>
+        </div>
+        
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="window.app.switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all text-sm text-left">
+                <i data-lucide="pie-chart" width="20"></i> ภาพรวม (Dashboard)
+            </button>
+            <button onclick="window.app.switchTab('prizes')" id="nav-prizes" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all text-sm text-left">
+                <i data-lucide="gift" width="20"></i> จัดการของรางวัล
+            </button>
+            <button onclick="window.app.switchTab('randomizer')" id="nav-randomizer" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all text-sm text-left">
+                <i data-lucide="play-circle" width="20"></i> ระบบสุ่มรางวัล
+            </button>
+            <button onclick="window.app.switchTab('results')" id="nav-results" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all text-sm text-left">
+                <i data-lucide="list-checks" width="20"></i> ประกาศผลรางวัล
+            </button>
+            <button onclick="window.app.switchTab('data')" id="nav-data" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all text-sm text-left">
+                <i data-lucide="table" width="20"></i> ข้อมูลลงทะเบียน
+            </button>
+            <button onclick="window.app.switchTab('dividend-info')" id="nav-dividend-info" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all text-sm text-left">
+                <i data-lucide="badge-dollar-sign" width="20"></i> ข้อมูลเงินปันผล
+            </button>
+            
+            <div class="pt-4 mt-4 border-t border-slate-700">
+                <p class="px-4 text-xs text-slate-500 mb-2 font-bold uppercase tracking-wider">QR Code Management</p>
+                <button onclick="window.app.switchTab('qrcode-in')" id="nav-qrcode-in" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all text-sm text-left">
+                    <i data-lucide="qr-code" width="20"></i> QR Code ลงทะเบียน
+                </button>
+                <button onclick="window.app.switchTab('qrcode-out')" id="nav-qrcode-out" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all text-sm text-left">
+                    <i data-lucide="qr-code" width="20"></i> QR Code เช็คปันผล
+                </button>
+            </div>
+
+            <div class="pt-4 mt-4 border-t border-slate-700">
+                <p class="px-4 text-xs text-slate-500 mb-2 font-bold uppercase tracking-wider">System Info</p>
+                <button onclick="window.app.switchTab('import')" id="nav-import" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all text-sm text-left">
+                    <i data-lucide="database" width="20"></i> Upload ข้อมูลสมาชิก
+                </button>
+                <button onclick="window.app.switchTab('dividend')" id="nav-dividend" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all text-sm text-left">
+                    <i data-lucide="wallet" width="20"></i> Upload ข้อมูลปันผล
+                </button>
+            </div>
+
+            <div class="pt-4 mt-4 border-t border-slate-700">
+                <p class="px-4 text-xs text-slate-500 mb-2 font-bold uppercase tracking-wider">ลิงก์ภายนอก</p>
+                <a href="coop-random.html" target="_blank" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-700/50 hover:text-white transition-all text-sm">
+                    <i data-lucide="external-link" width="20"></i> ลิงก์ระบบสุ่ม
+                </a>
+            </div>
+        </nav>
+
+        <div class="p-4 border-t border-slate-700">
+            <div class="bg-slate-900 rounded-xl p-4">
+                <p class="text-xs text-slate-500 mb-1">สถานะระบบ</p>
+                <div class="flex items-center gap-2">
+                    <div id="status-indicator" class="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span id="status-text" class="text-sm text-slate-400">Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 shadow-sm z-10">
+            <h2 id="page-title" class="text-xl font-bold text-slate-800">ภาพรวม (Dashboard)</h2>
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-bold text-slate-700">ผู้ดูแลระบบ</p>
+                    <p class="text-xs text-slate-500" id="current-time">--:--:--</p>
+                </div>
+                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">A</div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6 bg-slate-50 relative" id="main-scroll">
+            
+            <!-- VIEW 1: DASHBOARD -->
+            <div id="view-dashboard" class="view-section hidden space-y-6 fade-in-up">
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <div class="bg-slate-200 p-6 rounded-2xl shadow-sm border border-slate-300 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-10 text-slate-600"><i data-lucide="database" width="60" height="60"></i></div>
+                        <p class="text-slate-600 text-sm font-bold">จำนวนสมาชิกทั้งหมด</p>
+                        <h3 id="dash-stat-total" class="text-2xl font-bold text-slate-800 mt-2">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-6 rounded-2xl shadow-sm border border-slate-300 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-10 text-blue-600"><i data-lucide="users" width="60" height="60"></i></div>
+                        <p class="text-slate-600 text-sm font-bold">ลงทะเบียนเข้า</p>
+                        <h3 id="dash-stat-checkin" class="text-2xl font-bold text-slate-800 mt-2">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-6 rounded-2xl shadow-sm border border-slate-300 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-10 text-emerald-600"><i data-lucide="check-square" width="60" height="60"></i></div>
+                        <p class="text-slate-600 text-sm font-bold">สมาชิกรับบัตรเลือกตั้ง</p>
+                        <h3 id="dash-stat-voting" class="text-2xl font-bold text-slate-800 mt-2">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-6 rounded-2xl shadow-sm border border-slate-300 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-10 text-indigo-600"><i data-lucide="log-in" width="60" height="60"></i></div>
+                        <p class="text-slate-600 text-sm font-bold">ลงทะเบียนเงินปันผล</p>
+                        <h3 id="dash-stat-div-reg" class="text-2xl font-bold text-slate-800 mt-2">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-6 rounded-2xl shadow-sm border border-slate-300 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-10 text-green-600"><i data-lucide="user-check" width="60" height="60"></i></div>
+                        <p class="text-slate-600 text-sm font-bold">ยืนยันเข้าร่วมประชุม</p>
+                        <h3 id="dash-stat-div-join" class="text-2xl font-bold text-slate-800 mt-2">0</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                            <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><div class="w-3 h-3 bg-indigo-500 rounded-full"></div> สถิติการลงทะเบียน (Real-time)</h3>
+                            <div class="h-64"><canvas id="registrationChart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-full"> 
+                        <h3 class="font-bold text-lg mb-4 text-slate-700">กิจกรรมล่าสุด</h3>
+                        <div id="recent-activity-list" class="space-y-4 overflow-y-auto pr-2 flex-1 max-h-[400px]">
+                            <div class="text-center text-slate-400 text-sm py-8">รอข้อมูล...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: PRIZES -->
+            <div id="view-prizes" class="view-section hidden space-y-6 fade-in-up">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
+                        <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="plus-circle" class="text-indigo-600"></i> เพิ่มของรางวัล</h3>
+                        <form id="prize-form" onsubmit="window.app.handlePrizeSubmit(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">ชื่อรางวัล</label>
+                                <input type="text" id="prize-name" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-indigo-100 outline-none text-sm">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-600 mb-1 text-xs">สุ่มต่อรอบ</label>
+                                    <input type="number" id="prize-qty" value="1" min="1" class="w-full p-3 border rounded-xl outline-none text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-600 mb-1 text-xs">รวมทั้งหมด</label>
+                                    <input type="number" id="prize-total" value="1" min="1" class="w-full p-3 border rounded-xl outline-none text-sm">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition text-sm">บันทึกของรางวัล</button>
+                        </form>
+                    </div>
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-lg mb-4 text-slate-800">รายการของรางวัลทั้งหมด</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left table-compact">
+                                <thead class="bg-slate-200 font-bold">
+                                    <tr>
+                                        <th class="px-4 py-3">ชื่อของรางวัล</th>
+                                        <th class="px-4 py-3 text-center">สุ่ม/รอบ</th>
+                                        <th class="px-4 py-3 text-center">คงเหลือ / ทั้งหมด</th>
+                                        <th class="px-4 py-3 text-right">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prize-list-body" class="divide-y"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: RANDOMIZER -->
+            <div id="view-randomizer" class="view-section hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300 border-l-4 border-blue-500">
+                        <p class="text-slate-600 text-xs font-bold uppercase">ผู้ลงทะเบียนทั้งหมด</p>
+                        <h3 id="rand-stat-total" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300 border-l-4 border-indigo-500">
+                        <p class="text-slate-600 text-xs font-bold uppercase">ผู้มีสิทธิ์ลุ้นรางวัล</p>
+                        <h3 id="rand-stat-eligible-view" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300 border-l-4 border-slate-400">
+                        <p class="text-slate-600 text-xs font-bold uppercase">ยังไม่ได้สุ่ม</p>
+                        <h3 id="rand-stat-noreward" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300 border-l-4 border-red-500">
+                        <p class="text-slate-600 text-xs font-bold uppercase">สุ่มไม่ได้รับรางวัล</p>
+                        <h3 id="rand-stat-drawn-no" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300 border-l-4 border-green-500">
+                        <p class="text-slate-600 text-xs font-bold uppercase">สุ่มได้รับรางวัล</p>
+                        <h3 id="rand-stat-drawn-win" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-md border">
+                        <h3 class="font-bold text-lg mb-4 flex items-center gap-2 text-slate-800"><i data-lucide="settings-2"></i> ตั้งค่าการสุ่ม</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm text-slate-600 mb-1 font-medium">เลือกของรางวัล</label>
+                                <select id="select-prize" onchange="window.app.onPrizeSelect()" class="w-full p-3 border rounded-xl outline-none bg-white text-sm">
+                                    <option value="">-- เลือกของรางวัล --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-slate-600 mb-1 font-medium">จำนวนสุ่มต่อรอบ (คน)</label>
+                                <input type="number" id="input-draw-qty" value="1" min="1" max="100" oninput="window.app.validateRandomizerInput()" class="w-full p-3 border rounded-xl text-center text-lg font-bold outline-none text-sm">
+                                <p id="qty-warning" class="text-xs text-red-500 mt-1 hidden font-bold">สุ่มเกินสต็อกคงเหลือ!</p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-xl border space-y-2">
+                                <div class="flex justify-between text-sm"><span class="text-slate-500">คงเหลือในสต็อก</span><span id="label-stock-count" class="font-bold text-orange-600">0</span></div>
+                                <div class="flex justify-between text-sm"><span class="text-slate-500">ผู้มีสิทธิ์ลุ้นรางวัล</span><span id="label-eligible-count" class="font-bold text-indigo-600">0</span></div>
+                            </div>
+                            <button onclick="window.app.startRandomizer()" id="btn-start-random" disabled class="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold shadow-lg disabled:opacity-40 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
+                                <i data-lucide="play" width="24" class="fill-current"></i> เริ่มการสุ่มรางวัล
+                            </button>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-8 bg-slate-900 rounded-3xl h-[600px] p-8 flex flex-col relative overflow-hidden shadow-2xl border border-slate-700">
+                        <div class="text-center mb-6 relative z-10 border-b border-white/10 pb-4">
+                            <h1 id="screen-prize-title" class="text-2xl font-bold text-yellow-400 tracking-widest uppercase italic">LUCKY DRAW SYSTEM</h1>
+                        </div>
+                        <div id="screen-display-area" class="flex-1 overflow-y-auto custom-scroll-dark pr-2 space-y-4 relative z-10">
+                            <div class="flex flex-col items-center justify-center h-full opacity-20 text-white">
+                                <i data-lucide="gift" width="64" height="64" class="mb-4"></i>
+                                <p class="text-lg font-bold">READY TO SPIN</p>
+                            </div>
+                        </div>
+                        <div id="screen-overlay-controls" class="hidden absolute inset-0 bg-black/90 backdrop-blur-sm z-20 flex items-center justify-center">
+                            <div class="text-white text-center">
+                                <div class="w-20 h-20 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-6 mx-auto"></div>
+                                <h2 class="text-2xl font-bold uppercase tracking-widest">Randomizing...</h2>
+                                <p class="text-indigo-400 mt-2 text-sm">กรุณารอสักครู่ ระบบกำลังสุ่มรายชื่อ</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 4: RESULTS -->
+            <div id="view-results" class="view-section hidden space-y-6 fade-in-up">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">จำนวนรางวัลทั้งหมด</p>
+                        <h3 id="res-stat-total-prizes" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">รางวัลที่ได้สุ่มแล้ว</p>
+                        <h3 id="res-stat-total-drawn" class="text-2xl font-bold text-blue-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">จำนวนผู้ได้รับรางวัล</p>
+                        <h3 id="res-stat-winners" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">ผู้รับรางวัลแล้ว</p>
+                        <h3 id="res-stat-claimed" class="text-2xl font-bold text-green-600 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">ผู้ที่ยังไม่มารับรางวัล</p>
+                        <h3 id="res-stat-unclaimed" class="text-2xl font-bold text-red-600 mt-1">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b flex justify-between items-center bg-slate-200">
+                        <h3 class="font-bold text-lg text-slate-800">รายชื่อผู้โชคดี (เรียลไทม์)</h3>
+                        <div class="flex items-center gap-4">
+                            <select id="filter-results-status" onchange="window.app.renderResults()" class="border p-2 text-sm rounded-lg outline-none bg-white">
+                                <option value="all_winners">ผู้ได้รับรางวัลทั้งหมด</option>
+                                <option value="unclaimed">ยังไม่ยืนยันสิทธิ์</option>
+                                <option value="claimed">ยืนยันรับรางวัลแล้ว</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left table-compact table-results">
+                            <thead class="bg-slate-200 font-bold border-b text-slate-700">
+                                <tr>
+                                    <th class="sortable-header px-6 py-4 text-xs" onclick="window.app.changeResSort('index')">
+                                        ลำดับ <span id="rsort-index"></span>
+                                    </th>
+                                    <th class="sortable-header px-6 py-4 text-xs" onclick="window.app.changeResSort('EmpName')">
+                                        ชื่อ-นามสกุล <span id="rsort-EmpName"></span>
+                                    </th>
+                                    <th class="sortable-header px-6 py-4 text-xs" onclick="window.app.changeResSort('reward')">
+                                        รางวัลที่ได้ <span id="rsort-reward"></span>
+                                    </th>
+                                    <th class="sortable-header px-6 py-4 text-center text-xs" onclick="window.app.changeResSort('rewardTime')">
+                                        เวลาที่สุ่มได้ <span id="rsort-rewardTime"></span>
+                                    </th>
+                                    <th class="sortable-header px-6 py-4 text-center text-xs" onclick="window.app.changeResSort('ConfirmReward')">
+                                        สถานะการรับรางวัล <span id="rsort-ConfirmReward"></span>
+                                    </th>
+                                    <th class="px-6 py-4 text-right text-xs">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-table-body" class="divide-y"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 5: DATA TABLE (REGISTRATION) -->
+            <div id="view-data" class="view-section hidden space-y-6 fade-in-up">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border flex flex-col md:flex-row gap-4 items-end">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-slate-600 mb-2">ค้นหาสมาชิกเพื่อลงทะเบียน (รหัส/ชื่อ)</label>
+                        <input type="text" id="member-search-input" oninput="window.app.validateMemberSearch()" placeholder="ใส่รหัสสมาชิก หรือ ชื่อ..." class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 text-sm">
+                    </div>
+                    <button id="member-search-btn" onclick="window.app.openMemberSearchModal()" disabled class="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold opacity-50 cursor-not-allowed hover:bg-indigo-700 transition flex items-center gap-2 text-sm">
+                        <i data-lucide="search" width="20"></i> ค้นหารายชื่อ
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">จำนวนสมาชิก</p>
+                        <h3 id="reg-stat-total" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">ลงทะเบียนแล้ว</p>
+                        <h3 id="reg-stat-registered" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">รับบัตรเลือกตั้งแล้ว</p>
+                        <h3 id="reg-stat-voting" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">ผู้รับรางวัล</p>
+                        <h3 id="reg-stat-rewarded" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-4 border-b flex flex-col md:flex-row justify-between items-center bg-slate-200 gap-4 text-slate-800">
+                        <h3 class="font-bold text-lg">ข้อมูลพนักงานลงทะเบียนทั้งหมด</h3>
+                        <input type="text" id="search-data" oninput="window.app.handleSearch(this.value)" placeholder="กรองในตาราง..." class="p-2 border rounded-lg text-sm outline-none bg-white w-full md:w-64">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left table-compact">
+                            <thead class="bg-slate-300 font-bold border-b text-slate-700 sticky top-0 z-10">
+                                <tr>
+                                    <th class="sortable-header py-4 text-center text-sm" onclick="window.app.changeSort('EmpMember')">
+                                        no <span id="sort-EmpMember"></span>
+                                    </th>
+                                    <th class="sortable-header text-sm" onclick="window.app.changeSort('EmpName')">
+                                        ชื่อ-นามสกุล <span id="sort-EmpName"></span>
+                                    </th>
+                                    <th class="text-sm text-center">เวลาเข้าระบบ</th>
+                                    <th class="sortable-header text-sm" onclick="window.app.changeSort('CheckIN')">
+                                        Check-In <span id="sort-CheckIN"></span>
+                                    </th>
+                                    <th class="sortable-header text-sm" onclick="window.app.changeSort('CardPoll')">
+                                        รับบัตร <span id="sort-CardPoll"></span>
+                                    </th>
+                                    <th class="sortable-header text-sm" onclick="window.app.changeSort('ConfirmVotingCard')">
+                                        วันที่รับบัตร <span id="sort-ConfirmVotingCard"></span>
+                                    </th>
+                                    <th class="sortable-header text-sm" onclick="window.app.changeSort('reward')">
+                                        รางวัล <span id="sort-reward"></span>
+                                    </th>
+                                    <th class="sortable-header text-sm" onclick="window.app.changeSort('ConfirmReward')">
+                                        วันที่รับรางวัล <span id="sort-ConfirmReward"></span>
+                                    </th>
+                                    <th class="text-center text-sm">สถานะรางวัล</th>
+                                    <th class="text-right text-sm">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                        <div class="p-4 bg-slate-50 flex justify-between items-center text-xs">
+                            <div class="flex items-center gap-4">
+                                <p id="data-table-info" class="text-slate-400 font-medium">กำลังดึงข้อมูล...</p>
+                                <button onclick="window.app.downloadRegisteredCSV()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-2 shadow-sm">
+                                    <i data-lucide="download" width="14"></i> Download CSV File
+                                </button>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="window.app.changePage(-1)" class="px-3 py-1 bg-white border rounded disabled:opacity-50 hover:bg-slate-100" id="btn-prev">Prev</button>
+                                <span id="page-indicator" class="font-bold self-center px-4">Page 1</span>
+                                <button onclick="window.app.changePage(1)" class="px-3 py-1 bg-white border rounded disabled:opacity-50 hover:bg-slate-100" id="btn-next">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 10: DIVIDEND INFO -->
+            <div id="view-dividend-info" class="view-section hidden space-y-6 fade-in-up">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">จำนวนสมาชิกรวม</p>
+                        <h3 id="div-summary-total" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">จำนวนลงทะเบียน</p>
+                        <h3 id="div-summary-registered" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">แจ้งเข้าร่วม</p>
+                        <h3 id="div-summary-join" class="text-2xl font-bold text-green-600 mt-1">0</h3>
+                    </div>
+                    <div class="bg-slate-200 p-4 rounded-xl shadow-sm border border-slate-300">
+                        <p class="text-slate-600 text-xs font-bold uppercase">แจ้งไม่เข้าร่วม</p>
+                        <h3 id="div-summary-nojoin" class="text-2xl font-bold text-red-600 mt-1">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+                    <div class="p-6 border-b bg-slate-200 flex justify-between items-center">
+                        <h3 class="font-bold text-lg text-slate-800">ข้อมูลเงินปันผล (Dividend)</h3>
+                        <input type="text" id="search-dividend" oninput="window.app.handleDividendSearch(this.value)" placeholder="ค้นหารหัส/ชื่อ..." class="p-2 border rounded-lg text-sm outline-none w-64 bg-white">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left table-compact">
+                            <thead class="bg-slate-200 font-bold">
+                                <tr>
+                                    <th class="sortable-header py-4 text-center text-sm" onclick="window.app.changeDivSort('no')">
+                                        ลำดับ <span id="dsort-no"></span>
+                                    </th>
+                                    <th class="sortable-header text-sm" onclick="window.app.changeDivSort('empname')">
+                                        ชื่อ-นามสกุล <span id="dsort-empname"></span>
+                                    </th>
+                                    <th class="sortable-header text-right text-sm" onclick="window.app.changeDivSort('dividend')">
+                                        ปันผล <span id="dsort-dividend"></span>
+                                    </th>
+                                    <th class="sortable-header text-right text-sm" onclick="window.app.changeDivSort('moneyback')">
+                                        เงินเฉลี่ยคืน <span id="dsort-moneyback"></span>
+                                    </th>
+                                    <th class="sortable-header text-right text-sm" onclick="window.app.changeDivSort('gratuity')">
+                                        เงินสมนาคุณ <span id="dsort-gratuity"></span>
+                                    </th>
+                                    <th class="sortable-header text-right text-sm" onclick="window.app.changeDivSort('netpayment')">
+                                        รวมปันผล <span id="dsort-netpayment"></span>
+                                    </th>
+                                    <th class="sortable-header text-center text-sm" onclick="window.app.changeDivSort('DateLogin')">
+                                        ลงทะเบียน <span id="dsort-DateLogin"></span>
+                                    </th>
+                                    <th class="sortable-header text-center text-sm" onclick="window.app.changeDivSort('RegisMeeting')">
+                                        แจ้งเข้าร่วม <span id="dsort-RegisMeeting"></span>
+                                    </th>
+                                    <th class="text-right text-sm">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dividend-table-body" class="divide-y"></tbody>
+                        </table>
+                        <div class="p-4 bg-slate-50 flex justify-between items-center text-xs">
+                            <div class="flex items-center gap-4">
+                                <p id="div-table-info" class="text-slate-400 font-medium">แสดงผล...</p>
+                                <button onclick="window.app.downloadDividendCSV()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-2 shadow-sm">
+                                    <i data-lucide="download" width="14"></i> Download CSV File
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: IMPORT & DATA MANAGE -->
+            <div id="view-import" class="view-section hidden space-y-6 fade-in-up">
+                 <div class="bg-slate-200 p-6 rounded-2xl shadow-sm border border-slate-300 flex justify-between items-center">
+                    <div>
+                        <p class="text-slate-600 text-sm font-bold uppercase">จำนวนรายชื่อพนักงานทั้งหมดในระบบ</p>
+                        <h3 id="manage-total-docs" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-full text-blue-600">
+                        <i data-lucide="users" width="32"></i>
+                    </div>
+                </div>
+                
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border h-fit">
+                        <h3 class="font-bold text-lg mb-4 flex items-center gap-2 text-blue-600"><i data-lucide="upload-cloud"></i> Upload ข้อมูลสมาชิก</h3>
+                        <div class="space-y-4">
+                            <div class="border-2 border-dashed rounded-xl p-10 text-center cursor-pointer hover:bg-slate-50 transition" onclick="document.getElementById('file-upload').click()">
+                                <i data-lucide="file-up" class="mx-auto mb-3 text-slate-300" width="48"></i>
+                                <p class="text-sm text-slate-500 font-medium">ลากไฟล์มาวางที่นี่ หรือ คลิกเพื่อเลือกไฟล์ (.json, .csv)</p>
+                                <input type="file" id="file-upload" class="hidden" accept=".json,.csv" onchange="window.app.handleFileSelect(event)">
+                            </div>
+                            <div id="file-info" class="hidden bg-blue-50 p-4 rounded-xl flex justify-between items-center text-sm text-blue-700">
+                                <span id="file-name" class="font-bold"></span>
+                                <button onclick="window.app.clearFileSelection()" class="hover:text-red-500 transition"><i data-lucide="trash-2" width="18"></i></button>
+                            </div>
+                            <button onclick="window.app.processImport()" id="btn-import" disabled class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold disabled:opacity-40 transition-all hover:bg-blue-700 text-sm">เริ่มประมวลผลนำเข้าข้อมูลพนักงาน</button>
+                            <div id="import-progress" class="hidden w-full bg-slate-100 rounded-full h-3 mt-4"><div id="import-bar" class="bg-blue-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100 h-fit">
+                         <h4 class="font-bold text-red-600 mb-6 flex items-center gap-2 uppercase tracking-widest text-sm"><i data-lucide="alert-octagon" width="20"></i> Danger Zone</h4>
+                         <div class="space-y-4">
+                            <button onclick="window.app.openResetModal()" class="w-full border border-orange-200 text-orange-700 py-3 rounded-xl font-bold hover:bg-orange-50 transition flex items-center justify-center gap-3 text-sm">
+                                <i data-lucide="rotate-ccw" width="18"></i> รีเซ็ตสถานะการลงทะเบียนพนักงาน
+                            </button>
+                            <button onclick="window.app.openDeleteAllModal()" class="w-full border border-red-200 text-red-700 py-3 rounded-xl font-bold hover:bg-red-50 transition flex items-center justify-center gap-3 text-sm">
+                                <i data-lucide="trash-2" width="18"></i> ลบฐานข้อมูลพนักงานทั้งหมด
+                            </button>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: DIVIDEND MANAGE (IMPORT) -->
+            <div id="view-dividend" class="view-section hidden space-y-6 fade-in-up">
+                 <div class="bg-slate-200 p-6 rounded-2xl shadow-sm border border-slate-300 flex justify-between items-center">
+                    <div>
+                        <p class="text-slate-600 text-sm font-bold uppercase">จำนวนสมาชิกปันผลทั้งหมดในระบบ</p>
+                        <h3 id="manage-dividend-total" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-emerald-100 p-3 rounded-full text-emerald-600">
+                        <i data-lucide="wallet" width="32"></i>
+                    </div>
+                </div>
+
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border h-fit">
+                        <h3 class="font-bold text-lg mb-4 flex items-center gap-2 text-emerald-600"><i data-lucide="wallet"></i> Upload ข้อมูลปันผล</h3>
+                        <div class="space-y-4">
+                            <div class="border-2 border-dashed rounded-xl p-10 text-center cursor-pointer hover:bg-slate-50 transition" onclick="document.getElementById('dividend-file-upload').click()">
+                                <i data-lucide="file-up" class="mx-auto mb-3 text-slate-300" width="48"></i>
+                                <p class="text-sm text-slate-500 font-medium">เลือกไฟล์ข้อมูลเงินปันผล (.json, .csv)</p>
+                                <input type="file" id="dividend-file-upload" class="hidden" accept=".json,.csv" onchange="window.app.handleDividendFileSelect(event)">
+                            </div>
+                            <div id="dividend-file-info" class="hidden bg-emerald-50 p-4 rounded-xl flex justify-between items-center text-sm text-emerald-700">
+                                <span id="dividend-file-name" class="font-bold"></span>
+                                <button onclick="window.app.clearDividendFileSelection()" class="hover:text-red-500 transition"><i data-lucide="trash-2" width="18"></i></button>
+                            </div>
+                            <button onclick="window.app.processDividendImport()" id="btn-dividend-import" disabled class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold disabled:opacity-40 transition-all hover:bg-emerald-700 text-sm">เริ่มประมวลผลนำเข้าข้อมูลเงินปันผล</button>
+                            <div id="dividend-import-progress" class="hidden w-full bg-slate-100 rounded-full h-3 mt-4"><div id="dividend-import-bar" class="bg-emerald-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100 h-fit">
+                         <h4 class="font-bold text-red-600 mb-6 flex items-center gap-2 uppercase tracking-widest text-sm"><i data-lucide="alert-octagon" width="20"></i> Danger Zone</h4>
+                         <div class="space-y-4">
+                            <button onclick="window.app.openDividendResetModal()" class="w-full border border-orange-200 text-orange-700 py-3 rounded-xl font-bold hover:bg-orange-50 transition flex items-center justify-center gap-3 text-sm">
+                                <i data-lucide="rotate-ccw" width="18"></i> รีเซ็ตสถานะปันผลทั้งหมด
+                            </button>
+                            <button onclick="window.app.openDeleteAllDividendModal()" class="w-full border border-red-200 text-red-700 py-3 rounded-xl font-bold hover:bg-red-50 transition flex items-center justify-center gap-3 text-sm">
+                                <i data-lucide="trash-2" width="18"></i> ลบฐานข้อมูลเงินปันผลทั้งหมด
+                            </button>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: QR Code IN -->
+            <div id="view-qrcode-in" class="view-section hidden space-y-6 fade-in-up">
+                 <div class="bg-white p-10 rounded-2xl shadow-lg border flex flex-col items-center justify-center min-h-[60vh]">
+                    <h2 class="text-xl font-normal text-blue-800 mb-6 tracking-widest text-center">QR Code ลงทะเบียน</h2>
+                    <div class="bg-white p-6 border-4 border-slate-100 rounded-2xl shadow-inner mb-8">
+                        <img src="./images/coop-register.png" alt="Check-IN QR" class="w-80 h-80">
+                    </div>
+                </div>
+            </div>
+            <!-- VIEW: QR Code OUT -->
+            <div id="view-qrcode-out" class="view-section hidden space-y-6 fade-in-up">
+                 <div class="bg-white p-10 rounded-2xl shadow-lg border flex flex-col items-center justify-center min-h-[60vh]">
+                    <h2 class="text-xl font-normal text-orange-600 mb-6 tracking-widest text-center">QR Code เช็คปันผล</h2>
+                    <div class="bg-white p-6 border-4 border-slate-100 rounded-2xl shadow-inner mb-8">
+                        <img src="./images/coop-dividend.png" alt="Check-OUT QR" class="w-80 h-80">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODALS -->
+
+    <!-- Edit Prize Modal -->
+    <div id="edit-prize-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+            <h3 class="text-xl font-bold mb-6 text-slate-800 flex items-center gap-2">
+                <i data-lucide="edit-3" class="text-indigo-600"></i> แก้ไขข้อมูลรางวัล
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">ชื่อรางวัล</label>
+                    <input type="text" id="edit-prize-name" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 text-sm font-bold">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1 text-xs">สุ่มต่อรอบ</label>
+                        <input type="number" id="edit-prize-qty" min="1" class="w-full p-3 border rounded-xl outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1 text-xs">รวมทั้งหมด</label>
+                        <input type="number" id="edit-prize-total" min="1" class="w-full p-3 border rounded-xl outline-none text-sm font-bold text-blue-600">
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-4 mt-8">
+                <button onclick="window.app.closeEditPrizeModal()" class="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold transition text-sm">ยกเลิก</button>
+                <button onclick="window.app.saveEditedPrize()" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition text-sm shadow-lg">บันทึกรายการ</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirm Reset Modal -->
+    <div id="reset-confirm-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
+            <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="rotate-ccw" width="32"></i></div>
+            <h3 class="text-2xl font-bold mb-2">รีเซ็ตสถานะ?</h3>
+            <p class="text-slate-500 text-sm mb-6">พิมพ์คำว่า <span class="font-bold text-slate-800 tracking-widest">Reset</span> เพื่อยืนยันการล้างข้อมูล Check-IN/OUT</p>
+            <input type="text" id="confirm-reset-input" class="w-full p-3 border rounded-xl mb-6 text-center outline-none focus:ring-2 focus:ring-orange-100 font-bold" placeholder="พิมพ์ Reset">
+            <div class="flex gap-4">
+                <button onclick="window.app.closeResetModal()" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold">ยกเลิก</button>
+                <button onclick="window.app.confirmResetData()" class="flex-1 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700">รีเซ็ตข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete All Modal -->
+    <div id="delete-all-confirm-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="trash-2" width="32"></i></div>
+            <h3 class="text-2xl font-bold mb-2 text-red-600">ลบข้อมูลทั้งหมด?</h3>
+            <p class="text-slate-500 text-sm mb-6">พิมพ์คำว่า <span class="font-bold text-slate-800 tracking-widest">Delete</span> เพื่อยืนยันการลบข้อมูลพนักงาน</p>
+            <input type="text" id="confirm-delete-input" class="w-full p-3 border rounded-xl mb-6 text-center outline-none focus:ring-2 focus:ring-red-100 font-bold" placeholder="พิมพ์ Delete">
+            <div class="flex gap-4">
+                <button onclick="window.app.closeDeleteAllModal()" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold">ยกเลิก</button>
+                <button onclick="window.app.confirmDeleteAllData()" class="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700">ลบทั้งหมด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Reset Dividend Modal -->
+    <div id="dividend-reset-confirm-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
+            <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="rotate-ccw" width="32"></i></div>
+            <h3 class="text-xl font-bold mb-2">รีเซ็ตสถานะปันผล?</h3>
+            <p class="text-slate-500 text-sm mb-6">พิมพ์คำว่า <span class="font-bold text-slate-800 tracking-widest">Reset</span> เพื่อรีเซ็ตการรับปันผล</p>
+            <input type="text" id="confirm-div-reset-input" class="w-full p-3 border rounded-xl mb-6 text-center outline-none focus:ring-2 focus:ring-orange-100 font-bold" placeholder="พิมพ์ Reset">
+            <div class="flex gap-4">
+                <button onclick="window.app.closeDividendResetModal()" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold">ยกเลิก</button>
+                <button onclick="window.app.confirmResetDividendData()" class="flex-1 py-3 rounded-xl bg-orange-600 text-white font-bold">รีเซ็ต</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete All Dividend Modal -->
+    <div id="dividend-delete-confirm-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="trash-2" width="32"></i></div>
+            <h3 class="text-xl font-bold mb-2 text-red-600">ลบฐานปันผล?</h3>
+            <p class="text-slate-500 text-sm mb-6">พิมพ์คำว่า <span class="font-bold text-slate-800 tracking-widest">Delete</span> เพื่อลบข้อมูลปันผลถาวร</p>
+            <input type="text" id="confirm-div-delete-input" class="w-full p-3 border rounded-xl mb-6 text-center outline-none focus:ring-2 focus:ring-red-100 font-bold">
+            <div class="flex gap-4">
+                <button onclick="window.app.closeDeleteAllDividendModal()" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold">ยกเลิก</button>
+                <button onclick="window.app.confirmDeleteAllDividendData()" class="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold">ลบทั้งหมด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Single Dividend Reset Modal -->
+    <div id="dividend-single-reset-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
+            <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="alert-triangle" width="32"></i></div>
+            <h3 class="text-xl font-bold mb-2">ล้างข้อมูลเงินปันผล?</h3>
+            <p class="text-slate-500 text-sm mb-6">คุณกำลังจะล้างสถานะการลงทะเบียนและการแจ้งเข้าร่วมของสมาชิกท่านนี้</p>
+            <div class="flex gap-4">
+                <button onclick="window.app.closeSingleDividendResetModal()" class="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 transition font-bold text-sm">ยกเลิก</button>
+                <button onclick="window.app.confirmSingleDividendReset()" class="flex-1 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition text-sm">ยืนยันการล้างข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Search Modal -->
+    <div id="member-search-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
+            <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="user" width="32"></i></div>
+            <h3 class="text-2xl font-bold mb-4">ข้อมูลพนักงาน</h3>
+            <div id="search-member-details" class="text-left bg-slate-50 p-6 rounded-2xl mb-8 space-y-2 text-sm border italic"></div>
+            <div class="flex flex-col gap-3">
+                <div class="flex gap-2">
+                    <button onclick="window.app.closeMemberSearchModal()" class="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 transition font-bold text-sm">ยกเลิก</button>
+                    <button id="btn-confirm-regis" onclick="window.app.confirmRegistrationViaSearch(false)" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition text-sm">ลงทะเบียน</button>
+                </div>
+                <button id="btn-confirm-regis-card" onclick="window.app.confirmRegistrationViaSearch(true)" class="w-full py-4 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition text-sm shadow-lg flex items-center justify-center gap-2">
+                    <i data-lucide="check-square" width="18"></i> ยืนยันการรับบัตรเลือกตั้ง
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Logic -->
+    <script type="module">
+const _0x48b5e8=_0x3188;(function(_0xdb9575,_0x2680d7){const _0x1e1b83=_0x3188,_0xb74d11=_0xdb9575();while(!![]){try{const _0x148373=-parseInt(_0x1e1b83(0x13a))/0x1+-parseInt(_0x1e1b83(0x145))/0x2+-parseInt(_0x1e1b83(0x7d))/0x3*(parseInt(_0x1e1b83(0x137))/0x4)+-parseInt(_0x1e1b83(0x142))/0x5+-parseInt(_0x1e1b83(0x111))/0x6*(-parseInt(_0x1e1b83(0x10f))/0x7)+-parseInt(_0x1e1b83(0x1c3))/0x8*(-parseInt(_0x1e1b83(0x12e))/0x9)+parseInt(_0x1e1b83(0x1ea))/0xa*(parseInt(_0x1e1b83(0x92))/0xb);if(_0x148373===_0x2680d7)break;else _0xb74d11['push'](_0xb74d11['shift']());}catch(_0x358ace){_0xb74d11['push'](_0xb74d11['shift']());}}}(_0x1725,0x56b1c));import{initializeApp}from'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';import{getAuth,signInAnonymously,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';import{getFirestore,collection,query,where,getDocs,updateDoc,doc,serverTimestamp,onSnapshot,addDoc,deleteDoc,writeBatch,deleteField}from'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';const firebaseConfig={'apiKey':_0x48b5e8(0xa2),'authDomain':_0x48b5e8(0x1a9),'databaseURL':_0x48b5e8(0x1a5),'projectId':_0x48b5e8(0xaa),'storageBucket':_0x48b5e8(0x13b),'messagingSenderId':'1070273157855','appId':_0x48b5e8(0x14a),'measurementId':_0x48b5e8(0x1b9)},finalCollectionPath='tmb_coop',prizesCollectionPath='coop_gift',dividendCollectionPath=_0x48b5e8(0xf2),app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),state={'users':[],'dividendUsers':[],'prizes':[],'stats':{'checkin':0x0,'checkout':0x0,'rewarded':0x0,'notRewarded':0x0,'claimed':0x0,'eligible':0x0,'totalDocs':0x0,'notYetDrawn':0x0,'drawnNoReward':0x0,'drawnWon':0x0,'votingCards':0x0,'dividendTotal':0x0,'divRegistered':0x0,'divJoin':0x0,'divNoJoin':0x0,'totalPrizesQuota':0x0,'totalPrizesDrawn':0x0},'isDrawing':![],'rowsPerPage':0x32,'currentPage':0x1,'sortBy':'CheckIN','sortOrder':_0x48b5e8(0x19c),'searchTerm':'','divRowsPerPage':0x32,'divCurrentPage':0x1,'divSearchTerm':'','divSortBy':_0x48b5e8(0x1d4),'divSortOrder':_0x48b5e8(0x19c),'fileToImport':null,'dividendFileToImport':null,'searchCandidate':null,'resultsSortBy':_0x48b5e8(0xcd),'resultsSortOrder':'asc','dividendIdToReset':null,'prizeIdToEdit':null};async function sha256(_0x5db3c4){const _0x172c25=_0x48b5e8,_0x26371d=new TextEncoder()['encode'](_0x5db3c4),_0x4ef097=await crypto[_0x172c25(0x107)][_0x172c25(0x16f)](_0x172c25(0x12a),_0x26371d),_0x1b912f=Array[_0x172c25(0x80)](new Uint8Array(_0x4ef097));return _0x1b912f[_0x172c25(0x14b)](_0xed75e4=>_0xed75e4[_0x172c25(0x11a)](0x10)[_0x172c25(0x188)](0x2,'0'))[_0x172c25(0x182)]('');}window[_0x48b5e8(0x1cb)]=window[_0x48b5e8(0x1cb)]||{},window['app'][_0x48b5e8(0xa5)]=(_0x358149,_0x4afe57=_0x48b5e8(0x119))=>{const _0x562cc8=_0x48b5e8,_0x47bfce=document[_0x562cc8(0x7b)](_0x562cc8(0x157)),_0x133a8e=document[_0x562cc8(0xaf)](_0x562cc8(0x120));let _0x1a7b91=_0x4afe57===_0x562cc8(0x119)?_0x562cc8(0xd3):'border-red-500\x20text-red-700',_0x15a7c3=_0x4afe57===_0x562cc8(0x119)?_0x562cc8(0xdb):_0x562cc8(0xea);_0x133a8e['className']=_0x562cc8(0xe8)+_0x1a7b91+_0x562cc8(0xd1),_0x133a8e[_0x562cc8(0x1df)]=_0x562cc8(0x113)+_0x15a7c3+_0x562cc8(0x1ad)+_0x358149+'</div>',_0x47bfce['appendChild'](_0x133a8e),lucide[_0x562cc8(0xa3)](),setTimeout(()=>{const _0xa66fda=_0x562cc8;_0x133a8e[_0xa66fda(0x15d)][_0xa66fda(0x18f)](_0xa66fda(0x197),_0xa66fda(0xcf)),setTimeout(()=>_0x133a8e['remove'](),0x12c);},0xbb8);},window['app'][_0x48b5e8(0x102)]=_0x16ea14=>{const _0x18feab=_0x48b5e8;document[_0x18feab(0xf6)](_0x18feab(0xd2))['forEach'](_0x4d8ddc=>_0x4d8ddc['classList'][_0x18feab(0x18f)](_0x18feab(0x97)));const _0x23f931=document[_0x18feab(0x7b)](_0x18feab(0x1b2)+_0x16ea14);if(_0x23f931)_0x23f931['classList'][_0x18feab(0x129)](_0x18feab(0x97));document['querySelectorAll']('.nav-item')[_0x18feab(0x141)](_0x3f8d7a=>{const _0x407945=_0x18feab;_0x3f8d7a['classList'][_0x407945(0x129)](_0x407945(0x1b8),_0x407945(0x185)),_0x3f8d7a[_0x407945(0x15d)][_0x407945(0x18f)](_0x407945(0x16e));});const _0x3eec4a=document[_0x18feab(0x7b)]('nav-'+_0x16ea14);_0x3eec4a&&(_0x3eec4a[_0x18feab(0x15d)][_0x18feab(0x129)](_0x18feab(0x16e)),_0x3eec4a[_0x18feab(0x15d)][_0x18feab(0x18f)](_0x18feab(0x1b8),_0x18feab(0x185)));let _0x50c70d={'dashboard':'ภาพรวม','prizes':'จัดการของรางวัล','randomizer':_0x18feab(0x1aa),'results':'ประกาศผลรางวัล','data':_0x18feab(0x81),'dividend-info':_0x18feab(0x133),'import':'Upload\x20ข้อมูลสมาชิก','dividend':'Upload\x20ข้อมูลปันผล','qrcode-in':_0x18feab(0x99),'qrcode-out':_0x18feab(0x98)};document['getElementById']('page-title')[_0x18feab(0x84)]=_0x50c70d[_0x16ea14]||_0x16ea14;if(_0x16ea14===_0x18feab(0x1ee))renderTable(state['users']);if(_0x16ea14===_0x18feab(0x199))renderDividendTable(state['dividendUsers']);if(_0x16ea14==='randomizer')window[_0x18feab(0x1cb)]['onPrizeSelect']();if(_0x16ea14===_0x18feab(0x72))window[_0x18feab(0x1cb)]['renderResults']();lucide['createIcons']();};function processSnapshot(_0x56d126){const _0x2b1f65=_0x48b5e8,_0x282655=[],_0x1bb412={'checkin':0x0,'checkout':0x0,'rewarded':0x0,'notRewarded':0x0,'claimed':0x0,'eligible':0x0,'totalDocs':_0x56d126[_0x2b1f65(0x14e)],'notYetDrawn':0x0,'votingCards':0x0,'totalPrizesDrawn':0x0},_0x44f5a5={};_0x56d126[_0x2b1f65(0x141)](_0x5d2966=>{const _0x29ab03=_0x2b1f65,_0x3805ed=_0x5d2966[_0x29ab03(0x1ee)](),_0x5e74b5={'id':_0x5d2966['id'],..._0x3805ed};_0x282655[_0x29ab03(0xbf)](_0x5e74b5);if(_0x3805ed[_0x29ab03(0x166)]){_0x1bb412[_0x29ab03(0xf0)]++;const _0x1c325e=(_0x3805ed[_0x29ab03(0x166)]['toDate']?.()||new Date(_0x3805ed[_0x29ab03(0x166)]))[_0x29ab03(0x1c2)]();_0x44f5a5[_0x1c325e]=(_0x44f5a5[_0x1c325e]||0x0)+0x1;}_0x3805ed['CheckOUT']&&_0x1bb412['checkout']++;if(_0x3805ed[_0x29ab03(0x71)]===_0x29ab03(0x15a))_0x1bb412[_0x29ab03(0x17e)]++;if(_0x3805ed[_0x29ab03(0xcd)]){if(_0x3805ed[_0x29ab03(0xcd)]===_0x29ab03(0x1c6))_0x1bb412[_0x29ab03(0xdc)]++;else _0x1bb412[_0x29ab03(0x1c1)]++,_0x1bb412[_0x29ab03(0x110)]++;}if(_0x3805ed[_0x29ab03(0x191)])_0x1bb412[_0x29ab03(0x78)]++;if(_0x3805ed['status']===_0x29ab03(0xdd)){_0x1bb412[_0x29ab03(0x121)]++;if(!_0x3805ed[_0x29ab03(0xcd)])_0x1bb412[_0x29ab03(0xe4)]++;}}),state[_0x2b1f65(0x6a)]=_0x282655,state[_0x2b1f65(0x122)]={...state[_0x2b1f65(0x122)],..._0x1bb412},updateDashboardUI(state[_0x2b1f65(0x122)]),updateCharts(_0x44f5a5),renderActivityFeed(_0x282655),renderTable(_0x282655),window[_0x2b1f65(0x1cb)][_0x2b1f65(0x196)]();}function updateDashboardUI(_0x42b79d){const _0xa2fa68=_0x48b5e8,_0x4bddc2=[_0xa2fa68(0x1bd),_0xa2fa68(0xa9),'dash-stat-voting',_0xa2fa68(0x1d7),'dash-stat-div-join',_0xa2fa68(0x1e6),'rand-stat-eligible-view',_0xa2fa68(0xef),'rand-stat-drawn-no',_0xa2fa68(0x1af),'manage-total-docs',_0xa2fa68(0xe3),_0xa2fa68(0x7e),_0xa2fa68(0x6d),_0xa2fa68(0x12b),'div-summary-total',_0xa2fa68(0xe0),'div-summary-join','div-summary-nojoin',_0xa2fa68(0x1bf),_0xa2fa68(0x6e)],_0x1ea8f5={'dash-stat-total':_0x42b79d[_0xa2fa68(0xad)],'dash-stat-checkin':_0x42b79d[_0xa2fa68(0xf0)],'dash-stat-voting':_0x42b79d['votingCards'],'dash-stat-div-reg':_0x42b79d[_0xa2fa68(0x165)],'dash-stat-div-join':_0x42b79d['divJoin'],'rand-stat-total':_0x42b79d[_0xa2fa68(0xad)],'rand-stat-eligible-view':_0x42b79d[_0xa2fa68(0x121)],'rand-stat-noreward':_0x42b79d[_0xa2fa68(0xe4)],'rand-stat-drawn-no':_0x42b79d[_0xa2fa68(0xdc)],'rand-stat-drawn-win':_0x42b79d[_0xa2fa68(0x1c1)],'manage-total-docs':_0x42b79d[_0xa2fa68(0xad)],'reg-stat-total':_0x42b79d[_0xa2fa68(0xad)],'reg-stat-registered':_0x42b79d['checkin'],'reg-stat-voting':_0x42b79d[_0xa2fa68(0x17e)],'reg-stat-rewarded':_0x42b79d[_0xa2fa68(0x1c1)],'div-summary-total':_0x42b79d[_0xa2fa68(0x124)],'div-summary-registered':_0x42b79d[_0xa2fa68(0x165)],'div-summary-join':_0x42b79d[_0xa2fa68(0x96)],'div-summary-nojoin':_0x42b79d[_0xa2fa68(0xb9)],'res-stat-total-drawn':_0x42b79d[_0xa2fa68(0x110)],'manage-dividend-total':_0x42b79d[_0xa2fa68(0x124)]};_0x4bddc2[_0xa2fa68(0x141)](_0x132019=>{const _0x4d70d3=_0xa2fa68;if(document[_0x4d70d3(0x7b)](_0x132019))document[_0x4d70d3(0x7b)](_0x132019)[_0x4d70d3(0x84)]=_0x1ea8f5[_0x132019]||0x0;});}function _0x3188(_0x4bd672,_0x2c71e5){_0x4bd672=_0x4bd672-0x6a;const _0x172595=_0x1725();let _0x31886c=_0x172595[_0x4bd672];return _0x31886c;}window[_0x48b5e8(0x1cb)][_0x48b5e8(0x196)]=()=>{const _0x22b74a=_0x48b5e8,_0x591350=document['getElementById'](_0x22b74a(0x194))?.[_0x22b74a(0x1e9)]||'all_winners',_0xccb7b0=state[_0x22b74a(0x6a)]['filter'](_0xebc076=>_0xebc076[_0x22b74a(0xcd)]&&_0xebc076['reward']!==_0x22b74a(0x1c6))[_0x22b74a(0xbc)],_0x1bfe3f=state[_0x22b74a(0x6a)]['filter'](_0x1e4fd7=>_0x1e4fd7[_0x22b74a(0x191)])['length'],_0x4e4431=_0xccb7b0-_0x1bfe3f;if(document[_0x22b74a(0x7b)](_0x22b74a(0x18a)))document[_0x22b74a(0x7b)]('res-stat-total-prizes')[_0x22b74a(0x84)]=state[_0x22b74a(0x122)][_0x22b74a(0x184)]||0x0;if(document[_0x22b74a(0x7b)](_0x22b74a(0x1bf)))document[_0x22b74a(0x7b)]('res-stat-total-drawn')[_0x22b74a(0x84)]=state[_0x22b74a(0x122)][_0x22b74a(0x110)]||0x0;if(document[_0x22b74a(0x7b)]('res-stat-winners'))document[_0x22b74a(0x7b)](_0x22b74a(0x1db))[_0x22b74a(0x84)]=_0xccb7b0;if(document['getElementById'](_0x22b74a(0x1d6)))document['getElementById'](_0x22b74a(0x1d6))[_0x22b74a(0x84)]=_0x1bfe3f;if(document[_0x22b74a(0x7b)]('res-stat-unclaimed'))document[_0x22b74a(0x7b)]('res-stat-unclaimed')[_0x22b74a(0x84)]=_0x4e4431;let _0x5731cd=state[_0x22b74a(0x6a)]['filter'](_0x3fc4fe=>_0x3fc4fe[_0x22b74a(0xcd)]&&_0x3fc4fe[_0x22b74a(0xcd)]!==_0x22b74a(0x1c6));if(_0x591350===_0x22b74a(0xf1))_0x5731cd=_0x5731cd[_0x22b74a(0x19f)](_0x8eecfa=>!_0x8eecfa[_0x22b74a(0x191)]);if(_0x591350==='claimed')_0x5731cd=_0x5731cd[_0x22b74a(0x19f)](_0x385ba7=>_0x385ba7[_0x22b74a(0x191)]);_0x5731cd[_0x22b74a(0x195)]((_0x44d98d,_0x5917dd)=>{const _0x4a566a=_0x22b74a;let _0x4dec35=_0x44d98d[state[_0x4a566a(0x146)]],_0x107f43=_0x5917dd[state[_0x4a566a(0x146)]];if(state[_0x4a566a(0x146)]==='rewardTime'||state[_0x4a566a(0x146)]==='ConfirmReward'){_0x4dec35=_0x4dec35?.[_0x4a566a(0x13d)]?.()||(_0x4dec35?new Date(_0x4dec35):null),_0x107f43=_0x107f43?.[_0x4a566a(0x13d)]?.()||(_0x107f43?new Date(_0x107f43):null);if(!_0x4dec35)return 0x1;if(!_0x107f43)return-0x1;return state[_0x4a566a(0x125)]===_0x4a566a(0xe5)?_0x4dec35-_0x107f43:_0x107f43-_0x4dec35;}return _0x4dec35=String(_0x4dec35||'')[_0x4a566a(0x9c)](),_0x107f43=String(_0x107f43||'')[_0x4a566a(0x9c)](),state[_0x4a566a(0x125)]===_0x4a566a(0xe5)?_0x4dec35['localeCompare'](_0x107f43):_0x107f43['localeCompare'](_0x4dec35);});const _0x29029a=[_0x22b74a(0x14f),_0x22b74a(0xcd),_0x22b74a(0x15f),_0x22b74a(0x191)];_0x29029a[_0x22b74a(0x141)](_0x4b148d=>{const _0x4e5995=_0x22b74a,_0x1a24e3=document['getElementById'](_0x4e5995(0x108)+_0x4b148d);_0x1a24e3&&(state[_0x4e5995(0x146)]===_0x4b148d?_0x1a24e3[_0x4e5995(0x1df)]=state[_0x4e5995(0x125)]===_0x4e5995(0xe5)?_0x4e5995(0xb4):_0x4e5995(0xc6):_0x1a24e3[_0x4e5995(0x1df)]=_0x4e5995(0x170));});const _0x11a67c=document[_0x22b74a(0x7b)](_0x22b74a(0x18e));if(!_0x11a67c)return;if(_0x5731cd[_0x22b74a(0xbc)]===0x0){_0x11a67c[_0x22b74a(0x1df)]=_0x22b74a(0x1a6);return;}_0x11a67c[_0x22b74a(0x1df)]=_0x5731cd['map']((_0x41ebf9,_0x369b21)=>{const _0x47b297=_0x22b74a,_0x5e24d7=_0x41ebf9['rewardTime']?(_0x41ebf9[_0x47b297(0x15f)][_0x47b297(0x13d)]?.()||new Date(_0x41ebf9[_0x47b297(0x15f)]))['toLocaleTimeString']('th-TH'):'-';let _0x276ac0='-';return _0x41ebf9[_0x47b297(0x191)]?_0x276ac0=_0x47b297(0x1c9):_0x276ac0=_0x47b297(0x1bb)+_0x41ebf9['id']+'\x27)\x22\x20class=\x22px-2\x20py-1\x20bg-red-100\x20text-red-700\x20rounded-full\x20text-xs\x20font-bold\x20hover:bg-red-200\x20transition\x22>ยังไม่รับ</button>',_0x47b297(0x9e)+(_0x369b21+0x1)+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20py-4\x20font-bold\x20text-slate-800\x22>'+(_0x41ebf9[_0x47b297(0x14f)]||'-')+_0x47b297(0xf5)+_0x41ebf9[_0x47b297(0xcd)]+_0x47b297(0x1b1)+_0x5e24d7+_0x47b297(0x1ce)+_0x276ac0+_0x47b297(0x17c)+_0x41ebf9['id']+_0x47b297(0xee);})[_0x22b74a(0x182)](''),lucide[_0x22b74a(0xa3)]();},window['app'][_0x48b5e8(0xae)]=_0x209559=>{const _0x3310fa=_0x48b5e8;state['resultsSortBy']===_0x209559?state[_0x3310fa(0x125)]=state['resultsSortOrder']===_0x3310fa(0xe5)?'desc':_0x3310fa(0xe5):(state[_0x3310fa(0x146)]=_0x209559,state['resultsSortOrder']='asc'),window[_0x3310fa(0x1cb)][_0x3310fa(0x196)]();};function renderTable(_0x520ab2){const _0xc8e9c0=_0x48b5e8,_0x4102f7=document['getElementById'](_0xc8e9c0(0x1a8));if(!_0x4102f7)return;let _0x259bbf=[..._0x520ab2];state[_0xc8e9c0(0xba)]&&(_0x259bbf=_0x259bbf[_0xc8e9c0(0x19f)](_0x410914=>(_0x410914[_0xc8e9c0(0x14f)]||'')['toLowerCase']()[_0xc8e9c0(0xc2)](state[_0xc8e9c0(0xba)])||(_0x410914[_0xc8e9c0(0x168)]||'')[_0xc8e9c0(0x11a)]()[_0xc8e9c0(0xc2)](state[_0xc8e9c0(0xba)])));_0x259bbf['sort']((_0x471245,_0x2bcf38)=>{const _0xebf188=_0xc8e9c0;let _0x1b6cbb=_0x471245[state[_0xebf188(0x11c)]],_0x308b77=_0x2bcf38[state['sortBy']];if([_0xebf188(0x166),_0xebf188(0x115),'ConfirmReward'][_0xebf188(0xc2)](state['sortBy'])){_0x1b6cbb=_0x1b6cbb?.['toDate']?.()||(_0x1b6cbb?new Date(_0x1b6cbb):null),_0x308b77=_0x308b77?.[_0xebf188(0x13d)]?.()||(_0x308b77?new Date(_0x308b77):null);if(!_0x1b6cbb)return 0x1;if(!_0x308b77)return-0x1;return state[_0xebf188(0x180)]===_0xebf188(0xe5)?_0x1b6cbb-_0x308b77:_0x308b77-_0x1b6cbb;}if(state[_0xebf188(0x11c)]===_0xebf188(0x168))return state[_0xebf188(0x180)]===_0xebf188(0xe5)?(parseInt(_0x1b6cbb)||0x0)-(parseInt(_0x308b77)||0x0):(parseInt(_0x308b77)||0x0)-(parseInt(_0x1b6cbb)||0x0);return _0x1b6cbb=String(_0x1b6cbb||'')['toLowerCase'](),_0x308b77=String(_0x308b77||'')[_0xebf188(0x9c)](),state[_0xebf188(0x180)]===_0xebf188(0xe5)?_0x1b6cbb[_0xebf188(0xd8)](_0x308b77):_0x308b77[_0xebf188(0xd8)](_0x1b6cbb);});const _0x5746f0=[_0xc8e9c0(0x168),_0xc8e9c0(0x14f),_0xc8e9c0(0x166),_0xc8e9c0(0x71),_0xc8e9c0(0x115),_0xc8e9c0(0xcd),_0xc8e9c0(0x191)];_0x5746f0[_0xc8e9c0(0x141)](_0x4fae63=>{const _0x16dee3=_0xc8e9c0,_0x4eb1ff=document[_0x16dee3(0x7b)](_0x16dee3(0x1c8)+_0x4fae63);_0x4eb1ff&&(state[_0x16dee3(0x11c)]===_0x4fae63?_0x4eb1ff['innerHTML']=state['sortOrder']===_0x16dee3(0xe5)?'<i\x20data-lucide=\x22chevron-up\x22\x20class=\x22inline\x20w-3\x22></i>':_0x16dee3(0x179):_0x4eb1ff[_0x16dee3(0x1df)]=_0x16dee3(0x70));});const _0x3f8e95=state[_0xc8e9c0(0xb2)],_0x34c060=Math[_0xc8e9c0(0x1c5)](_0x259bbf[_0xc8e9c0(0xbc)]/_0x3f8e95)||0x1,_0x120fbe=_0x259bbf['slice']((state['currentPage']-0x1)*_0x3f8e95,state['currentPage']*_0x3f8e95);if(document['getElementById']('page-indicator'))document[_0xc8e9c0(0x7b)](_0xc8e9c0(0x12d))[_0xc8e9c0(0x84)]='Page\x20'+state[_0xc8e9c0(0x1ed)]+_0xc8e9c0(0x11d)+_0x34c060;if(document[_0xc8e9c0(0x7b)](_0xc8e9c0(0x181)))document[_0xc8e9c0(0x7b)](_0xc8e9c0(0x181))[_0xc8e9c0(0x117)]=state[_0xc8e9c0(0x1ed)]<=0x1;if(document['getElementById']('btn-next'))document[_0xc8e9c0(0x7b)](_0xc8e9c0(0xfd))[_0xc8e9c0(0x117)]=state[_0xc8e9c0(0x1ed)]>=_0x34c060;if(document[_0xc8e9c0(0x7b)](_0xc8e9c0(0x9d)))document[_0xc8e9c0(0x7b)](_0xc8e9c0(0x9d))[_0xc8e9c0(0x84)]=_0xc8e9c0(0xfe)+_0x120fbe[_0xc8e9c0(0xbc)]+_0xc8e9c0(0x154)+_0x259bbf[_0xc8e9c0(0xbc)]+_0xc8e9c0(0xd6);_0x4102f7[_0xc8e9c0(0x1df)]=_0x120fbe[_0xc8e9c0(0x14b)](_0x380848=>{const _0x4246d7=_0xc8e9c0,_0x7a0bcb=_0x380848[_0x4246d7(0x166)]?(_0x380848[_0x4246d7(0x166)]['toDate']?.()||new Date(_0x380848[_0x4246d7(0x166)]))[_0x4246d7(0x7a)](_0x4246d7(0x128)):'-',_0x2214f7=_0x380848['ConfirmVotingCard']?(_0x380848[_0x4246d7(0x115)][_0x4246d7(0x13d)]?.()||new Date(_0x380848[_0x4246d7(0x115)]))[_0x4246d7(0xc1)]('th-TH'):'-',_0x4cbb4b=_0x380848[_0x4246d7(0x191)]?(_0x380848[_0x4246d7(0x191)][_0x4246d7(0x13d)]?.()||new Date(_0x380848[_0x4246d7(0x191)]))[_0x4246d7(0xc1)](_0x4246d7(0x128)):'-';let _0x2e94dd='-';if(_0x380848[_0x4246d7(0x191)])_0x2e94dd='<span\x20class=\x22px-2\x20py-1\x20bg-green-100\x20text-green-700\x20rounded-full\x20text-xs\x20font-bold\x22>รับแล้ว</span>';else _0x380848[_0x4246d7(0xcd)]&&_0x380848[_0x4246d7(0xcd)]!=='ไม่ได้รับรางวัล'&&(_0x2e94dd=_0x4246d7(0x1bb)+_0x380848['id']+_0x4246d7(0x9a));return _0x4246d7(0x198)+(_0x380848[_0x4246d7(0x168)]||'-')+_0x4246d7(0x17a)+(_0x380848[_0x4246d7(0x14f)]||'-')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-center\x20text-sm\x20font-bold\x20text-slate-700\x22>'+(_0x380848[_0x4246d7(0x19a)]||'-')+_0x4246d7(0x15c)+_0x7a0bcb+_0x4246d7(0x6c)+(_0x380848[_0x4246d7(0x71)]||'-')+_0x4246d7(0x14c)+_0x2214f7+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22font-bold\x20text-indigo-600\x22>'+(_0x380848[_0x4246d7(0xcd)]||'-')+_0x4246d7(0xf8)+_0x4cbb4b+_0x4246d7(0x1ec)+_0x2e94dd+_0x4246d7(0x1a2)+_0x380848['id']+_0x4246d7(0x163);})[_0xc8e9c0(0x182)](''),lucide[_0xc8e9c0(0xa3)]();}window['app'][_0x48b5e8(0xab)]=()=>{const _0x1ddfcd=_0x48b5e8,_0x306e07=state[_0x1ddfcd(0xba)]?state[_0x1ddfcd(0x6a)][_0x1ddfcd(0x19f)](_0x4cd74e=>(_0x4cd74e[_0x1ddfcd(0x14f)]||'')[_0x1ddfcd(0x9c)]()[_0x1ddfcd(0xc2)](state[_0x1ddfcd(0xba)])||(_0x4cd74e[_0x1ddfcd(0x168)]||'')[_0x1ddfcd(0x11a)]()[_0x1ddfcd(0xc2)](state[_0x1ddfcd(0xba)])):state['users'],_0x3cf634=['no',_0x1ddfcd(0x94),_0x1ddfcd(0x74),_0x1ddfcd(0x19e),'สถานะรับบัตร',_0x1ddfcd(0x77),_0x1ddfcd(0x148),_0x1ddfcd(0xac)],_0x1974af=[_0x3cf634[_0x1ddfcd(0x182)](',')];_0x306e07[_0x1ddfcd(0x141)](_0x3f875d=>{const _0xad18ea=_0x1ddfcd,_0x8e667b=_0x3f875d[_0xad18ea(0x166)]?(_0x3f875d[_0xad18ea(0x166)]['toDate']?.()||new Date(_0x3f875d[_0xad18ea(0x166)]))[_0xad18ea(0xc1)](_0xad18ea(0x128)):'-',_0x1e0189=_0x3f875d[_0xad18ea(0x115)]?(_0x3f875d[_0xad18ea(0x115)][_0xad18ea(0x13d)]?.()||new Date(_0x3f875d['ConfirmVotingCard']))[_0xad18ea(0xc1)](_0xad18ea(0x128)):'-',_0x2b68c5=_0x3f875d['ConfirmReward']?(_0x3f875d['ConfirmReward']['toDate']?.()||new Date(_0x3f875d['ConfirmReward']))[_0xad18ea(0xc1)](_0xad18ea(0x128)):'-',_0xbf7368=[_0x3f875d['EmpMember']||'','\x22'+(_0x3f875d[_0xad18ea(0x14f)]||'')+'\x22',_0x3f875d[_0xad18ea(0x19a)]||'-','\x22'+_0x8e667b+'\x22',_0x3f875d[_0xad18ea(0x71)]||'-','\x22'+_0x1e0189+'\x22',_0x3f875d[_0xad18ea(0xcd)]||'-','\x22'+_0x2b68c5+'\x22'];_0x1974af['push'](_0xbf7368[_0xad18ea(0x182)](','));});const _0x596f8c='\ufeff'+_0x1974af[_0x1ddfcd(0x182)]('\x0a'),_0x324b80=new Blob([_0x596f8c],{'type':_0x1ddfcd(0x1d1)}),_0x52a2d1=URL[_0x1ddfcd(0x1d9)](_0x324b80),_0x33c2d0=document['createElement']('a');_0x33c2d0[_0x1ddfcd(0x9f)]=_0x52a2d1,_0x33c2d0[_0x1ddfcd(0x15e)]=_0x1ddfcd(0x1de)+new Date()[_0x1ddfcd(0x18c)]('th-TH')+_0x1ddfcd(0xc3),_0x33c2d0['click'](),window['app'][_0x1ddfcd(0xa5)](_0x1ddfcd(0x1bc));};function renderDividendTable(_0x1f8435){const _0x13b21e=_0x48b5e8,_0x1ab754=document['getElementById'](_0x13b21e(0x87));if(!_0x1ab754)return;let _0x7322ac=[..._0x1f8435];state[_0x13b21e(0x1c0)]&&(_0x7322ac=_0x7322ac['filter'](_0x4532cf=>(_0x4532cf['empname']||'')[_0x13b21e(0x9c)]()[_0x13b21e(0xc2)](state['divSearchTerm'])||(_0x4532cf['no']||'')[_0x13b21e(0x11a)]()['includes'](state[_0x13b21e(0x1c0)])));_0x7322ac[_0x13b21e(0x195)]((_0x30559a,_0x222445)=>{const _0x538a5a=_0x13b21e;let _0x1aab2f=_0x30559a[state[_0x538a5a(0x118)]],_0x179dfc=_0x222445[state[_0x538a5a(0x118)]];if(state[_0x538a5a(0x118)]===_0x538a5a(0x1d4)){_0x1aab2f=_0x1aab2f?.[_0x538a5a(0x13d)]?.()||(_0x1aab2f?new Date(_0x1aab2f):null),_0x179dfc=_0x179dfc?.['toDate']?.()||(_0x179dfc?new Date(_0x179dfc):null);if(!_0x1aab2f)return 0x1;if(!_0x179dfc)return-0x1;return state[_0x538a5a(0x1d8)]==='asc'?_0x1aab2f-_0x179dfc:_0x179dfc-_0x1aab2f;}if(['dividend',_0x538a5a(0x151),_0x538a5a(0x1d5),_0x538a5a(0x1b7),'no'][_0x538a5a(0xc2)](state[_0x538a5a(0x118)]))return state[_0x538a5a(0x1d8)]===_0x538a5a(0xe5)?(parseFloat(_0x1aab2f)||0x0)-(parseFloat(_0x179dfc)||0x0):(parseFloat(_0x179dfc)||0x0)-(parseFloat(_0x1aab2f)||0x0);return _0x1aab2f=String(_0x1aab2f||'')[_0x538a5a(0x9c)](),_0x179dfc=String(_0x179dfc||'')['toLowerCase'](),state[_0x538a5a(0x1d8)]===_0x538a5a(0xe5)?_0x1aab2f['localeCompare'](_0x179dfc):_0x179dfc[_0x538a5a(0xd8)](_0x1aab2f);});const _0x143aaa=['no',_0x13b21e(0xb8),_0x13b21e(0x176),'moneyback',_0x13b21e(0x1d5),_0x13b21e(0x1b7),_0x13b21e(0x1d4),'RegisMeeting'];_0x143aaa[_0x13b21e(0x141)](_0xbb349c=>{const _0x6e274f=_0x13b21e,_0x277c26=document[_0x6e274f(0x7b)](_0x6e274f(0x100)+_0xbb349c);_0x277c26&&(state['divSortBy']===_0xbb349c?_0x277c26[_0x6e274f(0x1df)]=state[_0x6e274f(0x1d8)]===_0x6e274f(0xe5)?_0x6e274f(0x17b):'<i\x20data-lucide=\x22chevron-down\x22\x20class=\x22inline\x20w-3\x22></i>':_0x277c26[_0x6e274f(0x1df)]=_0x6e274f(0x70));});const _0x58b698=_0x7322ac[_0x13b21e(0x1cd)](0x0,0x64),_0x560cb5=document['getElementById'](_0x13b21e(0x1c4));if(_0x560cb5)_0x560cb5[_0x13b21e(0x84)]=_0x13b21e(0xfe)+_0x58b698[_0x13b21e(0xbc)]+_0x13b21e(0x154)+_0x7322ac['length']+_0x13b21e(0xd6);_0x1ab754['innerHTML']=_0x58b698['map'](_0x4508a4=>{const _0xa9fee5=_0x13b21e;let _0x4f7e27='-';if(_0x4508a4[_0xa9fee5(0x172)]&&_0x4508a4[_0xa9fee5(0x172)]!==''){const _0x1e01e7=_0x4508a4['RegisMeeting']==='ไม่เข้าร่วม'?_0xa9fee5(0x88):_0xa9fee5(0x1b5);_0x4f7e27='<span\x20class=\x22text-xs\x20font-normal\x20text-white\x20'+_0x1e01e7+'\x20px-2\x20py-0.5\x20rounded\x22>'+(_0x4508a4[_0xa9fee5(0x167)]||_0xa9fee5(0x1dd))+_0xa9fee5(0x144);}const _0x11808d=_0x4508a4[_0xa9fee5(0x1d4)]?(_0x4508a4[_0xa9fee5(0x1d4)][_0xa9fee5(0x13d)]?.()||new Date(_0x4508a4[_0xa9fee5(0x1d4)]))[_0xa9fee5(0xc1)](_0xa9fee5(0x128)):'-';return'<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-center\x20font-mono\x22>'+(_0x4508a4['no']||'-')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22font-bold\x20text-slate-800\x22>'+(_0x4508a4[_0xa9fee5(0xb8)]||'-')+_0xa9fee5(0x90)+parseFloat(_0x4508a4['dividend']||0x0)[_0xa9fee5(0xc1)]()+_0xa9fee5(0x90)+parseFloat(_0x4508a4[_0xa9fee5(0x151)]||0x0)[_0xa9fee5(0xc1)]()+_0xa9fee5(0x90)+parseFloat(_0x4508a4[_0xa9fee5(0x1d5)]||0x0)[_0xa9fee5(0xc1)]()+_0xa9fee5(0x1d3)+parseFloat(_0x4508a4[_0xa9fee5(0x1b7)]||0x0)[_0xa9fee5(0xc1)]()+_0xa9fee5(0x1ec)+_0x11808d+_0xa9fee5(0x1ec)+_0x4f7e27+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-right\x22><button\x20onclick=\x22window.app.resetSingleDividendData(\x27'+_0x4508a4['id']+_0xa9fee5(0x106);})['join'](''),lucide[_0x13b21e(0xa3)]();}window['app'][_0x48b5e8(0x16c)]=_0x5eb716=>{const _0x4372e5=_0x48b5e8;state[_0x4372e5(0x118)]===_0x5eb716?state[_0x4372e5(0x1d8)]=state[_0x4372e5(0x1d8)]==='asc'?_0x4372e5(0x19c):_0x4372e5(0xe5):(state[_0x4372e5(0x118)]=_0x5eb716,state[_0x4372e5(0x1d8)]=_0x5eb716===_0x4372e5(0x1d4)?_0x4372e5(0x19c):'asc'),renderDividendTable(state[_0x4372e5(0x1be)]);},window[_0x48b5e8(0x1cb)][_0x48b5e8(0x178)]=()=>{const _0x202e04=_0x48b5e8,_0xb0ed39=state[_0x202e04(0x1be)],_0xa2eacf=[_0x202e04(0x161),'ชื่อ-นามสกุล',_0x202e04(0x158),_0x202e04(0xa8),_0x202e04(0x1b0),_0x202e04(0xa4),_0x202e04(0xc7),_0x202e04(0x83)],_0x1011e3=[_0xa2eacf[_0x202e04(0x182)](',')];_0xb0ed39[_0x202e04(0x141)](_0x4be619=>{const _0x325ca0=_0x202e04,_0x443b76=_0x4be619[_0x325ca0(0x1d4)]?(_0x4be619['DateLogin']['toDate']?.()||new Date(_0x4be619[_0x325ca0(0x1d4)]))[_0x325ca0(0xc1)](_0x325ca0(0x128)):'-',_0x2d05e6=_0x4be619[_0x325ca0(0x172)]&&_0x4be619[_0x325ca0(0x172)]!==''?_0x4be619[_0x325ca0(0x167)]||_0x325ca0(0x1dd):_0x325ca0(0x186),_0x45dc1d=[_0x4be619['no']||'','\x22'+(_0x4be619[_0x325ca0(0xb8)]||'')+'\x22',_0x4be619['dividend']||0x0,_0x4be619[_0x325ca0(0x151)]||0x0,_0x4be619[_0x325ca0(0x1d5)]||0x0,_0x4be619['netpayment']||0x0,'\x22'+_0x443b76+'\x22','\x22'+_0x2d05e6+'\x22'];_0x1011e3[_0x325ca0(0xbf)](_0x45dc1d[_0x325ca0(0x182)](','));});const _0x44793c='\ufeff'+_0x1011e3[_0x202e04(0x182)]('\x0a'),_0x1cf05d=new Blob([_0x44793c],{'type':_0x202e04(0x1d1)}),_0x3ff48f=URL[_0x202e04(0x1d9)](_0x1cf05d),_0x3e3991=document[_0x202e04(0xaf)]('a');_0x3e3991['setAttribute'](_0x202e04(0x9f),_0x3ff48f),_0x3e3991[_0x202e04(0x91)](_0x202e04(0x15e),_0x202e04(0xa6)+new Date()[_0x202e04(0x18c)]('th-TH')+_0x202e04(0xc3)),_0x3e3991[_0x202e04(0x1a7)](),window['app']['showToast'](_0x202e04(0x10e));},window['app'][_0x48b5e8(0x1a1)]=_0x51221d=>{const _0x2e9538=_0x48b5e8;state['sortBy']===_0x51221d?state['sortOrder']=state[_0x2e9538(0x180)]===_0x2e9538(0xe5)?'desc':_0x2e9538(0xe5):(state[_0x2e9538(0x11c)]=_0x51221d,state[_0x2e9538(0x180)]=_0x51221d===_0x2e9538(0x166)?'desc':_0x2e9538(0xe5)),renderTable(state[_0x2e9538(0x6a)]);},window[_0x48b5e8(0x1cb)][_0x48b5e8(0x123)]=()=>{const _0x19bc91=_0x48b5e8,_0x1b21a7=document[_0x19bc91(0x7b)](_0x19bc91(0x1e1))['value']['trim']()['toLowerCase'](),_0x2c3f33=document[_0x19bc91(0x7b)](_0x19bc91(0xfc)),_0x8102ef=state[_0x19bc91(0x6a)][_0x19bc91(0x86)](_0x5b62b9=>(_0x5b62b9[_0x19bc91(0x14f)]||'')[_0x19bc91(0x9c)]()[_0x19bc91(0xc2)](_0x1b21a7)||(_0x5b62b9[_0x19bc91(0x168)]||'')[_0x19bc91(0x11a)]()===_0x1b21a7);state[_0x19bc91(0xfa)]=_0x8102ef,_0x2c3f33[_0x19bc91(0x117)]=!_0x8102ef,_0x2c3f33[_0x19bc91(0x15d)][_0x19bc91(0xa7)](_0x19bc91(0x18d),!_0x8102ef),_0x2c3f33['classList'][_0x19bc91(0xa7)]('cursor-not-allowed',!_0x8102ef);},window[_0x48b5e8(0x1cb)]['openMemberSearchModal']=()=>{const _0x220c66=_0x48b5e8,_0x426e73=state[_0x220c66(0xfa)];if(!_0x426e73)return;document['getElementById']('search-member-details')['innerHTML']=_0x220c66(0x89)+_0x426e73[_0x220c66(0x14f)]+_0x220c66(0x1e5)+_0x426e73['EmpMember']+_0x220c66(0x1d0)+(_0x426e73['CheckIN']?_0x220c66(0xbb):'ยังไม่เช็คอิน')+_0x220c66(0x131)+(_0x426e73['CardPoll']?'<span\x20class=\x22text-emerald-600\x20font-bold\x22>รับแล้ว</span>':_0x220c66(0x13c))+_0x220c66(0x14d),document['getElementById'](_0x220c66(0x16d))['classList'][_0x220c66(0x129)](_0x220c66(0x97)),lucide[_0x220c66(0xa3)]();},window[_0x48b5e8(0x1cb)][_0x48b5e8(0x169)]=async _0x499806=>{const _0x281ec5=_0x48b5e8,_0x5af028=state[_0x281ec5(0xfa)];if(!_0x5af028)return;const _0x21f1d2={};!_0x5af028['TimeLogin']||_0x5af028[_0x281ec5(0x19a)]===''?(_0x21f1d2[_0x281ec5(0x19a)]=0x1,_0x21f1d2[_0x281ec5(0x166)]=serverTimestamp(),_0x21f1d2[_0x281ec5(0x187)]=_0x281ec5(0xdd)):_0x21f1d2[_0x281ec5(0x187)]=_0x281ec5(0xdd);_0x499806&&(_0x21f1d2[_0x281ec5(0x71)]=_0x281ec5(0x15a),_0x21f1d2[_0x281ec5(0x115)]=serverTimestamp());try{await updateDoc(doc(db,finalCollectionPath,_0x5af028['id']),_0x21f1d2),window['app'][_0x281ec5(0xa5)](_0x281ec5(0x10d)+(_0x499806?_0x281ec5(0x7f):'')),window[_0x281ec5(0x1cb)]['closeMemberSearchModal'](),document['getElementById']('member-search-input')[_0x281ec5(0x1e9)]='',window[_0x281ec5(0x1cb)][_0x281ec5(0x123)]();}catch(_0x38c263){window[_0x281ec5(0x1cb)][_0x281ec5(0xa5)](_0x281ec5(0x1b4),_0x281ec5(0xb1));}},window[_0x48b5e8(0x1cb)][_0x48b5e8(0x13f)]=async _0x512054=>{const _0x5d073b=_0x48b5e8;try{await updateDoc(doc(db,finalCollectionPath,_0x512054),{'ConfirmReward':serverTimestamp()}),window['app']['showToast'](_0x5d073b(0x10a));}catch(_0x1b7830){window[_0x5d073b(0x1cb)][_0x5d073b(0xa5)]('อัปเดตไม่สำเร็จ','error');}},window[_0x48b5e8(0x1cb)][_0x48b5e8(0x1ba)]=async _0xb67d22=>{const _0xd9bc63=_0x48b5e8;if(confirm('ล้างข้อมูลสถานะของพนักงานคนนี้ทั้งหมด?'))try{await updateDoc(doc(db,finalCollectionPath,_0xb67d22),{'CheckIN':deleteField(),'reward':deleteField(),'rewardTime':deleteField(),'status':deleteField(),'ConfirmReward':deleteField(),'CardPoll':deleteField(),'ConfirmVotingCard':deleteField(),'TimeLogin':deleteField()}),window['app'][_0xd9bc63(0xa5)]('ล้างข้อมูลสำเร็จ');}catch(_0x30633d){window[_0xd9bc63(0x1cb)][_0xd9bc63(0xa5)](_0xd9bc63(0x76),_0xd9bc63(0xb1));}},window[_0x48b5e8(0x1cb)]['openEditPrizeModal']=_0xa6ca81=>{const _0x4ad037=_0x48b5e8,_0x24ec39=state['prizes'][_0x4ad037(0x86)](_0x471b0e=>_0x471b0e['id']===_0xa6ca81);if(!_0x24ec39)return;state[_0x4ad037(0x183)]=_0xa6ca81,document[_0x4ad037(0x7b)](_0x4ad037(0x95))[_0x4ad037(0x1e9)]=_0x24ec39['name']||'',document[_0x4ad037(0x7b)](_0x4ad037(0x1a4))['value']=_0x24ec39['qtyPerDraw']||0x1,document['getElementById'](_0x4ad037(0xb5))[_0x4ad037(0x1e9)]=_0x24ec39[_0x4ad037(0xd7)]||0x1,document['getElementById'](_0x4ad037(0x132))[_0x4ad037(0x15d)][_0x4ad037(0x129)](_0x4ad037(0x97)),lucide[_0x4ad037(0xa3)]();},window[_0x48b5e8(0x1cb)][_0x48b5e8(0x116)]=()=>{const _0x3a508b=_0x48b5e8;state[_0x3a508b(0x183)]=null,document[_0x3a508b(0x7b)](_0x3a508b(0x132))[_0x3a508b(0x15d)][_0x3a508b(0x18f)](_0x3a508b(0x97));},window[_0x48b5e8(0x1cb)]['saveEditedPrize']=async()=>{const _0x8050c4=_0x48b5e8;if(!state[_0x8050c4(0x183)])return;const _0xb7b881=document[_0x8050c4(0x7b)](_0x8050c4(0x95))[_0x8050c4(0x1e9)],_0x411562=parseInt(document[_0x8050c4(0x7b)](_0x8050c4(0x1a4))[_0x8050c4(0x1e9)]),_0x52d993=parseInt(document['getElementById'](_0x8050c4(0xb5))[_0x8050c4(0x1e9)]);try{await updateDoc(doc(db,prizesCollectionPath,state['prizeIdToEdit']),{'name':_0xb7b881,'qtyPerDraw':_0x411562,'totalQty':_0x52d993}),window[_0x8050c4(0x1cb)][_0x8050c4(0xa5)]('แก้ไขข้อมูลรางวัลสำเร็จ'),window[_0x8050c4(0x1cb)][_0x8050c4(0x116)]();}catch(_0x113291){window[_0x8050c4(0x1cb)][_0x8050c4(0xa5)](_0x8050c4(0x93),'error');}},window[_0x48b5e8(0x1cb)][_0x48b5e8(0xe9)]=_0x277a55=>{const _0xe0a596=_0x48b5e8;state[_0xe0a596(0x147)]=_0x277a55,document[_0xe0a596(0x7b)](_0xe0a596(0x155))[_0xe0a596(0x15d)][_0xe0a596(0x129)]('hidden');},window[_0x48b5e8(0x1cb)][_0x48b5e8(0xa0)]=()=>{const _0x419003=_0x48b5e8;state[_0x419003(0x147)]=null,document[_0x419003(0x7b)]('dividend-single-reset-modal')[_0x419003(0x15d)][_0x419003(0x18f)](_0x419003(0x97));},window['app'][_0x48b5e8(0x175)]=async()=>{const _0x2cacfa=_0x48b5e8,_0x50e190=state[_0x2cacfa(0x147)];if(!_0x50e190)return;try{await updateDoc(doc(db,dividendCollectionPath,_0x50e190),{'DateLogin':deleteField(),'DateMeeting':deleteField(),'RegisMeeting':deleteField(),'login':deleteField()}),window[_0x2cacfa(0x1cb)][_0x2cacfa(0xa5)](_0x2cacfa(0xb6)),window[_0x2cacfa(0x1cb)][_0x2cacfa(0xa0)]();}catch(_0x5c83b4){window['app']['showToast'](_0x2cacfa(0x76),_0x2cacfa(0xb1));}},window['app'][_0x48b5e8(0x1f1)]=_0x6c86a0=>{const _0x5b23de=_0x48b5e8,_0x499368=_0x6c86a0[_0x5b23de(0x7c)][_0x5b23de(0xeb)][0x0];_0x499368&&(state['fileToImport']=_0x499368,document[_0x5b23de(0x7b)](_0x5b23de(0x112))[_0x5b23de(0x84)]=_0x499368[_0x5b23de(0xb3)],document['getElementById'](_0x5b23de(0x1d2))['classList'][_0x5b23de(0x129)](_0x5b23de(0x97)),document[_0x5b23de(0x7b)](_0x5b23de(0x189))[_0x5b23de(0x117)]=![]);},window[_0x48b5e8(0x1cb)][_0x48b5e8(0x192)]=()=>{const _0x355134=_0x48b5e8;state['fileToImport']=null,document[_0x355134(0x7b)](_0x355134(0x1d2))[_0x355134(0x15d)][_0x355134(0x18f)](_0x355134(0x97)),document[_0x355134(0x7b)](_0x355134(0x189))[_0x355134(0x117)]=!![];},window['app'][_0x48b5e8(0x12c)]=_0x496107=>{const _0x4b4758=_0x48b5e8,_0x8c1513=_0x496107[_0x4b4758(0x7c)]['files'][0x0];_0x8c1513&&(state[_0x4b4758(0xbe)]=_0x8c1513,document[_0x4b4758(0x7b)]('dividend-file-name')[_0x4b4758(0x84)]=_0x8c1513['name'],document[_0x4b4758(0x7b)](_0x4b4758(0x1cc))[_0x4b4758(0x15d)]['remove']('hidden'),document[_0x4b4758(0x7b)](_0x4b4758(0x1b6))[_0x4b4758(0x117)]=![]);},window[_0x48b5e8(0x1cb)]['clearDividendFileSelection']=()=>{const _0xd98cf4=_0x48b5e8;state['dividendFileToImport']=null,document[_0xd98cf4(0x7b)](_0xd98cf4(0x1cc))[_0xd98cf4(0x15d)][_0xd98cf4(0x18f)]('hidden'),document[_0xd98cf4(0x7b)]('btn-dividend-import')[_0xd98cf4(0x117)]=!![];},window[_0x48b5e8(0x1cb)][_0x48b5e8(0xce)]=async()=>{const _0x2423ff=_0x48b5e8,_0x2ec6e1=state[_0x2423ff(0x1b3)];if(!_0x2ec6e1)return;const _0x47fc8f=await _0x2ec6e1[_0x2423ff(0x82)]();let _0x3fdc4c=_0x2ec6e1[_0x2423ff(0xb3)][_0x2423ff(0xed)](_0x2423ff(0xc3))?csvToJson(_0x47fc8f):JSON[_0x2423ff(0xca)](_0x47fc8f);document[_0x2423ff(0x7b)](_0x2423ff(0x1f2))['classList'][_0x2423ff(0x129)]('hidden');const _0x1dc8b8=_0x3fdc4c[_0x2423ff(0xbc)],_0x2eb673=0x12c;for(let _0x7b5c1d=0x0;_0x7b5c1d<_0x1dc8b8;_0x7b5c1d+=_0x2eb673){const _0x343d48=_0x3fdc4c[_0x2423ff(0x1cd)](_0x7b5c1d,_0x7b5c1d+_0x2eb673),_0x17a544=writeBatch(db);for(const _0x4bee66 of _0x343d48){const _0x5625b5=_0x4bee66['citizenId']||_0x4bee66[_0x2423ff(0x104)]||'',_0x3cce93=await sha256(_0x5625b5[_0x2423ff(0x11a)]()[_0x2423ff(0x73)](/-/g,'')[_0x2423ff(0x190)]()),_0x534915=doc(collection(db,finalCollectionPath));_0x17a544[_0x2423ff(0x1ef)](_0x534915,{..._0x4bee66,'citizenId':_0x3cce93,'importedAt':serverTimestamp()});}await _0x17a544[_0x2423ff(0x11e)](),document['getElementById'](_0x2423ff(0x9b))[_0x2423ff(0x136)][_0x2423ff(0x1e2)]=(_0x7b5c1d+_0x343d48[_0x2423ff(0xbc)])/_0x1dc8b8*0x64+'%';}window[_0x2423ff(0x1cb)][_0x2423ff(0xa5)](_0x2423ff(0x171)),window['app']['clearFileSelection']();},window[_0x48b5e8(0x1cb)][_0x48b5e8(0xc4)]=async()=>{const _0x3b4b4b=_0x48b5e8,_0x4e5e9e=state[_0x3b4b4b(0xbe)];if(!_0x4e5e9e)return;const _0x2455e5=await _0x4e5e9e[_0x3b4b4b(0x82)]();let _0x157867=_0x4e5e9e[_0x3b4b4b(0xb3)][_0x3b4b4b(0xed)]('.csv')?csvToJson(_0x2455e5):JSON[_0x3b4b4b(0xca)](_0x2455e5);document[_0x3b4b4b(0x7b)](_0x3b4b4b(0x8a))['classList']['remove'](_0x3b4b4b(0x97));const _0x11490d=_0x157867[_0x3b4b4b(0xbc)],_0x629449=0x12c;for(let _0x862099=0x0;_0x862099<_0x11490d;_0x862099+=_0x629449){const _0x39219d=_0x157867[_0x3b4b4b(0x1cd)](_0x862099,_0x862099+_0x629449),_0x50b32b=writeBatch(db);for(const _0x1f9189 of _0x39219d){const _0xff3e2f=_0x1f9189['citizenId']||_0x1f9189['citizenID']||_0x1f9189[_0x3b4b4b(0x1a0)]||'',_0x5ba1be=_0xff3e2f?await sha256(_0xff3e2f[_0x3b4b4b(0x11a)]()[_0x3b4b4b(0x73)](/-/g,'')['trim']()):'',_0x4fae23=doc(collection(db,dividendCollectionPath));_0x50b32b[_0x3b4b4b(0x1ef)](_0x4fae23,{..._0x1f9189,'citizenId':_0x5ba1be,'membertype':_0x3b4b4b(0x10b),'importedAt':serverTimestamp()});}await _0x50b32b[_0x3b4b4b(0x11e)](),document[_0x3b4b4b(0x7b)]('dividend-import-bar')[_0x3b4b4b(0x136)][_0x3b4b4b(0x1e2)]=(_0x862099+_0x39219d[_0x3b4b4b(0xbc)])/_0x11490d*0x64+'%';}window[_0x3b4b4b(0x1cb)][_0x3b4b4b(0xa5)]('นำเข้าข้อมูลปันผลสำเร็จ'),window[_0x3b4b4b(0x1cb)][_0x3b4b4b(0x1ac)]();},window[_0x48b5e8(0x1cb)]['openResetModal']=()=>{const _0x55ac78=_0x48b5e8;document[_0x55ac78(0x7b)](_0x55ac78(0x1ca))[_0x55ac78(0x1e9)]='',document[_0x55ac78(0x7b)](_0x55ac78(0xb0))[_0x55ac78(0x15d)][_0x55ac78(0x129)](_0x55ac78(0x97));},window[_0x48b5e8(0x1cb)][_0x48b5e8(0xfb)]=()=>document[_0x48b5e8(0x7b)](_0x48b5e8(0xb0))[_0x48b5e8(0x15d)][_0x48b5e8(0x18f)](_0x48b5e8(0x97)),window['app'][_0x48b5e8(0xd5)]=()=>{const _0x1e4d1e=_0x48b5e8;document[_0x1e4d1e(0x7b)]('confirm-delete-input')[_0x1e4d1e(0x1e9)]='',document[_0x1e4d1e(0x7b)](_0x1e4d1e(0x149))[_0x1e4d1e(0x15d)][_0x1e4d1e(0x129)](_0x1e4d1e(0x97));},window['app'][_0x48b5e8(0xec)]=()=>document[_0x48b5e8(0x7b)](_0x48b5e8(0x149))['classList'][_0x48b5e8(0x18f)]('hidden'),window[_0x48b5e8(0x1cb)]['openDividendResetModal']=()=>{const _0x3b3979=_0x48b5e8;document[_0x3b3979(0x7b)](_0x3b3979(0x173))[_0x3b3979(0x1e9)]='',document[_0x3b3979(0x7b)](_0x3b3979(0x174))['classList']['remove'](_0x3b3979(0x97));},window['app'][_0x48b5e8(0x139)]=()=>document['getElementById']('dividend-reset-confirm-modal')['classList'][_0x48b5e8(0x18f)](_0x48b5e8(0x97)),window[_0x48b5e8(0x1cb)][_0x48b5e8(0x18b)]=()=>{const _0x242bea=_0x48b5e8;document[_0x242bea(0x7b)](_0x242bea(0x130))['value']='',document[_0x242bea(0x7b)](_0x242bea(0x156))[_0x242bea(0x15d)][_0x242bea(0x129)](_0x242bea(0x97));},window[_0x48b5e8(0x1cb)][_0x48b5e8(0xc5)]=()=>document[_0x48b5e8(0x7b)](_0x48b5e8(0x156))[_0x48b5e8(0x15d)][_0x48b5e8(0x18f)](_0x48b5e8(0x97)),window['app'][_0x48b5e8(0xf3)]=()=>document[_0x48b5e8(0x7b)](_0x48b5e8(0x16d))['classList'][_0x48b5e8(0x18f)](_0x48b5e8(0x97)),window[_0x48b5e8(0x1cb)][_0x48b5e8(0x159)]=async()=>{const _0x266f7e=_0x48b5e8;if(document[_0x266f7e(0x7b)](_0x266f7e(0x1ca))[_0x266f7e(0x1e9)][_0x266f7e(0x190)]()!==_0x266f7e(0x11b))return window['app'][_0x266f7e(0xa5)]('พิมพ์\x20Reset\x20เพื่อยืนยัน','error');window[_0x266f7e(0x1cb)][_0x266f7e(0xfb)]();const _0xc37763=await getDocs(query(collection(db,finalCollectionPath))),_0x1bd5e1=writeBatch(db);_0xc37763[_0x266f7e(0x141)](_0x2c4235=>_0x1bd5e1[_0x266f7e(0x8b)](_0x2c4235[_0x266f7e(0x1e7)],{'CheckIN':deleteField(),'reward':deleteField(),'rewardTime':deleteField(),'ConfirmReward':deleteField(),'status':deleteField(),'CardPoll':deleteField(),'ConfirmVotingCard':deleteField(),'TimeLogin':deleteField()})),await _0x1bd5e1[_0x266f7e(0x11e)](),window[_0x266f7e(0x1cb)][_0x266f7e(0xa5)](_0x266f7e(0x19d));},window['app'][_0x48b5e8(0xa1)]=async()=>{const _0xe5f505=_0x48b5e8;if(document[_0xe5f505(0x7b)](_0xe5f505(0x150))[_0xe5f505(0x1e9)][_0xe5f505(0x190)]()!==_0xe5f505(0x152))return window[_0xe5f505(0x1cb)][_0xe5f505(0xa5)]('พิมพ์\x20Delete\x20เพื่อยืนยัน',_0xe5f505(0xb1));window[_0xe5f505(0x1cb)][_0xe5f505(0xec)]();const _0x4716ca=await getDocs(query(collection(db,finalCollectionPath))),_0x5eedd5=writeBatch(db);_0x4716ca[_0xe5f505(0x141)](_0x366ffb=>_0x5eedd5[_0xe5f505(0x127)](_0x366ffb[_0xe5f505(0x1e7)])),await _0x5eedd5[_0xe5f505(0x11e)](),window[_0xe5f505(0x1cb)]['showToast'](_0xe5f505(0x114));},window[_0x48b5e8(0x1cb)][_0x48b5e8(0xc9)]=async()=>{const _0x40e645=_0x48b5e8;if(document['getElementById'](_0x40e645(0x173))[_0x40e645(0x1e9)][_0x40e645(0x190)]()!==_0x40e645(0x11b))return window['app'][_0x40e645(0xa5)](_0x40e645(0x177),_0x40e645(0xb1));window['app'][_0x40e645(0x139)]();const _0x284e33=await getDocs(query(collection(db,dividendCollectionPath))),_0x2b4d50=writeBatch(db);_0x284e33['forEach'](_0x51ffd9=>_0x2b4d50[_0x40e645(0x8b)](_0x51ffd9[_0x40e645(0x1e7)],{'DateLogin':deleteField(),'DateMeeting':deleteField(),'RegisMeeting':deleteField(),'login':deleteField()})),await _0x2b4d50['commit'](),window[_0x40e645(0x1cb)][_0x40e645(0xa5)](_0x40e645(0xc0));},window['app'][_0x48b5e8(0x6b)]=async()=>{const _0x52306a=_0x48b5e8;if(document[_0x52306a(0x7b)](_0x52306a(0x130))[_0x52306a(0x1e9)][_0x52306a(0x190)]()!==_0x52306a(0x152))return window[_0x52306a(0x1cb)]['showToast'](_0x52306a(0x143),_0x52306a(0xb1));window['app'][_0x52306a(0xc5)]();const _0x3cb855=await getDocs(query(collection(db,dividendCollectionPath))),_0x52158b=writeBatch(db);_0x3cb855[_0x52306a(0x141)](_0x5c2fad=>_0x52158b[_0x52306a(0x127)](_0x5c2fad[_0x52306a(0x1e7)])),await _0x52158b['commit'](),window[_0x52306a(0x1cb)][_0x52306a(0xa5)]('ลบฐานข้อมูลเงินปันผลแล้ว');},window['app'][_0x48b5e8(0x126)]=()=>{const _0x2b8b00=_0x48b5e8,_0x2008d5=document[_0x2b8b00(0x7b)](_0x2b8b00(0x1e0)),_0x301bc1=_0x2008d5['options'][_0x2008d5[_0x2b8b00(0x164)]];if(!_0x2008d5[_0x2b8b00(0x1e9)])return;const _0x22b5a1=parseInt(_0x301bc1[_0x2b8b00(0xda)][_0x2b8b00(0x153)]),_0x1fc152=state[_0x2b8b00(0x6a)][_0x2b8b00(0x19f)](_0x3e6768=>_0x3e6768[_0x2b8b00(0xcd)]===_0x301bc1[_0x2b8b00(0x82)])['length'],_0x5f42fe=_0x22b5a1-_0x1fc152;document[_0x2b8b00(0x7b)](_0x2b8b00(0x101))['innerText']=_0x5f42fe,document[_0x2b8b00(0x7b)](_0x2b8b00(0x103))[_0x2b8b00(0x84)]=state['stats']['notYetDrawn'],document['getElementById'](_0x2b8b00(0x10c))[_0x2b8b00(0x1e9)]=_0x301bc1[_0x2b8b00(0xda)][_0x2b8b00(0x1eb)],window['app']['validateRandomizerInput']();},window[_0x48b5e8(0x1cb)]['validateRandomizerInput']=()=>{const _0x108ccf=_0x48b5e8,_0xe7214e=document[_0x108ccf(0x7b)](_0x108ccf(0x1e0)),_0x97893=parseInt(document['getElementById'](_0x108ccf(0x10c))[_0x108ccf(0x1e9)]),_0x40bc1=parseInt(document[_0x108ccf(0x7b)](_0x108ccf(0x101))[_0x108ccf(0x84)]),_0x386021=_0x97893>0x0&&_0x97893<=_0x40bc1&&_0xe7214e[_0x108ccf(0x1e9)];document[_0x108ccf(0x7b)](_0x108ccf(0x135))[_0x108ccf(0x117)]=!_0x386021,document['getElementById'](_0x108ccf(0x15b))['classList'][_0x108ccf(0xa7)](_0x108ccf(0x97),_0x97893<=_0x40bc1);},window[_0x48b5e8(0x1cb)][_0x48b5e8(0x8d)]=async()=>{const _0x5931e3=_0x48b5e8;if(state[_0x5931e3(0x1a3)])return;const _0x448061=document[_0x5931e3(0x7b)](_0x5931e3(0x1e0)),_0x357ad3=_0x448061[_0x5931e3(0x16b)][_0x448061['selectedIndex']][_0x5931e3(0x82)],_0x57e47a=parseInt(document['getElementById'](_0x5931e3(0x10c))[_0x5931e3(0x1e9)]),_0x4d4fff=state[_0x5931e3(0x6a)][_0x5931e3(0x19f)](_0x51057a=>_0x51057a[_0x5931e3(0x187)]===_0x5931e3(0xdd)&&!_0x51057a[_0x5931e3(0xcd)]);if(_0x4d4fff[_0x5931e3(0xbc)]<_0x57e47a)return window[_0x5931e3(0x1cb)][_0x5931e3(0xa5)]('ผู้มีสิทธิ์ลุ้นไม่เพียงพอ',_0x5931e3(0xb1));state[_0x5931e3(0x1a3)]=!![],document[_0x5931e3(0x7b)](_0x5931e3(0x135))[_0x5931e3(0x117)]=!![],document[_0x5931e3(0x7b)](_0x5931e3(0x1dc))[_0x5931e3(0x15d)][_0x5931e3(0x129)](_0x5931e3(0x97)),await new Promise(_0x2ea983=>setTimeout(_0x2ea983,0x3e8)),document['getElementById'](_0x5931e3(0x1dc))[_0x5931e3(0x15d)][_0x5931e3(0x18f)](_0x5931e3(0x97)),document[_0x5931e3(0x7b)](_0x5931e3(0xd0))['innerHTML']='';const _0x1812af=_0x4d4fff['sort'](()=>0.5-Math[_0x5931e3(0x8e)]())[_0x5931e3(0x1cd)](0x0,_0x57e47a);for(let _0x5af405=0x0;_0x5af405<_0x1812af[_0x5931e3(0xbc)];_0x5af405++){const _0x394fdd=_0x1812af[_0x5af405],_0x4419ba=document[_0x5931e3(0xaf)]('div');_0x4419ba[_0x5931e3(0x1e3)]=_0x5931e3(0xf9),_0x4419ba[_0x5931e3(0x1df)]=_0x5931e3(0x8f)+_0x394fdd[_0x5931e3(0x14f)]+_0x5931e3(0xd9)+_0x394fdd[_0x5931e3(0x168)]+_0x5931e3(0xf7)+_0x357ad3+_0x5931e3(0x144),document[_0x5931e3(0x7b)](_0x5931e3(0xd0))['appendChild'](_0x4419ba),confetti({'particleCount':0x64,'spread':0x46,'origin':{'y':0.6}}),await updateDoc(doc(db,finalCollectionPath,_0x394fdd['id']),{'reward':_0x357ad3,'rewardTime':serverTimestamp()});if(_0x5af405<_0x1812af[_0x5931e3(0xbc)]-0x1)await new Promise(_0x4d0bc7=>setTimeout(_0x4d0bc7,0x7d0));}state['isDrawing']=![],window[_0x5931e3(0x1cb)][_0x5931e3(0x126)]();};function updateCharts(_0xf84b8e){const _0x7d67fb=_0x48b5e8,_0x657f3d=Array['from']({'length':0x18},(_0x30eb05,_0x38d0f7)=>_0x38d0f7+_0x7d67fb(0x1e8)),_0x1cbc1b=document[_0x7d67fb(0x7b)](_0x7d67fb(0x13e))?.[_0x7d67fb(0x1cf)]('2d');if(!_0x1cbc1b)return;window[_0x7d67fb(0x160)]?(window[_0x7d67fb(0x160)]['data'][_0x7d67fb(0x16a)][0x0][_0x7d67fb(0x1ee)]=_0x657f3d[_0x7d67fb(0x14b)]((_0x3ea93f,_0x67d587)=>_0xf84b8e[_0x67d587]||0x0),window[_0x7d67fb(0x160)]['update']()):window[_0x7d67fb(0x160)]=new Chart(_0x1cbc1b,{'type':_0x7d67fb(0x1da),'data':{'labels':_0x657f3d,'datasets':[{'label':_0x7d67fb(0xff),'data':_0x657f3d[_0x7d67fb(0x14b)]((_0x16b636,_0x3ea90a)=>_0xf84b8e[_0x3ea90a]||0x0),'borderColor':_0x7d67fb(0x1ab),'backgroundColor':_0x7d67fb(0xd4),'fill':!![],'tension':0.4}]},'options':{'responsive':!![],'maintainAspectRatio':![]}});}function renderActivityFeed(_0x309183){const _0x22fd8a=_0x48b5e8,_0x7ae2f2=document[_0x22fd8a(0x7b)](_0x22fd8a(0x19b));if(!_0x7ae2f2)return;const _0x5159da=[];_0x309183[_0x22fd8a(0x141)](_0x4b680b=>{const _0x4c10cd=_0x22fd8a;if(_0x4b680b[_0x4c10cd(0x166)])_0x5159da[_0x4c10cd(0xbf)]({'t':'IN','d':_0x4b680b[_0x4c10cd(0x166)][_0x4c10cd(0x13d)]?.()||new Date(_0x4b680b[_0x4c10cd(0x166)]),'n':_0x4b680b['EmpName']});}),_0x5159da[_0x22fd8a(0x195)]((_0x1df3fb,_0x1dbfb9)=>_0x1dbfb9['d']-_0x1df3fb['d']),_0x7ae2f2['innerHTML']=_0x5159da[_0x22fd8a(0x1cd)](0x0,0xf)[_0x22fd8a(0x14b)](_0xf02531=>'<div\x20class=\x22flex\x20items-center\x20gap-3\x20p-3\x20bg-slate-50\x20rounded-xl\x20text-sm\x20border-l-4\x20border-indigo-500\x20shadow-sm\x20font-medium\x22><span\x20class=\x22font-bold\x20text-indigo-700\x22>IN</span>\x20<span\x20class=\x22flex-1\x22>'+_0xf02531['n']+_0x22fd8a(0xdf)+_0xf02531['d'][_0x22fd8a(0x7a)]('th-TH')+_0x22fd8a(0x1ae))['join']('');}const csvToJson=_0x44e1d7=>{const _0x5f5698=_0x48b5e8,_0x2cb7a1=_0x44e1d7[_0x5f5698(0x140)]('\x0a'),_0x51224b=_0x2cb7a1[0x0][_0x5f5698(0x140)](',')['map'](_0x222c18=>_0x222c18[_0x5f5698(0x190)]());return _0x2cb7a1[_0x5f5698(0x1cd)](0x1)[_0x5f5698(0x14b)](_0x75f2d7=>{const _0x443a44=_0x5f5698,_0x3e5512=_0x75f2d7[_0x443a44(0x140)](',');if(_0x3e5512['length']<_0x51224b[_0x443a44(0xbc)])return null;return _0x51224b[_0x443a44(0x8c)]((_0x205620,_0x6e6d9c,_0x34a299)=>{const _0x142934=_0x443a44;return _0x205620[_0x6e6d9c]=_0x3e5512[_0x34a299]?_0x3e5512[_0x34a299][_0x142934(0x190)]():'',_0x205620;},{});})[_0x5f5698(0x19f)](_0x3ae310=>_0x3ae310);};setInterval(()=>{const _0x5a2818=_0x48b5e8;if(document[_0x5a2818(0x7b)]('current-time'))document[_0x5a2818(0x7b)](_0x5a2818(0xcb))['innerText']=new Date()[_0x5a2818(0x7a)](_0x5a2818(0x128));},0x3e8),window['app'][_0x48b5e8(0x1e4)]=async _0x7a5c16=>{const _0x1ecf9b=_0x48b5e8;_0x7a5c16['preventDefault']();const _0x5efe8b=document[_0x1ecf9b(0x7b)](_0x1ecf9b(0xe1))[_0x1ecf9b(0x1e9)],_0xfaf948=parseInt(document[_0x1ecf9b(0x7b)](_0x1ecf9b(0x12f))[_0x1ecf9b(0x1e9)]),_0x2de14f=parseInt(document['getElementById'](_0x1ecf9b(0x193))[_0x1ecf9b(0x1e9)]);await addDoc(collection(db,prizesCollectionPath),{'name':_0x5efe8b,'qtyPerDraw':_0xfaf948,'totalQty':_0x2de14f,'createdAt':serverTimestamp()}),document['getElementById']('prize-form')[_0x1ecf9b(0x11f)](),window[_0x1ecf9b(0x1cb)][_0x1ecf9b(0xa5)](_0x1ecf9b(0x134));},window[_0x48b5e8(0x1cb)]['deletePrize']=async _0x41900a=>{const _0x5205cb=_0x48b5e8;if(confirm(_0x5205cb(0x105)))await deleteDoc(doc(db,prizesCollectionPath,_0x41900a));},window['app'][_0x48b5e8(0x109)]=async _0x3f1925=>{const _0x46df9c=_0x48b5e8;if(confirm(_0x46df9c(0xe6)))await updateDoc(doc(db,finalCollectionPath,_0x3f1925),{'reward':deleteField(),'rewardTime':deleteField(),'ConfirmReward':deleteField()});},window[_0x48b5e8(0x1cb)]['handleSearch']=_0x671318=>{const _0x2a8f0e=_0x48b5e8;state[_0x2a8f0e(0xba)]=_0x671318['toLowerCase'](),state[_0x2a8f0e(0x1ed)]=0x1,renderTable(state[_0x2a8f0e(0x6a)]);},window[_0x48b5e8(0x1cb)]['handleDividendSearch']=_0x5a8739=>{const _0x33e699=_0x48b5e8;state['divSearchTerm']=_0x5a8739[_0x33e699(0x9c)](),renderDividendTable(state['dividendUsers']);},window['app'][_0x48b5e8(0x1c7)]=_0x2e44a4=>{const _0x1681d2=_0x48b5e8;state[_0x1681d2(0x1ed)]+=_0x2e44a4,renderTable(state[_0x1681d2(0x6a)]);};async function init(){const _0x4e1ae3=_0x48b5e8;try{await signInAnonymously(auth),document[_0x4e1ae3(0x7b)]('status-indicator')?.[_0x4e1ae3(0x15d)][_0x4e1ae3(0x73)]('bg-red-500',_0x4e1ae3(0x1b5));if(document[_0x4e1ae3(0x7b)](_0x4e1ae3(0xde)))document[_0x4e1ae3(0x7b)](_0x4e1ae3(0xde))[_0x4e1ae3(0x84)]=_0x4e1ae3(0xe2);onSnapshot(query(collection(db,finalCollectionPath)),_0x30f3ac=>processSnapshot(_0x30f3ac)),onSnapshot(query(collection(db,prizesCollectionPath)),_0x3bebe4=>{const _0x49db90=_0x4e1ae3,_0xf94241=[];let _0x4a92bf=0x0;_0x3bebe4['forEach'](_0x4473a0=>{const _0xc32be6=_0x3188,_0x2ccd86=_0x4473a0['data']();_0xf94241[_0xc32be6(0xbf)]({'id':_0x4473a0['id'],..._0x2ccd86}),_0x4a92bf+=parseInt(_0x2ccd86[_0xc32be6(0xd7)])||0x0;}),state[_0x49db90(0x79)]=_0xf94241,state['stats'][_0x49db90(0x184)]=_0x4a92bf;const _0xe33d50=document[_0x49db90(0x7b)](_0x49db90(0x1e0));if(_0xe33d50)_0xe33d50[_0x49db90(0x1df)]=_0x49db90(0x17d)+_0xf94241['map'](_0x362b7c=>'<option\x20value=\x22'+_0x362b7c['id']+_0x49db90(0x85)+_0x362b7c[_0x49db90(0xb7)]+_0x49db90(0xc8)+_0x362b7c[_0x49db90(0xd7)]+'\x22>'+_0x362b7c[_0x49db90(0xb3)]+_0x49db90(0x162))['join']('');const _0x4f20e5=document[_0x49db90(0x7b)](_0x49db90(0xf4));if(_0x4f20e5)_0x4f20e5[_0x49db90(0x1df)]=_0xf94241[_0x49db90(0x14b)](_0x57a0b0=>_0x49db90(0xbd)+_0x57a0b0[_0x49db90(0xb3)]+_0x49db90(0x1f0)+_0x57a0b0[_0x49db90(0xb7)]+_0x49db90(0xcc)+_0x57a0b0['totalQty']+_0x49db90(0x75)+_0x57a0b0['id']+_0x49db90(0xe7)+_0x57a0b0['id']+_0x49db90(0x17f))[_0x49db90(0x182)]('');lucide[_0x49db90(0xa3)]();}),onSnapshot(query(collection(db,dividendCollectionPath)),_0x1e7afa=>{const _0x4ba87c=_0x4e1ae3,_0x306333=[];let _0x690be0=0x0,_0x4d740b=0x0,_0x19b189=0x0;_0x1e7afa['forEach'](_0x285f19=>{const _0x13dcb6=_0x3188,_0xbbb0cc=_0x285f19['data']();_0x306333[_0x13dcb6(0xbf)]({'id':_0x285f19['id'],..._0xbbb0cc});if(_0xbbb0cc[_0x13dcb6(0x1d4)])_0x690be0++;if(_0xbbb0cc[_0x13dcb6(0x172)]&&_0xbbb0cc[_0x13dcb6(0x172)]!==''){if(_0xbbb0cc[_0x13dcb6(0x167)]===_0x13dcb6(0x186))_0x19b189++;else _0x4d740b++;}}),state[_0x4ba87c(0x1be)]=_0x306333,state['stats'][_0x4ba87c(0x124)]=_0x1e7afa['size'],state[_0x4ba87c(0x122)][_0x4ba87c(0x165)]=_0x690be0,state['stats'][_0x4ba87c(0x96)]=_0x4d740b,state[_0x4ba87c(0x122)]['divNoJoin']=_0x19b189,updateDashboardUI(state['stats']);if(!document['getElementById'](_0x4ba87c(0x138))[_0x4ba87c(0x15d)]['contains'](_0x4ba87c(0x97)))renderDividendTable(_0x306333);}),window[_0x4e1ae3(0x1cb)][_0x4e1ae3(0x102)](_0x4e1ae3(0x6f));}catch(_0x619c86){console[_0x4e1ae3(0xb1)](_0x619c86);}}init(),lucide[_0x48b5e8(0xa3)]();function _0x1725(){const _0x1ec05c=['add','trim','ConfirmReward','clearFileSelection','prize-total','filter-results-status','sort','renderResults','opacity-0','<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-center\x20font-mono\x20text-slate-500\x22>','dividend-info','TimeLogin','recent-activity-list','desc','รีเซ็ตสถานะสำเร็จ','เวลา\x20Check-In','filter','CitizenId','changeSort','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-right\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22window.app.deleteSingleData(\x27','isDrawing','edit-prize-qty','https://ttb-register-default-rtdb.asia-southeast1.firebasedate.app','<tr><td\x20colspan=\x226\x22\x20class=\x22text-center\x20py-8\x20text-slate-400\x22>ไม่พบข้อมูล</td></tr>','click','table-body','ttb-register.firebaseapp.com','ระบบสุ่มรางวัล','#4f46e5','clearDividendFileSelection','\x22\x20width=\x2220\x22></i><div\x20class=\x22flex-1\x20text-sm\x20font-bold\x22>','</span></div>','rand-stat-drawn-win','เงินสมนาคุณ','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20py-4\x20text-xs\x20text-slate-500\x20font-mono\x20text-center\x22>','view-','fileToImport','เกิดข้อผิดพลาดในการบันทึก','bg-green-500','btn-dividend-import','netpayment','bg-slate-700','G-9DJLWJ5LQ1','deleteSingleData','<button\x20onclick=\x22window.app.manualConfirmReward(\x27','Download\x20CSV\x20ข้อมูลลงทะเบียนสำเร็จ','dash-stat-total','dividendUsers','res-stat-total-drawn','divSearchTerm','rewarded','getHours','79568IsfeEb','div-table-info','ceil','ไม่ได้รับรางวัล','changePage','sort-','<span\x20class=\x22px-2\x20py-1\x20bg-green-100\x20text-green-700\x20rounded-full\x20text-xs\x20font-bold\x22>รับแล้ว</span>','confirm-reset-input','app','dividend-file-info','slice','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20py-4\x20text-center\x22>','getContext','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<b\x20class=\x22text-slate-400\x22>สถานะเช็คอิน:</b>\x20<span>','text/csv;charset=utf-8;','file-info','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-right\x20font-bold\x20text-emerald-600\x22>','DateLogin','gratuity','res-stat-claimed','dash-stat-div-reg','divSortOrder','createObjectURL','line','res-stat-winners','screen-overlay-controls','เข้าร่วม','registered_members_','innerHTML','select-prize','member-search-input','width','className','handlePrizeSubmit','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<b\x20class=\x22text-slate-400\x22>รหัสสมาชิก:</b>\x20<span\x20class=\x22font-mono\x22>','rand-stat-total','ref',':00','value','21290dpeRha','qty','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-center\x22>','currentPage','data','set','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-center\x20font-bold\x22>','handleFileSelect','import-progress','users','confirmDeleteAllDividendData','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22font-bold\x20text-blue-600\x22>','reg-stat-voting','manage-dividend-total','dashboard','<i\x20data-lucide=\x22chevrons-up-down\x22\x20class=\x22inline\x20w-3\x20opacity-30\x22></i>','CardPoll','results','replace','เวลาเข้าระบบ','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-right\x20px-4\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex\x20justify-end\x20gap-2\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22window.app.openEditPrizeModal(\x27','เกิดข้อผิดพลาด','วันที่รับบัตร','claimed','prizes','toLocaleTimeString','getElementById','target','10353PkloUo','reg-stat-registered','\x20พร้อมยืนยันรับบัตร','from','ข้อมูลลงทะเบียน','text','แจ้งเข้าร่วม','innerText','\x22\x20data-qty=\x22','find','dividend-table-body','bg-red-500','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22grid\x20grid-cols-2\x20gap-y-3\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<b\x20class=\x22text-slate-400\x22>ชื่อ-นามสกุล:</b>\x20<span\x20class=\x22font-bold\x20text-slate-800\x22>','dividend-import-progress','update','reduce','startRandomizer','random','<div><p\x20class=\x22font-bold\x20text-lg\x20text-slate-800\x22>','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-right\x22>','setAttribute','8569UxHVvc','แก้ไขข้อมูลไม่สำเร็จ','ชื่อ-นามสกุล','edit-prize-name','divJoin','hidden','QR\x20Code\x20เช็คปันผล','QR\x20Code\x20ลงทะเบียน','\x27)\x22\x20class=\x22px-2\x20py-1\x20bg-red-100\x20text-red-700\x20rounded-full\x20text-xs\x20font-bold\x20hover:bg-red-200\x20transition\x22>ยังไม่รับ</button>','import-bar','toLowerCase','data-table-info','<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20py-4\x20text-xs\x20font-mono\x20text-slate-500\x22>','href','closeSingleDividendResetModal','confirmDeleteAllData','AIzaSyAgWMzWcZPzyzoBu5eQzj2y59nKsxTWurQ','createIcons','รวมปันผล','showToast','dividend_report_','toggle','เงินเฉลี่ยคืน','dash-stat-checkin','ttb-register','downloadRegisteredCSV','วันที่รับรางวัล','totalDocs','changeResSort','createElement','reset-confirm-modal','error','rowsPerPage','name','<i\x20data-lucide=\x22chevron-up\x22></i>','edit-prize-total','ล้างข้อมูลสำเร็จ','qtyPerDraw','empname','divNoJoin','searchTerm','<span\x20class=\x22text-green-600\x20font-bold\x22>เช็คอินแล้ว</span>','length','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>','dividendFileToImport','push','รีเซ็ตสถานะปันผลแล้ว','toLocaleString','includes','.csv','processDividendImport','closeDeleteAllDividendModal','<i\x20data-lucide=\x22chevron-down\x22></i>','ลงทะเบียน','\x22\x20data-total=\x22','confirmResetDividendData','parse','current-time','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-center\x20font-bold\x20text-blue-600\x22>','reward','processImport','translate-x-full','screen-display-area','\x20p-4\x20rounded-lg\x20shadow-xl\x20flex\x20items-center\x20gap-3\x20toast-enter\x20pointer-events-auto','.view-section','border-green-500\x20text-green-700','rgba(79,\x2070,\x20229,\x200.1)','openDeleteAllModal','\x20รายการ','totalQty','localeCompare','</p><p\x20class=\x22text-xs\x20text-slate-400\x20font-mono\x22>NO:\x20','dataset','check-circle','notRewarded','Active','status-text','</span>\x20<span\x20class=\x22text-[10px]\x20text-slate-400\x20font-mono\x22>','div-summary-registered','prize-name','Online\x20(Connected)','reg-stat-total','notYetDrawn','asc','ล้างข้อมูลรางวัลพนักงานท่านนี้?','\x27)\x22\x20class=\x22text-indigo-500\x20hover:text-indigo-700\x20transition\x22\x20title=\x22แก้ไข\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20data-lucide=\x22edit-3\x22\x20width=\x2216\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22window.app.deletePrize(\x27','bg-white\x20border-l-4\x20','resetSingleDividendData','alert-circle','files','closeDeleteAllModal','endsWith','\x27)\x22\x20class=\x22text-slate-400\x20hover:text-red-600\x20transition\x22><i\x20data-lucide=\x22trash-2\x22\x20width=\x2216\x22></i></button></td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>','rand-stat-noreward','checkin','unclaimed','tmb_coop_dividend','closeMemberSearchModal','prize-list-body','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20py-4\x20font-bold\x20text-indigo-600\x22>','querySelectorAll','</p></div><span\x20class=\x22text-xs\x20font-bold\x20bg-indigo-100\x20text-indigo-700\x20px-3\x20py-1\x20rounded-lg\x20uppercase\x22>','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-xs\x20text-slate-500\x20font-mono\x20text-center\x22>','bg-white\x20p-4\x20rounded-xl\x20shadow-lg\x20border-l-4\x20border-yellow-400\x20flex\x20justify-between\x20items-center\x20fade-in-up','searchCandidate','closeResetModal','member-search-btn','btn-next','แสดงผล\x20','Check-IN','dsort-','label-stock-count','switchTab','label-eligible-count','citizenID','ลบรางวัลนี้?','\x27)\x22\x20class=\x22text-slate-400\x20hover:text-red-500\x20transition\x22><i\x20data-lucide=\x22trash-2\x22\x20width=\x2216\x22></i></button></td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>','subtle','rsort-','resetWinnerStatus','ยืนยันการรับรางวัลสำเร็จ','member','input-draw-qty','ลงทะเบียนพนักงานสำเร็จ','Download\x20CSV\x20สำเร็จ','7TokIkS','totalPrizesDrawn','1678242qfylhd','file-name','<i\x20data-lucide=\x22','ลบพนักงานทั้งหมดแล้ว','ConfirmVotingCard','closeEditPrizeModal','disabled','divSortBy','success','toString','Reset','sortBy','\x20of\x20','commit','reset','div','eligible','stats','validateMemberSearch','dividendTotal','resultsSortOrder','onPrizeSelect','delete','th-TH','remove','SHA-256','reg-stat-rewarded','handleDividendFileSelect','page-indicator','279gOEXzd','prize-qty','confirm-div-delete-input','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<b\x20class=\x22text-slate-400\x22>รับบัตรเลือกตั้ง:</b>\x20<span>','edit-prize-modal','ข้อมูลเงินปันผล','บันทึกรางวัลสำเร็จ','btn-start-random','style','568fhTFns','view-dividend-info','closeDividendResetModal','220043UoixLS','ttb-register.firebasestorage.app','ยังไม่ได้รับ','toDate','registrationChart','manualConfirmReward','split','forEach','3218540NsDKvG','พิมพ์\x20Delete','</span>','1075262kjlHqm','resultsSortBy','dividendIdToReset','รางวัล','delete-all-confirm-modal','1:1070273157855:web:5c8120e1df27e233d8676a','map','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22text-xs\x20text-slate-500\x20font-mono\x22>','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>','size','EmpName','confirm-delete-input','moneyback','Delete','total','\x20จากทั้งหมด\x20','dividend-single-reset-modal','dividend-delete-confirm-modal','toast-container','ปันผล','confirmResetData','รับบัตรเลือกตั้ง','qty-warning','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22font-medium\x20text-slate-600\x22>','classList','download','rewardTime','regChartInst','ลำดับ','</option>','\x27)\x22\x20class=\x22text-slate-300\x20hover:text-red-500\x20transition\x22\x20title=\x22ล้างข้อมูล\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20data-lucide=\x22trash-2\x22\x20width=\x2216\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>','selectedIndex','divRegistered','CheckIN','RegisMeeting','EmpMember','confirmRegistrationViaSearch','datasets','options','changeDivSort','member-search-modal','text-slate-400','digest','<i\x20data-lucide=\x22chevrons-up-down\x22\x20class=\x22opacity-30\x22></i>','นำเข้าข้อมูลรายชื่อสำเร็จ','DateMeeting','confirm-div-reset-input','dividend-reset-confirm-modal','confirmSingleDividendReset','dividend','พิมพ์\x20Reset','downloadDividendCSV','<i\x20data-lucide=\x22chevron-down\x22\x20class=\x22inline\x20w-3\x22></i>','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22font-bold\x20text-slate-700\x22>','<i\x20data-lucide=\x22chevron-up\x22\x20class=\x22inline\x20w-3\x22></i>','</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22px-6\x20py-4\x20text-right\x22><button\x20onclick=\x22window.app.resetWinnerStatus(\x27','<option\x20value=\x22\x22>--\x20เลือกของรางวัล\x20--</option>','votingCards','\x27)\x22\x20class=\x22text-red-500\x20hover:text-red-700\x20transition\x22\x20title=\x22ลบ\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20data-lucide=\x22trash-2\x22\x20width=\x2216\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>','sortOrder','btn-prev','join','prizeIdToEdit','totalPrizesQuota','text-white','ไม่เข้าร่วม','status','padStart','btn-import','res-stat-total-prizes','openDeleteAllDividendModal','toLocaleDateString','opacity-50','results-table-body'];_0x1725=function(){return _0x1ec05c;};return _0x1725();}
+    </script>
+</body>
+</html>
