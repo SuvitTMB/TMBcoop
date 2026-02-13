@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Payroll Exclusive Banking - Prototype</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -10,298 +10,737 @@
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
         
         :root {
-            --primary-blue: #0A3D62;
+            --ttb-blue: #0056ff;
+            --ttb-orange: #ff8200;
             --secondary-blue: #3C6382;
             --gold: #D4AF37;
+            --platinum: #A0A0A0;
             --light-bg: #F8FAFC;
         }
 
         body {
             font-family: 'Kanit', sans-serif;
-            background-color: #E2E8F0;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            width: 100%;
+            height: 100%;
         }
 
-        .phone-container {
-            max-width: 414px;
-            margin: 2rem auto;
+        .app-view {
+            width: 100%;
+            max-width: 480px; 
+            margin: 0 auto;
             background-color: var(--light-bg);
-            border-radius: 40px;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            border: 8px solid #334155;
-            position: relative;
-            height: 850px;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
 
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 0px;
+        .custom-scrollbar::-webkit-scrollbar { width: 0px; }
+
+        .ttb-header-bg { background: linear-gradient(180deg, var(--ttb-blue) 0%, #0046d5 100%); }
+        .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .tier-tag { font-size: 10px; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; font-weight: 600; }
+        .tier-gold { background: linear-gradient(90deg, #D4AF37, #F1D38E); color: #4A3700; }
+
+        .fixed-bottom-nav { width: 100%; z-index: 60; background-color: white; flex-shrink: 0; }
+        .content-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+        .ai-buddy-fab { position: absolute; right: 20px; bottom: 90px; z-index: 45; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .ai-buddy-fab.hidden-fab { opacity: 0; transform: translateY(30px) scale(0.5); pointer-events: none; }
+        .ai-buddy-pulse { box-shadow: 0 0 0 0 rgba(0, 86, 255, 0.7); animation: pulse-ring 2s infinite; }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(0, 86, 255, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 86, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 86, 255, 0); }
         }
 
-        .gradient-header {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
-        }
+        #aiChat, #activityView { z-index: 70; height: 100%; position: absolute; inset: 0; background: white; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .translate-y-full { transform: translateY(100%); }
 
-        .card-shadow {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
+        @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .animate-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .pt-safe { padding-top: env(safe-area-inset-top); }
 
-        .loan-card {
-            transition: transform 0.2s;
+        /* Wheel Animation */
+        .wheel {
+            width: 280px; height: 280px; border-radius: 50%; border: 8px solid #fff; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.2); transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+            background: conic-gradient(#0056ff 0 45deg, #ff8200 45deg 90deg, #0056ff 90deg 135deg, #ff8200 135deg 180deg, #0056ff 180deg 225deg, #ff8200 225deg 270deg, #0056ff 270deg 315deg, #ff8200 315deg 360deg);
         }
+        .wheel-pointer { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #f44336; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 10; }
 
-        .loan-card:active {
-            transform: scale(0.98);
+        /* Quiz Buttons Styles */
+        .answer-btn {
+            display: flex; align-items: center; width: 100%; padding: 10px 20px; margin-bottom: 10px; text-align: left; border: 2px solid #f1f5f9; border-radius: 16px; font-weight: 500; transition: all 0.2s; background-color: white; color: #1e293b;
         }
+        .answer-btn.correct { border-color: #22c55e !important; background-color: #f0fdf4 !important; color: #166534 !important; }
+        .answer-btn.incorrect { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #991b1b !important; }
+        .answer-btn .label { width: 32px; height: 32px; border-radius: 10px; background-color: #f8fafc; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 12px; font-weight: 700; color: #94a3b8; flex-shrink: 0; transition: all 0.2s; }
+        .answer-btn.correct .label { background-color: #22c55e; color: white; }
+        .answer-btn.incorrect .label { background-color: #ef4444; color: white; }
 
-        .ai-buddy-pulse {
-            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
-            animation: pulse 2s infinite;
-        }
+        .schedule-table { width: 100%; font-size: 11px; border-collapse: collapse; }
+        .schedule-table th { text-align: center; padding: 8px; background-color: #f8fafc; border-bottom: 1px solid #e2e8f0; color: #64748b; }
+        .schedule-table td { padding: 8px; text-align: center; border-bottom: 1px solid #f1f5f9; }
 
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
+        .pin-dot { width: 14px; height: 14px; border-radius: 50%; background-color: #e2e8f0; transition: all 0.2s; border: 1px solid #cbd5e1; }
+        .pin-dot.filled { background-color: var(--ttb-blue); border-color: var(--ttb-blue); transform: scale(1.2); }
+        .keypad-btn { width: 65px; height: 65px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 600; background-color: #f8fafc; border-radius: 50%; user-select: none; }
+        .keypad-btn:active { background-color: #e2e8f0; transform: scale(0.9); }
+        .btn-disabled { opacity: 0.4; pointer-events: none; }
 
-        .tab-active {
-            color: var(--primary-blue);
-            font-weight: 600;
+        /* Solutions Content Styling (No Borders) */
+        .solution-card { background: transparent; border-radius: 0; padding: 0; border: none; box-shadow: none; margin-bottom: 32px; }
+        .solution-banner { height: 160px; border-radius: 24px; margin-bottom: 16px; background-size: cover; background-position: center; background-repeat: no-repeat; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+        /* Speaker Pulse for AI Voice */
+        .pulse-audio { animation: audio-glow 1.5s infinite; }
+        @keyframes audio-glow {
+            0% { color: white; transform: scale(1); }
+            50% { color: #ffd700; transform: scale(1.2); }
+            100% { color: white; transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
-<div class="phone-container">
-    <!-- Status Bar (Mockup) -->
-    <div class="px-8 py-2 flex justify-between items-center bg-white text-xs font-bold">
-        <span>9:41</span>
-        <div class="flex space-x-1">
-            <i class="fas fa-signal"></i>
-            <i class="fas fa-wifi"></i>
-            <i class="fas fa-battery-full"></i>
-        </div>
-    </div>
-
-    <div class="flex-1 overflow-y-auto custom-scrollbar">
-        <!-- Header: Personal Welcome -->
-        <div class="gradient-header p-6 pt-8 rounded-b-[40px] text-white">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h1 class="text-xl font-semibold">สวัสดีครับ คุณธนกฤต</h1>
-                    <p class="text-sm opacity-80">พนักงานผู้ทรงคุณค่าของ <span class="font-bold underline">CP Group</span></p>
-                </div>
-                <div class="relative">
-                    <img src="https://ui-avatars.com/api/?name=Thanakrit&background=D4AF37&color=fff" class="w-12 h-12 rounded-full border-2 border-white" alt="Profile">
-                    <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
-                </div>
-            </div>
-
-            <!-- Instant Cash Card (The Hero Feature) -->
-            <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20 mb-2">
-                <div class="flex justify-between items-start mb-3">
-                    <span class="text-xs font-medium uppercase tracking-widest text-blue-200">สิทธิ์กดเงินสดทันใจ (Pre-approved)</span>
-                    <i class="fas fa-bolt text-yellow-400"></i>
-                </div>
-                <div class="flex items-baseline space-x-1 mb-4">
-                    <span class="text-3xl font-bold">฿ 250,000</span>
-                </div>
-                <button onclick="showLoanModal()" class="w-full bg-yellow-500 hover:bg-yellow-400 text-blue-900 font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">
-                    โอนเข้าบัญชีทันที
-                </button>
-            </div>
-        </div>
-
-        <!-- Quick Menu -->
-        <div class="px-6 -mt-4 mb-6">
-            <div class="bg-white rounded-2xl p-4 flex justify-around card-shadow">
-                <div class="flex flex-col items-center group cursor-pointer">
-                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-1 group-hover:bg-blue-600 group-hover:text-white transition">
-                        <i class="fas fa-paper-plane"></i>
-                    </div>
-                    <span class="text-[10px] font-medium">โอนเงิน</span>
-                </div>
-                <div class="flex flex-col items-center group cursor-pointer">
-                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-1 group-hover:bg-blue-600 group-hover:text-white transition">
-                        <i class="fas fa-qrcode"></i>
-                    </div>
-                    <span class="text-[10px] font-medium">สแกนจ่าย</span>
-                </div>
-                <div class="flex flex-col items-center group cursor-pointer">
-                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-1 group-hover:bg-blue-600 group-hover:text-white transition">
-                        <i class="fas fa-file-invoice"></i>
-                    </div>
-                    <span class="text-[10px] font-medium">จ่ายบิล</span>
-                </div>
-                <div class="flex flex-col items-center group cursor-pointer">
-                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-1 group-hover:bg-blue-600 group-hover:text-white transition">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </div>
-                    <span class="text-[10px] font-medium">อื่นๆ</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- AI Assistant Banner -->
-        <div class="px-6 mb-8">
-            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-4 flex items-center justify-between text-white card-shadow cursor-pointer" onclick="toggleAIChat()">
-                <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl ai-buddy-pulse">
-                        <i class="fas fa-robot"></i>
-                    </div>
+<div class="app-view">
+    
+    <!-- Main Content Area -->
+    <main class="content-area custom-scrollbar text-gray-800">
+        <!-- Header Section -->
+        <header class="ttb-header-bg pt-safe text-white shadow-lg">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h4 class="font-bold">ปรึกษา AI Buddy</h4>
-                        <p class="text-xs opacity-80">มีคำถามเรื่องกู้บ้านหรือรถ? ถามผมได้ครับ</p>
-                    </div>
-                </div>
-                <i class="fas fa-chevron-right opacity-50"></i>
-            </div>
-        </div>
-
-        <!-- Specialized Products Section -->
-        <div class="px-6 mb-8">
-            <h3 class="font-bold text-gray-800 mb-4 flex justify-between items-center">
-                ผลิตภัณฑ์พิเศษเพื่อคุณ
-                <span class="text-xs text-blue-600 font-normal">ดูทั้งหมด</span>
-            </h3>
-            
-            <div class="space-y-4">
-                <!-- Home Loan -->
-                <div class="bg-white p-4 rounded-2xl border border-gray-100 card-shadow loan-card flex items-center space-x-4">
-                    <div class="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 text-2xl">
-                        <i class="fas fa-house-user"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="font-bold text-gray-800">สินเชื่อบ้าน Payroll</h4>
-                        <p class="text-[10px] text-gray-500">ดอกเบี้ยคงที่ 2.75% นาน 3 ปี</p>
-                        <div class="mt-2 flex items-center">
-                            <span class="bg-green-100 text-green-700 text-[9px] px-2 py-0.5 rounded-full font-bold">อนุมัติง่ายสำหรับพนักงาน CP</span>
+                        <div class="flex items-center space-x-2 mb-1">
+                            <span class="tier-tag tier-gold text-blue-900 font-bold">GOLD MEMBER</span>
+                            <span class="text-[10px] opacity-70 text-blue-100">| CP Group Employee</span>
                         </div>
+                        <h1 class="text-xl font-semibold">สวัสดีครับ คุณธนกฤต</h1>
                     </div>
-                    <div class="text-right">
-                        <p class="text-[10px] text-gray-400">ผ่อนเริ่มต้น</p>
-                        <p class="font-bold text-blue-800">฿ 8,500</p>
-                    </div>
-                </div>
-
-                <!-- Car Loan -->
-                <div class="bg-white p-4 rounded-2xl border border-gray-100 card-shadow loan-card flex items-center space-x-4">
-                    <div class="w-16 h-16 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500 text-2xl">
-                        <i class="fas fa-car-side"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="font-bold text-gray-800">สินเชื่อรถยนต์ใหม่</h4>
-                        <p class="text-[10px] text-gray-500">ดาวน์ 0% สำหรับพนักงานบัญชีเงินเดือน</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] text-gray-400">ดอกเบี้ยพิเศษ</p>
-                        <p class="font-bold text-blue-800">1.99%</p>
+                    <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-md overflow-hidden p-2 text-blue-600">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Ttb_bank_logo.svg" class="w-full h-auto object-contain" alt="ttb logo">
                     </div>
                 </div>
 
-                <!-- Credit Card -->
-                <div class="bg-white p-4 rounded-2xl border border-gray-100 card-shadow loan-card flex items-center space-x-4">
-                    <div class="w-16 h-16 bg-gold/10 rounded-xl flex items-center justify-center text-yellow-600 text-2xl">
-                        <i class="fas fa-credit-card"></i>
+                <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20 text-white">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-medium uppercase tracking-widest text-blue-100">สิทธิ์เบิกเงินสดฉุกเฉิน</span>
+                        <i class="fas fa-bolt text-yellow-400"></i>
                     </div>
-                    <div class="flex-1">
-                        <h4 class="font-bold text-gray-800">บัตรเครดิต Platinum</h4>
-                        <p class="text-[10px] text-gray-500">ฟรีค่าธรรมเนียมรายปีตลอดชีพ</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-baseline space-x-1">
+                            <span class="text-2xl font-bold">฿ 250,000</span>
+                            <span class="text-[10px] opacity-80 ml-2 text-blue-100 font-medium">พิเศษ 0.99%</span>
+                        </div>
+                        <button onclick="showLoanConfirmModal()" class="bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md transition transform active:scale-95">
+                            เบิกเงินทันที
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="h-6 bg-white rounded-t-[40px]"></div>
+        </header>
+
+        <div class="px-6 pb-12">
+            <!-- Quick Menu -->
+            <div class="mb-8">
+                <div class="bg-white rounded-2xl p-4 flex justify-around card-shadow text-gray-800">
+                    <div class="flex flex-col items-center group cursor-pointer">
+                        <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-[#0056ff] mb-1"><i class="fas fa-paper-plane text-lg"></i></div>
+                        <span class="text-[10px] font-medium text-gray-600">โอนเงิน</span>
+                    </div>
+                    <div class="flex flex-col items-center group cursor-pointer">
+                        <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-[#0056ff] mb-1"><i class="fas fa-qrcode text-lg"></i></div>
+                        <span class="text-[10px] font-medium text-gray-600">สแกนจ่าย</span>
+                    </div>
+                    <div class="flex flex-col items-center group cursor-pointer">
+                        <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-[#0056ff] mb-1"><i class="fas fa-file-invoice text-lg"></i></div>
+                        <span class="text-[10px] font-medium text-gray-600">จ่ายบิล</span>
+                    </div>
+                    <div class="flex flex-col items-center group cursor-pointer">
+                        <div class="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 mb-1"><i class="fas fa-chart-pie text-lg"></i></div>
+                        <span class="text-[10px] font-medium text-gray-600">สรุปผล</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tiered Offers -->
+            <div class="mb-8 text-gray-800">
+                <h3 class="font-bold text-gray-800 mb-4">ข้อเสนอสำหรับ Gold Tier</h3>
+                <div class="bg-white p-5 rounded-2xl card-shadow border border-gray-50 flex items-center justify-between mb-3 cursor-pointer">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-[#0056ff] text-2xl"><i class="fas fa-house-chimney text-[#0056ff]"></i></div>
+                        <div><h4 class="text-sm font-bold text-gray-800 text-gray-800">กู้บ้านเพื่อพนักงาน</h4><p class="text-[10px] text-gray-500">ดอกเบี้ย 2.5% นาน 3 ปีแรก</p></div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300"></i>
+                </div>
+                <div class="bg-white p-5 rounded-2xl card-shadow border border-gray-50 flex items-center justify-between cursor-pointer">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-[#0056ff] text-2xl"><i class="fas fa-car text-[#0056ff]"></i></div>
+                        <div><h4 class="text-sm font-bold text-gray-800">ถอยรถใหม่ 0%</h4><p class="text-[10px] text-gray-500">สิทธิ์พิเศษเฉพาะพนักงาน CP เท่านั้น</p></div>
                     </div>
                     <i class="fas fa-chevron-right text-gray-300"></i>
                 </div>
             </div>
+
+            <!-- Engagement Activity -->
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-4 text-gray-800">
+                    <h3 class="font-bold text-gray-800">กิจกรรมพิเศษ</h3>
+                    <span class="text-xs text-[#0056ff] font-semibold">🪙 1,250 พอยท์</span>
+                </div>
+                <div onclick="openActivity()" class="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 rounded-2xl text-white shadow-lg flex items-center justify-between cursor-pointer active:scale-95 transition text-white">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl"><i class="fas fa-gift"></i></div>
+                        <div><h4 class="text-base font-bold leading-none mb-1 text-white">คุณรู้หรือไม่ว่า...</h4><p class="text-xs opacity-90 text-blue-50">ตอบคำถามถูกหมุนวงล้อลุ้นรับรางวัลทุกวัน!</p></div>
+                    </div>
+                    <i class="fas fa-chevron-right opacity-60"></i>
+                </div>
+            </div>
+
+            <!-- News -->
+            <div class="mb-8 -mx-6">
+                <h3 class="px-6 font-bold text-gray-800 mb-4 text-gray-800">ข่าวสารธนาคาร</h3>
+                <div class="flex overflow-x-auto space-x-4 px-6 custom-scrollbar text-gray-800">
+                    <div class="bg-white rounded-2xl overflow-hidden card-shadow border border-gray-100 min-w-[260px]">
+                        <div class="h-24 bg-[#0056ff] p-4 text-white flex flex-col justify-end"><h4 class="text-sm font-bold text-white">ttb Privilege</h4></div>
+                        <div class="p-3 text-gray-800"><p class="text-[11px] text-gray-600">สิทธิพิเศษซื้อของใน 7-Eleven รับเงินคืนทันที 5%</p></div>
+                    </div>
+                    <div class="bg-white rounded-2xl overflow-hidden card-shadow border border-gray-100 min-w-[260px]">
+                        <div class="h-24 bg-blue-900 p-4 text-white flex flex-col justify-end text-white"><h4 class="text-sm font-bold text-white">ttb Advisory</h4></div>
+                        <div class="p-3 text-gray-800"><p class="text-[11px] text-gray-600">เทคนิคการบริหารเงินเดือนให้งอกเงย สไตล์พนักงาน CP</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Know ttb Better Section -->
+            <div class="mb-8 pb-10 text-gray-800">
+                <h3 class="font-bold text-gray-800 mb-4 text-gray-800">รู้จัก ttb ให้มากขึ้น</h3>
+                <div class="bg-white rounded-[32px] overflow-hidden card-shadow border border-gray-100">
+                    <div class="relative bg-gray-100 flex items-center justify-center overflow-hidden h-[220px]">
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-600/90 to-blue-800/90 flex flex-col justify-center px-8 text-white">
+                            <h2 class="text-2xl font-bold leading-tight mb-2">วันนี้ เราอยากให้คุณ<br>รู้จัก ttb ให้มากขึ้น</h2>
+                            <p class="text-[10px] opacity-90 leading-relaxed font-light text-blue-50">ถ้าจะมีอะไรที่เราสามารถเปลี่ยน...เพื่อความมั่งคงในชีวิตทางการเงินที่ดีขึ้น มันคงไม่ใช่แค่การเปลี่ยนชื่อ เปลี่ยนโลโก้</p>
+                        </div>
+                    </div>
+                    <div class="p-5 bg-white text-gray-800">
+                        <p class="text-sm font-semibold text-gray-800 leading-tight text-gray-800">สร้างชีวิตทางการเงินที่ดีขึ้นไปกับ ttb</p>
+                        <p class="text-xs text-gray-500 mt-2 leading-relaxed italic">ร่วมค้นหาโซลูชันทางการเงิน 4 มิติ ที่ออกแบบมาเพื่อคุณโดยเฉพาะ</p>
+                        <button onclick="showTtbSolutionModal()" class="mt-4 w-full bg-blue-50 text-[#0056ff] font-bold py-3.5 rounded-2xl border border-blue-100 hover:bg-blue-100 transition active:scale-95 text-blue-600">
+                            ดูรายละเอียด
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </main>
 
     <!-- Bottom Navigation -->
-    <div class="bg-white border-t border-gray-100 px-6 py-3 flex justify-between items-center rounded-t-3xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <div class="flex flex-col items-center tab-active cursor-pointer">
-            <i class="fas fa-home text-lg"></i>
-            <span class="text-[10px] mt-1">หน้าหลัก</span>
+    <nav class="fixed-bottom-nav border-t border-gray-100 px-8 py-4 flex justify-between items-center shadow-[0_-5px_20px_rgba(0,0,0,0.1)] pb-[calc(1.1rem+env(safe-area-inset-bottom))] text-gray-800">
+        <div class="flex flex-col items-center text-[#0056ff] cursor-pointer text-blue-600"><i class="fas fa-home text-lg"></i><span class="text-[10px] mt-1 font-bold">หน้าหลัก</span></div>
+        <div class="flex flex-col items-center text-gray-400 hover:text-[#0056ff] cursor-pointer"><i class="fas fa-tasks text-lg"></i><span class="text-[10px] mt-1 font-medium">กิจกรรม</span></div>
+        <div class="flex flex-col items-center text-gray-400 hover:text-[#0056ff] cursor-pointer text-center"><i class="fas fa-star text-lg"></i><span class="text-[10px] mt-1 font-medium text-center">สิทธิ์เฉพาะคุณ</span></div>
+        <div class="flex flex-col items-center text-gray-400 hover:text-[#0056ff] cursor-pointer text-gray-800"><i class="fas fa-user text-lg"></i><span class="text-[10px] mt-1 font-medium">โปรไฟล์</span></div>
+    </nav>
+
+    <!-- AI FAB -->
+    <div id="aiFab" class="ai-buddy-fab" onclick="toggleAIChat()">
+        <div class="w-16 h-16 bg-[#0056ff] rounded-full flex items-center justify-center text-white shadow-2xl cursor-pointer ai-buddy-pulse border-4 border-white">
+            <i class="fas fa-robot text-2xl text-white"></i>
         </div>
-        <div class="flex flex-col items-center text-gray-400 hover:text-blue-600 cursor-pointer transition">
-            <i class="fas fa-wallet text-lg"></i>
-            <span class="text-[10px] mt-1">ผลิตภัณฑ์</span>
-        </div>
-        <div class="flex flex-col items-center text-gray-400 hover:text-blue-600 cursor-pointer transition">
-            <i class="fas fa-gift text-lg"></i>
-            <span class="text-[10px] mt-1">สิทธิพิเศษ</span>
-        </div>
-        <div class="flex flex-col items-center text-gray-400 hover:text-blue-600 cursor-pointer transition">
-            <i class="fas fa-cog text-lg"></i>
-            <span class="text-[10px] mt-1">ตั้งค่า</span>
+        <div class="bg-white text-[#0056ff] text-[10px] font-bold px-3 py-1 rounded-full shadow-md absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap border border-blue-100">
+            ปรึกษา AI
         </div>
     </div>
 
-    <!-- AI Buddy Chat Overlay (Hidden by Default) -->
-    <div id="aiChat" class="absolute inset-0 bg-white z-20 translate-y-full transition-transform duration-300 flex flex-col">
-        <div class="gradient-header p-6 text-white flex justify-between items-center">
+    <!-- AI Chat Overlay (RESTORED) -->
+    <div id="aiChat" class="translate-y-full flex flex-col text-gray-800">
+        <div class="ttb-header-bg pt-safe text-white shadow-md p-6 flex justify-between items-center text-white">
             <div class="flex items-center space-x-3">
-                <i class="fas fa-robot text-2xl"></i>
-                <div>
-                    <h3 class="font-bold">AI Financial Buddy</h3>
-                    <p class="text-[10px] opacity-70">กำลังออนไลน์ | พร้อมดูแลพนักงาน CP</p>
-                </div>
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white"><i class="fas fa-robot"></i></div>
+                <h3 class="font-bold">AI Financial Advisor</h3>
             </div>
-            <button onclick="toggleAIChat()" class="text-white opacity-70 hover:opacity-100">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-        <div class="flex-1 p-6 overflow-y-auto space-y-4">
-            <div class="flex items-start space-x-2">
-                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs">AI</div>
-                <div class="bg-blue-50 p-3 rounded-2xl rounded-tl-none text-sm text-gray-700 max-w-[80%]">
-                    สวัสดีครับคุณธนกฤต ผมเห็นคุณมีแผนจะซื้อบ้านเร็วๆ นี้ สนใจดูโปรโมชันดอกเบี้ยพิเศษสำหรับพนักงาน CP ไหมครับ?
-                </div>
-            </div>
-            <div class="flex items-start flex-row-reverse space-x-reverse space-x-2">
-                <div class="bg-blue-600 p-3 rounded-2xl rounded-tr-none text-sm text-white max-w-[80%]">
-                    สนใจครับ มีเงื่อนไขอะไรบ้าง?
-                </div>
+            <div class="flex items-center space-x-4">
+                <button id="aiVoiceToggle" onclick="toggleVoice()" class="text-xl hover:scale-110 transition">
+                    <i class="fas fa-volume-mute" id="voiceIcon"></i>
+                </button>
+                <button onclick="toggleAIChat()"><i class="fas fa-times text-white"></i></button>
             </div>
         </div>
-        <div class="p-4 border-t flex items-center space-x-2">
-            <input type="text" placeholder="พิมพ์คำถามของคุณ..." class="flex-1 bg-gray-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-            <button class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center">
-                <i class="fas fa-paper-plane text-xs"></i>
-            </button>
+        <div class="flex-1 p-6 bg-gray-50 flex flex-col text-gray-800">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-sm mb-4" id="aiWelcomeMsg">
+                สวัสดีครับคุณธนกฤต ผมเป็นที่ปรึกษาทางการเงินส่วนตัวของคุณ ต้องการสอบถามเกี่ยวกับโซลูชัน 4 มิติ หรือแผนการกู้เงินวันนี้ดีครับ?
+            </div>
+            <!-- Dynamic Chat Area Placeholder -->
+            <div class="flex-1 overflow-y-auto" id="chatArea"></div>
+        </div>
+        <!-- Input area at bottom -->
+        <div class="p-4 bg-white border-t flex gap-3 pb-8">
+            <input type="text" placeholder="พิมพ์ข้อความที่นี่..." class="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm outline-none border focus:border-blue-500">
+            <button class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
-    <!-- Loan Modal (Demo) -->
-    <div id="loanModal" class="absolute inset-0 bg-black/50 z-30 hidden flex items-center justify-center p-6">
-        <div class="bg-white rounded-3xl w-full p-6 text-center animate-bounce-in">
-            <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
-                <i class="fas fa-check-circle"></i>
+    <!-- TTB Solutions Lightbox -->
+    <div id="ttbSolutionModal" class="absolute inset-0 bg-black/60 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm text-gray-800">
+        <div class="bg-white rounded-[40px] w-[95%] max-h-[85vh] flex flex-col animate-pop shadow-2xl overflow-hidden">
+            <div class="p-6 border-b flex justify-between items-center shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg"><img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Ttb_bank_logo.svg" class="w-7 h-auto brightness-0 invert" alt="logo"></div>
+                    <div><h3 class="text-lg font-bold text-gray-800">โซลูชัน 4 มิติจาก ttb</h3><p class="text-[10px] text-gray-400 font-normal">เพื่อชีวิตทางการเงินที่ดีขึ้น</p></div>
+                </div>
+                <button onclick="hideTtbSolutionModal()" class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition"><i class="fas fa-times text-gray-800"></i></button>
             </div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">ยืนยันรายการสำเร็จ!</h3>
-            <p class="text-sm text-gray-500 mb-6">ธนาคารได้โอนเงิน ฿250,000 เข้าบัญชีเงินเดือนของคุณเรียบร้อยแล้ว</p>
-            <button onclick="hideLoanModal()" class="w-full bg-blue-900 text-white font-bold py-3 rounded-xl">
-                กลับสู่หน้าหลัก
-            </button>
+            <div class="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                <!-- Dimension 1 -->
+                <div class="solution-card">
+                    <div class="solution-banner" style="background-image: url('https://media.ttbbank.com/1/homepage_4pillars_banner/5116-highlight-mobile-th.jpeg')"></div>
+                    <h4 class="text-base font-bold text-[#0056ff] mb-2">1. ฉลาดออม ฉลาดใช้</h4>
+                    <p class="text-xs text-gray-600 leading-relaxed mb-4">เปลี่ยนการจ่ายให้คุ้มค่าด้วย <span class="font-bold">ttb all free</span> ฟรีค่าธรรมเนียมถอน-โอน-จ่าย และรับดอกเบี้ยสูงไปกับ <span class="font-bold">ttb no fixed</span></p>
+                    <a href="https://www.ttbbank.com/th/personal/spend-save" target="_blank" class="inline-flex items-center text-xs font-bold text-[#0056ff] hover:underline">
+                        ดูรายละเอียดเพิ่มเติม <i class="fas fa-external-link-alt ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+                <!-- Dimension 2 -->
+                <div class="solution-card">
+                    <div class="solution-banner" style="background-image: url('https://media.ttbbank.com/1/homepage_4pillars_banner/5117-highlight-mobile-th.jpeg')"></div>
+                    <h4 class="text-base font-bold text-orange-600 mb-2">2. รอบรู้เรื่องกู้ยืม</h4>
+                    <p class="text-xs text-gray-600 leading-relaxed mb-4">บริหารจัดการหนี้ให้มีประสิทธิภาพด้วยสินเชื่อดอกเบี้ยต่ำพิเศษสำหรับพนักงาน <span class="font-bold">ttb payroll</span> ทั้งสินเชื่อส่วนบุคคล สินเชื่อบ้าน และรถ</p>
+                    <a href="https://www.ttbbank.com/th/personal/loans" target="_blank" class="inline-flex items-center text-xs font-bold text-orange-600 hover:underline">
+                        ดูรายละเอียดเพิ่มเติม <i class="fas fa-external-link-alt ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+                <!-- Dimension 3 -->
+                <div class="solution-card">
+                    <div class="solution-banner" style="background-image: url('https://media.ttbbank.com/1/homepage_4pillars_banner/5119-highlight-mobile-th.jpeg')"></div>
+                    <h4 class="text-base font-bold text-green-600 mb-2">3. ลงทุน เพื่ออนาคต</h4>
+                    <p class="text-xs text-gray-600 leading-relaxed mb-4 text-gray-600">สร้างความมั่งคั่งให้งอกเงยด้วยบริการ <span class="font-bold">ttb smart port</span> พอร์ตการลงทุนที่ดูแลโดยผู้เชี่ยวชาญ คัดสรรกองทุนรวมชั้นนำทั่วโลก</p>
+                    <a href="https://www.ttbbank.com/th/personal/investment/mutual-funds" target="_blank" class="inline-flex items-center text-xs font-bold text-green-600 hover:underline">
+                        ดูรายละเอียดเพิ่มเติม <i class="fas fa-external-link-alt ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+                <!-- Dimension 4 -->
+                <div class="solution-card">
+                    <div class="solution-banner" style="background-image: url('https://media.ttbbank.com/1/homepage_4pillars_banner/5120-highlight-mobile-th.jpeg')"></div>
+                    <h4 class="text-base font-bold text-purple-600 mb-2">4. มีความคุ้มครอง ที่อุ่นใจ</h4>
+                    <p class="text-xs text-gray-600 leading-relaxed mb-4 text-gray-600">เตรียมพร้อมรับมือเหตุการณ์ไม่คาดฝันด้วยประกันชีวิตและประกันสุขภาพที่คุ้มค่า ช่วยดูแลคุณและคนที่คุณรักได้อย่างอุ่นใจ</p>
+                    <a href="https://www.ttbbank.com/th/personal/insurance/life/suggest-insurance" target="_blank" class="inline-flex items-center text-xs font-bold text-purple-600 hover:underline">
+                        ดูรายละเอียดเพิ่มเติม <i class="fas fa-external-link-alt ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="p-6 bg-gray-50 border-t text-white">
+                <button onclick="hideTtbSolutionModal()" class="w-full bg-[#0056ff] text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition">เข้าใจแล้ว</button>
+            </div>
         </div>
     </div>
+
+    <!-- Activity, Loan, etc Modals -->
+    <div id="activityView" class="translate-y-full flex flex-col overflow-hidden text-gray-800">
+        <div class="ttb-header-bg pt-safe text-white shadow-md p-5 flex justify-between items-center text-white">
+            <h3 class="font-bold text-white">กิจกรรมพิเศษประจำวัน</h3>
+            <button onclick="closeActivity()"><i class="fas fa-times text-white"></i></button>
+        </div>
+        <div id="quizScreen" class="flex-1 flex flex-col bg-gray-50 overflow-y-auto custom-scrollbar">
+            <div class="relative pt-8 pb-4 text-center">
+                <div class="inline-flex w-20 h-20 bg-blue-100 rounded-[28px] items-center justify-center shadow-lg transform -rotate-3 animate-pop text-blue-600">
+                    <i class="fas fa-lightbulb text-4xl"></i>
+                </div>
+            </div>
+            <div class="px-6 py-2">
+                <div class="bg-white rounded-[36px] p-6 shadow-sm border border-gray-100">
+                    <div class="mb-6 text-center text-gray-800">
+                        <span class="inline-block px-3 py-1 bg-blue-50 text-[#0056ff] text-[11px] font-bold rounded-full mb-3 uppercase tracking-wider">Trivia Quiz</span>
+                        <h2 class="text-base font-bold leading-snug">พนักงานบัญชีเงินเดือน ttb ได้รับดอกเบี้ยพิเศษเบิกเงินสดฉุกเฉิน (Flat Rate) เริ่มต้นเท่าไหร่?</h2>
+                    </div>
+                    <div id="answersGrid" class="space-y-3">
+                        <button onclick="handleAnswerSelection(1, true)" id="ans-1" class="answer-btn"><span class="label">ก</span><span class="flex-1 text-sm">0.99% ต่อเดือน</span><i class="status-icon hidden ml-2 text-lg"></i></button>
+                        <button onclick="handleAnswerSelection(2, false)" id="ans-2" class="answer-btn text-gray-800"><span class="label">ข</span><span class="flex-1 text-sm">1.50% ต่อเดือน</span><i class="status-icon hidden ml-2 text-lg"></i></button>
+                        <button onclick="handleAnswerSelection(3, false)" id="ans-3" class="answer-btn text-gray-800"><span class="label text-gray-800">ค</span><span class="flex-1 text-sm text-gray-800">2.00% ต่อเดือน</span><i class="status-icon hidden ml-2 text-lg"></i></button>
+                        <button onclick="handleAnswerSelection(4, false)" id="ans-4" class="answer-btn text-gray-800"><span class="label">ง</span><span class="flex-1 text-sm text-gray-800">2.50% ต่อเดือน</span><i class="status-icon hidden ml-2 text-lg"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="quizResultModal" class="hidden absolute inset-0 bg-black/60 z-[110] flex items-center justify-center p-6 backdrop-blur-sm text-gray-800">
+        <div class="bg-white rounded-[40px] w-full p-8 text-center shadow-2xl animate-pop text-gray-800">
+            <div id="resultIcon" class="w-20 h-20 rounded-full flex items-center justify-center text-4xl mx-auto mb-6"></div>
+            <h3 id="resultTitle" class="text-xl font-bold mb-2"></h3>
+            <p id="resultMessage" class="text-sm text-gray-500 mb-6 leading-relaxed"></p>
+            <div id="resultExplanation" class="mb-6 p-4 bg-blue-50 rounded-2xl text-left border border-blue-100 text-gray-800 text-gray-800">
+                <h4 class="text-xs font-bold text-[#0056ff] flex items-center mb-1 text-[#0056ff]"><i class="fas fa-info-circle mr-2 text-blue-600"></i> ข้อมูลเพิ่มเติม:</h4>
+                <p class="text-[11px] text-gray-600 leading-relaxed text-gray-600">ttb payroll มอบความคุ้มค่าสูงสุดด้วยอัตราดอกเบี้ยเริ่มต้นเพียง 0.99% ต่อเดือน เพื่อสภาพคล่องที่จำเป็นของพนักงานบริษัทพันธมิตร</p>
+            </div>
+            <button id="resultActionBtn" class="w-full font-bold py-4 rounded-2xl shadow-lg transition text-white"></button>
+        </div>
+    </div>
+
+    <!-- Loan Confirmation Lightbox -->
+    <div id="loanConfirmModal" class="absolute inset-0 bg-black/60 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm text-gray-800">
+        <div class="bg-white rounded-[30px] w-[95%] max-h-[90vh] flex flex-col animate-pop shadow-2xl overflow-hidden text-gray-800">
+            <div class="p-5 border-b flex justify-between items-center shrink-0">
+                <h3 class="text-lg font-bold">เบิกเงินสดฉุกเฉิน</h3>
+                <button onclick="hideLoanConfirmModal()" class="text-gray-400"><i class="fas fa-times text-gray-800"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+                <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-200">
+                    <h4 class="text-[11px] font-bold text-blue-800 uppercase mb-2 flex items-center text-blue-600"><i class="fas fa-info-circle mr-2 text-blue-600"></i> ข้อมูลผลิตภัณฑ์</h4>
+                    <p class="text-[10.5px] text-gray-700">สินเชื่อสวัสดิการพนักงาน ttb payroll ดอกเบี้ย 0.99% ต่อเดือน</p>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-gray-800">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">ระบุจำนวนเงิน</label>
+                        <input type="number" id="loanAmountInput" value="250000" min="1000" max="250000" oninput="validateAndRecalculate()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-lg font-bold text-blue-800">
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">ระยะเวลาผ่อน</label>
+                        <div class="flex gap-2">
+                            <button onclick="changePeriod(1, this)" class="period-btn flex-1 py-2 rounded-xl border-2 border-blue-600 bg-blue-600 text-white font-bold text-xs text-white">1 ปี</button>
+                            <button onclick="changePeriod(2, this)" class="period-btn flex-1 py-2 rounded-xl border-2 border-gray-200 bg-white text-gray-500 font-bold text-xs text-gray-500">2 ปี</button>
+                            <button onclick="changePeriod(3, this)" class="period-btn flex-1 py-2 rounded-xl border-2 border-gray-200 bg-white text-gray-500 font-bold text-xs text-gray-500">3 ปี</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-gray-800">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs text-gray-600 text-gray-600">ดอกเบี้ย 0.99%</span>
+                        <span id="monthlyPaymentLabel" class="text-lg font-bold text-blue-800 text-blue-800">฿ 0.00</span>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden text-gray-800">
+                    <table class="schedule-table text-gray-800">
+                        <thead><tr><th>งวดที่</th><th>ยอดผ่อน</th><th>เงินต้น</th><th>ดอกเบี้ย</th></tr></thead>
+                        <tbody id="repaymentBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="p-5 bg-white border-t flex flex-row gap-3 text-white">
+                <button onclick="openPinStep()" class="flex-1 bg-[#0056ff] text-white font-bold py-3 rounded-2xl text-white">ยืนยัน</button>
+                <button onclick="hideLoanConfirmModal()" class="flex-1 bg-gray-100 text-gray-500 font-bold py-3 rounded-2xl text-gray-500">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN Modal -->
+    <div id="pinModal" class="absolute inset-0 bg-black/60 z-[110] hidden flex items-center justify-center p-4 backdrop-blur-md text-gray-800">
+        <div class="bg-white rounded-[40px] w-[95%] p-6 flex flex-col items-center animate-pop shadow-2xl text-gray-800">
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-2xl mb-4 text-blue-600"><i class="fas fa-lock"></i></div>
+            <h3 class="text-lg font-bold text-gray-800">ยืนยันรหัส PIN</h3>
+            <p class="text-[11px] text-gray-500 mb-6 text-center text-gray-500">ใส่รหัส PIN 6 หลัก</p>
+            <div class="flex space-x-3 mb-8 text-gray-800"><div class="pin-dot" id="dot-1"></div><div class="pin-dot" id="dot-2"></div><div class="pin-dot" id="dot-3"></div><div class="pin-dot" id="dot-4"></div><div class="pin-dot" id="dot-5"></div><div class="pin-dot" id="dot-6"></div></div>
+            <div class="grid grid-cols-3 gap-y-4 gap-x-8 mb-8 text-gray-800">
+                <div class="keypad-btn" onclick="pressPinKey('1')">1</div><div class="keypad-btn" onclick="pressPinKey('2')">2</div><div class="keypad-btn" onclick="pressPinKey('3')">3</div>
+                <div class="keypad-btn" onclick="pressPinKey('4')">4</div><div class="keypad-btn" onclick="pressPinKey('5')">5</div><div class="keypad-btn" onclick="pressPinKey('6')">6</div>
+                <div class="keypad-btn" onclick="pressPinKey('7')">7</div><div class="keypad-btn" onclick="pressPinKey('8')">8</div><div class="keypad-btn" onclick="pressPinKey('9')">9</div>
+                <div></div><div class="keypad-btn" onclick="pressPinKey('0')">0</div><div class="keypad-btn text-red-500" onclick="deletePinKey()"><i class="fas fa-backspace text-red-500"></i></div>
+            </div>
+            <div class="w-full flex flex-row gap-3 text-white text-white">
+                <button id="finalConfirmBtn" onclick="confirmPinAndFinish()" class="flex-1 bg-[#0056ff] text-white font-bold py-3.5 rounded-2xl btn-disabled text-white">ยืนยัน</button>
+                <button onclick="closeAllModals()" class="flex-1 bg-gray-100 text-gray-500 font-bold py-3.5 rounded-2xl text-gray-500">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loan Success Modal -->
+    <div id="loanModal" class="absolute inset-0 bg-black/60 z-[120] hidden flex items-center justify-center p-6 backdrop-blur-sm text-gray-800">
+        <div class="bg-white rounded-[30px] w-full p-8 text-center shadow-2xl animate-pop text-gray-800">
+            <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 text-green-600"><i class="fas fa-check text-green-600"></i></div>
+            <h3 class="text-xl font-bold mb-2 text-gray-800">เบิกเงินสำเร็จ!</h3>
+            <p class="text-xs text-gray-500 mb-8 text-gray-500">โอนเงินเข้าบัญชี Gold Member ของคุณแล้ว</p>
+            <button onclick="closeAllModals()" class="w-full bg-[#0056ff] text-white font-bold py-4 rounded-2xl shadow-lg transition text-white">รับทราบ</button>
+        </div>
+    </div>
+
 </div>
 
 <script>
+    let currentYears = 1; let maxAmount = 250000; let pinCode = "";
+    const correctId = 1;
+    let isVoiceEnabled = false; // Voice state
+    let currentAudio = null;
+
+    const apiKey = ""; // Provided at runtime
+
     function toggleAIChat() {
         const chat = document.getElementById('aiChat');
-        if (chat.classList.contains('translate-y-full')) {
-            chat.classList.remove('translate-y-full');
-        } else {
-            chat.classList.add('translate-y-full');
+        const fab = document.getElementById('aiFab');
+        if (chat && fab) {
+            const isOpening = chat.classList.contains('translate-y-full');
+            chat.classList.toggle('translate-y-full');
+            fab.classList.toggle('hidden-fab');
+            
+            if (isOpening) {
+                // If voice is enabled, speak welcome message when opening
+                if (isVoiceEnabled) {
+                    const msgText = document.getElementById('aiWelcomeMsg').innerText;
+                    speakText(msgText);
+                }
+            } else {
+                stopAudio();
+            }
         }
     }
 
-    function showLoanModal() {
-        document.getElementById('loanModal').classList.remove('hidden');
+    function toggleVoice() {
+        isVoiceEnabled = !isVoiceEnabled;
+        const icon = document.getElementById('voiceIcon');
+        if (isVoiceEnabled) {
+            icon.classList.replace('fa-volume-mute', 'fa-volume-up');
+            icon.classList.add('pulse-audio');
+            const msgText = document.getElementById('aiWelcomeMsg').innerText;
+            speakText(msgText);
+        } else {
+            icon.classList.replace('fa-volume-up', 'fa-volume-mute');
+            icon.classList.remove('pulse-audio');
+            stopAudio();
+        }
     }
 
-    function hideLoanModal() {
-        document.getElementById('loanModal').classList.add('hidden');
+    async function speakText(text) {
+        if (!isVoiceEnabled) return;
+        stopAudio();
+        
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: text }] }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: {
+                            voiceConfig: {
+                                prebuiltVoiceConfig: { voiceName: "Kore" }
+                            }
+                        }
+                    },
+                    model: "gemini-2.5-flash-preview-tts"
+                })
+            });
+
+            const result = await response.json();
+            const pcmData = result.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+            if (pcmData) {
+                const wavUrl = pcmToWav(pcmData);
+                currentAudio = new Audio(wavUrl);
+                currentAudio.play();
+            }
+        } catch (error) {
+            console.error("TTS Error:", error);
+        }
+    }
+
+    function stopAudio() {
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+    }
+
+    // Helper: Convert PCM to WAV for Browser Playback
+    function pcmToWav(pcmBase64, sampleRate = 24000) {
+        const byteCharacters = atob(pcmBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const buffer = byteArray.buffer;
+        const view = new DataView(buffer);
+
+        const wavBuffer = new ArrayBuffer(44 + buffer.byteLength);
+        const wavView = new DataView(wavBuffer);
+
+        wavView.setUint32(0, 0x46464952, true); // "RIFF"
+        wavView.setUint32(4, 36 + buffer.byteLength, true);
+        wavView.setUint32(8, 0x45564157, true); // "WAVE"
+        wavView.setUint32(12, 0x20746d66, true); // "fmt "
+        wavView.setUint32(16, 16, true);
+        wavView.setUint16(20, 1, true); // PCM
+        wavView.setUint16(22, 1, true); // Mono channel
+        wavView.setUint32(24, sampleRate, true);
+        wavView.setUint32(28, sampleRate * 2, true);
+        wavView.setUint16(32, 2, true);
+        wavView.setUint16(34, 16, true);
+        wavView.setUint32(36, 0x61746164, true); // "data"
+        wavView.setUint32(40, buffer.byteLength, true);
+
+        for (let i = 0; i < buffer.byteLength; i++) {
+            wavView.setUint8(44 + i, view.getUint8(i));
+        }
+
+        const blob = new Blob([wavView], { type: 'audio/wav' });
+        return URL.createObjectURL(blob);
+    }
+
+    function showTtbSolutionModal() { 
+        const modal = document.getElementById('ttbSolutionModal');
+        if (modal) modal.classList.remove('hidden'); 
+    }
+    function hideTtbSolutionModal() { 
+        const modal = document.getElementById('ttbSolutionModal');
+        if (modal) modal.classList.add('hidden'); 
+    }
+
+    function showLoanConfirmModal() { validateAndRecalculate(); document.getElementById('loanConfirmModal').classList.remove('hidden'); }
+    function hideLoanConfirmModal() { document.getElementById('loanConfirmModal').classList.add('hidden'); }
+
+    function openActivity() {
+        const view = document.getElementById('activityView');
+        const fab = document.getElementById('aiFab');
+        if (view) view.classList.remove('translate-y-full');
+        if (fab) fab.classList.add('hidden-fab');
+        resetQuizUI();
+    }
+    function closeActivity() {
+        const view = document.getElementById('activityView');
+        const fab = document.getElementById('aiFab');
+        if (view) view.classList.add('translate-y-full');
+        if (fab) fab.classList.remove('hidden-fab');
+        document.getElementById('wheelScreen').classList.add('hidden');
+        document.getElementById('quizResultModal').classList.add('hidden');
+        const prizeResult = document.getElementById('prizeResult');
+        if (prizeResult) prizeResult.classList.add('hidden');
+    }
+
+    function resetQuizUI() {
+        const btns = document.querySelectorAll('.answer-btn');
+        btns.forEach(btn => {
+            btn.classList.remove('correct', 'incorrect');
+            btn.disabled = false;
+            const icon = btn.querySelector('.status-icon');
+            if (icon) icon.className = 'status-icon hidden ml-2';
+        });
+    }
+
+    function handleAnswerSelection(id, isCorrect) {
+        const btns = document.querySelectorAll('.answer-btn');
+        const resultModal = document.getElementById('quizResultModal');
+        const resIcon = document.getElementById('resultIcon');
+        const resTitle = document.getElementById('resultTitle');
+        const resMsg = document.getElementById('resultMessage');
+        const resBtn = document.getElementById('resultActionBtn');
+
+        btns.forEach(btn => btn.disabled = true);
+        const correctBtn = document.getElementById(`ans-${correctId}`);
+        if (correctBtn) {
+            correctBtn.classList.add('correct');
+            const cIcon = correctBtn.querySelector('.status-icon');
+            if (cIcon) cIcon.className = 'status-icon fas fa-check-circle ml-2 block';
+        }
+
+        if (!isCorrect) {
+            const wrongBtn = document.getElementById(`ans-${id}`);
+            if (wrongBtn) {
+                wrongBtn.classList.add('incorrect');
+                const wIcon = wrongBtn.querySelector('.status-icon');
+                if (wIcon) wIcon.className = 'status-icon fas fa-times-circle ml-2 block';
+            }
+            if (resIcon) {
+                resIcon.className = "w-20 h-20 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 bg-red-100 text-red-600";
+                resIcon.innerHTML = '<i class="fas fa-times"></i>';
+            }
+            if (resTitle) resTitle.innerText = "เสียใจด้วยนะครับ";
+            if (resMsg) resMsg.innerText = "ท่านตอบคำถามไม่ถูกต้อง พรุ่งนี้ลองใหม่นะ!";
+            if (resBtn) {
+                resBtn.innerText = "ปิดหน้าต่าง";
+                resBtn.className = "w-full font-bold py-4 rounded-2xl shadow-lg bg-gray-200 text-gray-600";
+                resBtn.onclick = closeActivity;
+            }
+        } else {
+            if (resIcon) {
+                resIcon.className = "w-20 h-20 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 bg-green-100 text-green-600";
+                resIcon.innerHTML = '<i class="fas fa-check"></i>';
+            }
+            if (resTitle) resTitle.innerText = "แสดงความยินดีด้วย!";
+            if (resMsg) resMsg.innerText = "ท่านตอบคำถามได้ถูกต้อง รับสิทธิ์ลุ้นรางวัลทันที";
+            if (resBtn) {
+                resBtn.innerText = "ไปลุ้นรางวัลของคุณ";
+                resBtn.className = "w-full font-bold py-4 rounded-2xl shadow-lg bg-[#0056ff] text-white active:scale-95";
+                resBtn.onclick = goToWheel;
+            }
+        }
+        if (resultModal) { setTimeout(() => { resultModal.classList.remove('hidden'); }, 300); }
+    }
+
+    function goToWheel() {
+        document.getElementById('quizResultModal').classList.add('hidden');
+        document.getElementById('activityView').classList.remove('translate-y-full');
+        document.getElementById('quizScreen').classList.add('hidden');
+        document.getElementById('wheelScreen').classList.remove('hidden');
+    }
+
+    function spinWheel() {
+        const wheel = document.getElementById('wheel');
+        const btn = document.getElementById('spinBtn');
+        if (!wheel || !btn) return;
+        btn.disabled = true;
+        const randomRotation = Math.floor(Math.random() * 360) + 3600;
+        wheel.style.transform = `rotate(${randomRotation}deg)`;
+        setTimeout(() => { showPrizeResult(Math.random() > 0.5); }, 4500);
+    }
+
+    function showPrizeResult(isWinner) {
+        const resultView = document.getElementById('prizeResult');
+        const content = document.getElementById('prizeContent');
+        if (resultView) resultView.classList.remove('hidden');
+        if (isWinner && content) {
+            content.innerHTML = `<div class="animate-pop text-gray-800"><i class="fas fa-trophy text-7xl text-orange-500 mb-6 text-orange-500"></i><h2 class="text-2xl font-bold mb-2">ยินดีด้วย! คุณได้รับรางวัล</h2><p class="text-gray-600 mb-8">รหัสส่วนลด Lotus 100 บาท</p><div class="bg-gray-50 p-6 rounded-3xl font-mono text-2xl border-4 border-dashed border-[#0056ff] text-[#0056ff] tracking-wider">TTB-LOTUS-V7X2</div></div>`;
+        } else if (content) {
+            content.innerHTML = `<div><i class="fas fa-frown text-7xl text-gray-300 mb-6 text-gray-300"></i><h2 class="text-2xl font-bold mb-2 text-gray-800">เสียใจด้วยนะครับ</h2><p class="text-gray-600">วันนี้คุณยังไม่ได้รับรางวัล พรุ่งนี้ลองใหม่นะ!</p></div>`;
+        }
+    }
+
+    function openPinStep() { pinCode = ""; updatePinUI(); document.getElementById('pinModal').classList.remove('hidden'); }
+    function pressPinKey(num) { if (pinCode.length < 6) { pinCode += num; updatePinUI(); } }
+    function deletePinKey() { if (pinCode.length > 0) { pinCode = pinCode.slice(0, -1); updatePinUI(); } }
+    function updatePinUI() {
+        for (let i = 1; i <= 6; i++) {
+            const el = document.getElementById(`dot-${i}`);
+            if(el) el.classList.toggle('filled', i <= pinCode.length);
+        }
+        const btn = document.getElementById('finalConfirmBtn');
+        if(btn) btn.classList.toggle('btn-disabled', pinCode.length !== 6);
+    }
+    function confirmPinAndFinish() { if (pinCode.length === 6) { closeAllModals(); document.getElementById('loanModal').classList.remove('hidden'); } }
+    function closeAllModals() { document.querySelectorAll('#pinModal, #loanConfirmModal, #loanModal, #quizResultModal, #ttbSolutionModal, #prizeResult').forEach(m => m.classList.add('hidden')); }
+    
+    function validateAndRecalculate() {
+        const input = document.getElementById('loanAmountInput');
+        if(!input) return;
+        let val = parseInt(input.value) || 0; if (val > maxAmount) { val = maxAmount; input.value = maxAmount; }
+        generateRepaymentTable(val, currentYears);
+    }
+    function changePeriod(years, btn) {
+        currentYears = years;
+        document.querySelectorAll('.period-btn').forEach(b => { b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600'); b.classList.add('bg-white', 'text-gray-500', 'border-gray-200'); });
+        btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+        validateAndRecalculate();
+    }
+    function generateRepaymentTable(amount, years) {
+        const rate = 0.0099; const months = years * 12;
+        const interest = amount * rate; const principal = amount / months;
+        const total = principal + interest;
+        const monthlyLabel = document.getElementById('monthlyPaymentLabel');
+        if(monthlyLabel) monthlyLabel.innerText = `฿ ${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        let html = '';
+        const tbody = document.getElementById('repaymentBody');
+        if(tbody) {
+            for (let i = 1; i <= months; i++) {
+                html += `<tr><td class="font-medium text-gray-800">${i}</td><td class="font-bold text-[#0056ff]">${total.toLocaleString(undefined,{minimumFractionDigits:2})}</td><td class="text-gray-800">${principal.toLocaleString(undefined,{minimumFractionDigits:2})}</td><td class="text-orange-500">${interest.toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>`;
+            }
+            tbody.innerHTML = html;
+        }
     }
 </script>
 
