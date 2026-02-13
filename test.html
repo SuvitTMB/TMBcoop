@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payroll Exclusive Banking - Prototype</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -13,32 +13,26 @@
             --primary-blue: #0A3D62;
             --secondary-blue: #3C6382;
             --gold: #D4AF37;
-            --platinum: #A0A0A0;
             --light-bg: #F8FAFC;
         }
 
         body {
             font-family: 'Kanit', sans-serif;
-            background-color: #f3f4f6;
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Prevent body scroll to maintain app feel */
-            width: 100%;
-            height: 100%;
+            background-color: #E2E8F0;
         }
 
-        /* Mobile-First Full Screen Container */
-        .app-view {
-            width: 100%;
-            max-width: 480px; /* Limit width on Desktop */
-            margin: 0 auto;
+        .phone-container {
+            max-width: 414px;
+            margin: 2rem auto;
             background-color: var(--light-bg);
-            height: 100vh;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 8px solid #334155;
+            position: relative;
+            height: 850px;
             display: flex;
             flex-direction: column;
-            position: relative;
-            box-shadow: 0 0 50px rgba(0,0,0,0.1);
-            overflow: hidden;
         }
 
         .custom-scrollbar::-webkit-scrollbar {
@@ -50,330 +44,243 @@
         }
 
         .card-shadow {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
-        .tier-tag {
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 99px;
-            text-transform: uppercase;
-            font-weight: 600;
+        .loan-card {
+            transition: transform 0.2s;
         }
 
-        .tier-gold { background: linear-gradient(90deg, #D4AF37, #F1D38E); color: #4A3700; }
-
-        /* Fixed Header Adjustments */
-        .fixed-header {
-            width: 100%;
-            z-index: 50;
-            flex-shrink: 0;
-        }
-
-        /* Fixed Bottom Navigation Adjustments */
-        .fixed-bottom-nav {
-            width: 100%;
-            z-index: 60;
-            background-color: white;
-            flex-shrink: 0;
-        }
-
-        /* Scrollable Content Area */
-        .content-area {
-            flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* AI Buddy Floating Button */
-        .ai-buddy-fab {
-            position: absolute;
-            right: 20px;
-            bottom: 90px;
-            z-index: 45;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .ai-buddy-fab.hidden-fab {
-            opacity: 0;
-            transform: translateY(30px) scale(0.5);
-            pointer-events: none;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-10px);}
-            60% {transform: translateY(-5px);}
+        .loan-card:active {
+            transform: scale(0.98);
         }
 
         .ai-buddy-pulse {
             box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
-            animation: pulse-ring 2s infinite, bounce 3s infinite;
+            animation: pulse 2s infinite;
         }
 
-        @keyframes pulse-ring {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
 
-        /* AI Chat Layering */
-        #aiChat {
-            z-index: 40; 
-            height: 100%;
-            pointer-events: none;
-            width: 100%;
-            left: 0;
-        }
-        
-        #aiChat.active {
-            pointer-events: auto;
-        }
-
-        /* Pop Animation */
-        @keyframes pop {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .animate-pop {
-            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        /* Handle Safe Area for Mobile Notch */
-        .pt-safe {
-            padding-top: env(safe-area-inset-top);
+        .tab-active {
+            color: var(--primary-blue);
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
 
-<div class="app-view">
-    
-    <!-- Fixed Header Section -->
-    <header class="fixed-header gradient-header pt-safe text-white shadow-lg">
-        <div class="p-6">
+<div class="phone-container">
+    <!-- Status Bar (Mockup) -->
+    <div class="px-8 py-2 flex justify-between items-center bg-white text-xs font-bold">
+        <span>9:41</span>
+        <div class="flex space-x-1">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto custom-scrollbar">
+        <!-- Header: Personal Welcome -->
+        <div class="gradient-header p-6 pt-8 rounded-b-[40px] text-white">
             <div class="flex justify-between items-center mb-6">
                 <div>
-                    <div class="flex items-center space-x-2 mb-1">
-                        <span class="tier-tag tier-gold">GOLD MEMBER</span>
-                        <span class="text-[10px] opacity-70">| CP Group Employee</span>
-                    </div>
                     <h1 class="text-xl font-semibold">สวัสดีครับ คุณธนกฤต</h1>
+                    <p class="text-sm opacity-80">พนักงานผู้ทรงคุณค่าของ <span class="font-bold underline">CP Group</span></p>
                 </div>
-                <img src="https://ui-avatars.com/api/?name=Thanakrit&background=D4AF37&color=fff" class="w-12 h-12 rounded-full border-2 border-white shadow-md" alt="Profile">
+                <div class="relative">
+                    <img src="https://ui-avatars.com/api/?name=Thanakrit&background=D4AF37&color=fff" class="w-12 h-12 rounded-full border-2 border-white" alt="Profile">
+                    <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+                </div>
             </div>
 
-            <!-- Instant Cash Card -->
-            <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-medium uppercase tracking-widest text-blue-200">สิทธิ์เบิกเงินสดฉุกเฉิน</span>
+            <!-- Instant Cash Card (The Hero Feature) -->
+            <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20 mb-2">
+                <div class="flex justify-between items-start mb-3">
+                    <span class="text-xs font-medium uppercase tracking-widest text-blue-200">สิทธิ์กดเงินสดทันใจ (Pre-approved)</span>
                     <i class="fas fa-bolt text-yellow-400"></i>
                 </div>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-baseline space-x-1">
-                        <span class="text-2xl font-bold">฿ 250,000</span>
-                        <span class="text-[10px] opacity-60 ml-2">พิเศษ 0.99%</span>
-                    </div>
-                    <button onclick="showLoanModal()" class="bg-yellow-500 hover:bg-yellow-400 text-blue-900 text-xs font-bold px-4 py-2 rounded-lg shadow-md transition transform active:scale-95">
-                        เบิกเงินทันที
-                    </button>
+                <div class="flex items-baseline space-x-1 mb-4">
+                    <span class="text-3xl font-bold">฿ 250,000</span>
                 </div>
+                <button onclick="showLoanModal()" class="w-full bg-yellow-500 hover:bg-yellow-400 text-blue-900 font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">
+                    โอนเข้าบัญชีทันที
+                </button>
             </div>
         </div>
-        <div class="h-6 bg-white rounded-t-[40px]"></div>
-    </header>
 
-    <!-- Scrollable Main Content Area -->
-    <main class="content-area custom-scrollbar px-6 pb-12">
-        
         <!-- Quick Menu -->
-        <div class="mb-8">
+        <div class="px-6 -mt-4 mb-6">
             <div class="bg-white rounded-2xl p-4 flex justify-around card-shadow">
-                <div class="flex flex-col items-center cursor-pointer group">
-                    <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-1">
+                <div class="flex flex-col items-center group cursor-pointer">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-1 group-hover:bg-blue-600 group-hover:text-white transition">
                         <i class="fas fa-paper-plane"></i>
                     </div>
-                    <span class="text-[10px] font-medium text-gray-600">โอนเงิน</span>
+                    <span class="text-[10px] font-medium">โอนเงิน</span>
                 </div>
-                <div class="flex flex-col items-center cursor-pointer group">
-                    <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-1">
+                <div class="flex flex-col items-center group cursor-pointer">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-1 group-hover:bg-blue-600 group-hover:text-white transition">
                         <i class="fas fa-qrcode"></i>
                     </div>
-                    <span class="text-[10px] font-medium text-gray-600">สแกนจ่าย</span>
+                    <span class="text-[10px] font-medium">สแกนจ่าย</span>
                 </div>
-                <div class="flex flex-col items-center cursor-pointer group">
-                    <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-1">
+                <div class="flex flex-col items-center group cursor-pointer">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-1 group-hover:bg-blue-600 group-hover:text-white transition">
                         <i class="fas fa-file-invoice"></i>
                     </div>
-                    <span class="text-[10px] font-medium text-gray-600">จ่ายบิล</span>
+                    <span class="text-[10px] font-medium">จ่ายบิล</span>
                 </div>
-                <div class="flex flex-col items-center cursor-pointer group">
-                    <div class="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 mb-1">
-                        <i class="fas fa-chart-pie"></i>
+                <div class="flex flex-col items-center group cursor-pointer">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-1 group-hover:bg-blue-600 group-hover:text-white transition">
+                        <i class="fas fa-ellipsis-h"></i>
                     </div>
-                    <span class="text-[10px] font-medium text-gray-600">สรุปผล</span>
+                    <span class="text-[10px] font-medium">อื่นๆ</span>
                 </div>
             </div>
         </div>
 
-        <!-- Engagement Mission -->
-        <div class="mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-gray-800">กิจกรรมล่ารางวัล</h3>
-                <span class="text-xs text-blue-600 font-semibold">🪙 1,250 พอยท์</span>
-            </div>
-            <div class="bg-gradient-to-r from-orange-400 to-red-400 p-4 rounded-2xl text-white shadow-lg flex items-center justify-between">
+        <!-- AI Assistant Banner -->
+        <div class="px-6 mb-8">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-4 flex items-center justify-between text-white card-shadow cursor-pointer" onclick="toggleAIChat()">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                        <i class="fas fa-gift"></i>
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl ai-buddy-pulse">
+                        <i class="fas fa-robot"></i>
                     </div>
                     <div>
-                        <h4 class="text-sm font-bold leading-none mb-1 text-white text-white">สะสมเงินฝากครบสัปดาห์</h4>
-                        <p class="text-[10px] opacity-80 text-white text-white">รับสิทธิ์ลุ้นตั๋วหนังฟรี 2 ที่นั่ง</p>
+                        <h4 class="font-bold">ปรึกษา AI Buddy</h4>
+                        <p class="text-xs opacity-80">มีคำถามเรื่องกู้บ้านหรือรถ? ถามผมได้ครับ</p>
                     </div>
                 </div>
                 <i class="fas fa-chevron-right opacity-50"></i>
             </div>
         </div>
 
-        <!-- News Section -->
-        <div class="mb-8 -mx-6">
-            <h3 class="px-6 font-bold text-gray-800 mb-4">ข่าวสารธนาคาร</h3>
-            <div class="flex overflow-x-auto space-x-4 px-6 custom-scrollbar">
-                <div class="bg-white rounded-2xl overflow-hidden card-shadow border border-gray-100 min-w-[260px]">
-                    <div class="h-24 bg-blue-800 p-4 text-white flex flex-col justify-end">
-                        <h4 class="text-sm font-bold text-white text-white">Privilege For CP</h4>
+        <!-- Specialized Products Section -->
+        <div class="px-6 mb-8">
+            <h3 class="font-bold text-gray-800 mb-4 flex justify-between items-center">
+                ผลิตภัณฑ์พิเศษเพื่อคุณ
+                <span class="text-xs text-blue-600 font-normal">ดูทั้งหมด</span>
+            </h3>
+            
+            <div class="space-y-4">
+                <!-- Home Loan -->
+                <div class="bg-white p-4 rounded-2xl border border-gray-100 card-shadow loan-card flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 text-2xl">
+                        <i class="fas fa-house-user"></i>
                     </div>
-                    <div class="p-3">
-                        <p class="text-[11px] text-gray-600">เปิดตัวสิทธิพิเศษใหม่ ซื้อของใน 7-Eleven รับคืน 5%</p>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-gray-800">สินเชื่อบ้าน Payroll</h4>
+                        <p class="text-[10px] text-gray-500">ดอกเบี้ยคงที่ 2.75% นาน 3 ปี</p>
+                        <div class="mt-2 flex items-center">
+                            <span class="bg-green-100 text-green-700 text-[9px] px-2 py-0.5 rounded-full font-bold">อนุมัติง่ายสำหรับพนักงาน CP</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-gray-400">ผ่อนเริ่มต้น</p>
+                        <p class="font-bold text-blue-800">฿ 8,500</p>
                     </div>
                 </div>
-                <div class="bg-white rounded-2xl overflow-hidden card-shadow border border-gray-100 min-w-[260px]">
-                    <div class="h-24 bg-indigo-800 p-4 text-white flex flex-col justify-end">
-                        <h4 class="text-sm font-bold text-white text-white">Investment Tips</h4>
-                    </div>
-                    <div class="p-3">
-                        <p class="text-[11px] text-gray-600">เทคนิคการออมเงินฉบับพนักงานออฟฟิศ ปี 2024</p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Tiered Offers -->
-        <div class="mb-8">
-            <h3 class="font-bold text-gray-800 mb-4 text-gray-800">ข้อเสนอสำหรับ Gold Tier</h3>
-            <div class="bg-white p-5 rounded-2xl card-shadow border border-gray-50 flex items-center justify-between mb-3">
-                <div class="flex items-center space-x-4">
-                    <div class="text-blue-600 text-2xl">
-                        <i class="fas fa-house-chimney text-blue-600"></i>
+                <!-- Car Loan -->
+                <div class="bg-white p-4 rounded-2xl border border-gray-100 card-shadow loan-card flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500 text-2xl">
+                        <i class="fas fa-car-side"></i>
                     </div>
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-800 text-gray-800">กู้บ้านเพื่อพนักงาน</h4>
-                        <p class="text-[10px] text-gray-500">ดอกเบี้ย 2.5% นาน 3 ปีแรก</p>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-gray-800">สินเชื่อรถยนต์ใหม่</h4>
+                        <p class="text-[10px] text-gray-500">ดาวน์ 0% สำหรับพนักงานบัญชีเงินเดือน</p>
                     </div>
-                </div>
-                <i class="fas fa-chevron-right text-gray-300"></i>
-            </div>
-            <div class="bg-white p-5 rounded-2xl card-shadow border border-gray-50 flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="text-indigo-600 text-2xl">
-                        <i class="fas fa-car text-indigo-600"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-800 text-gray-800">ถอยรถใหม่ 0%</h4>
-                        <p class="text-[10px] text-gray-500">สิทธิ์พิเศษเฉพาะพนักงาน CP เท่านั้น</p>
+                    <div class="text-right">
+                        <p class="text-[10px] text-gray-400">ดอกเบี้ยพิเศษ</p>
+                        <p class="font-bold text-blue-800">1.99%</p>
                     </div>
                 </div>
-                <i class="fas fa-chevron-right text-gray-300"></i>
-            </div>
-        </div>
-    </main>
 
-    <!-- Floating AI Buddy Advisor Button -->
-    <div id="aiFab" class="ai-buddy-fab" onclick="toggleAIChat()">
-        <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-2xl cursor-pointer ai-buddy-pulse border-4 border-white">
-            <i class="fas fa-robot text-2xl text-white"></i>
-        </div>
-        <div class="bg-white text-blue-600 text-[10px] font-bold px-3 py-1 rounded-full shadow-md absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap border border-blue-100">
-            ปรึกษา AI
+                <!-- Credit Card -->
+                <div class="bg-white p-4 rounded-2xl border border-gray-100 card-shadow loan-card flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-gold/10 rounded-xl flex items-center justify-center text-yellow-600 text-2xl">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-gray-800">บัตรเครดิต Platinum</h4>
+                        <p class="text-[10px] text-gray-500">ฟรีค่าธรรมเนียมรายปีตลอดชีพ</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300"></i>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Fixed Bottom Navigation (Z-Index 60) -->
-    <nav class="fixed-bottom-nav border-t border-gray-100 px-8 py-4 flex justify-between items-center shadow-[0_-5px_20px_rgba(0,0,0,0.1)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
-        <div class="flex flex-col items-center text-blue-600 cursor-pointer">
+    <!-- Bottom Navigation -->
+    <div class="bg-white border-t border-gray-100 px-6 py-3 flex justify-between items-center rounded-t-3xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div class="flex flex-col items-center tab-active cursor-pointer">
             <i class="fas fa-home text-lg"></i>
-            <span class="text-[10px] mt-1 font-bold">หน้าหลัก</span>
+            <span class="text-[10px] mt-1">หน้าหลัก</span>
         </div>
-        <div class="flex flex-col items-center text-gray-400 hover:text-blue-600 cursor-pointer">
-            <i class="fas fa-tasks text-lg"></i>
-            <span class="text-[10px] mt-1 font-medium">กิจกรรม</span>
+        <div class="flex flex-col items-center text-gray-400 hover:text-blue-600 cursor-pointer transition">
+            <i class="fas fa-wallet text-lg"></i>
+            <span class="text-[10px] mt-1">ผลิตภัณฑ์</span>
         </div>
-        <div class="flex flex-col items-center text-gray-400 hover:text-blue-600 cursor-pointer">
-            <i class="fas fa-star text-lg"></i>
-            <span class="text-[10px] mt-1 font-medium text-center">สิทธิ์เฉพาะคุณ</span>
+        <div class="flex flex-col items-center text-gray-400 hover:text-blue-600 cursor-pointer transition">
+            <i class="fas fa-gift text-lg"></i>
+            <span class="text-[10px] mt-1">สิทธิพิเศษ</span>
         </div>
-        <div class="flex flex-col items-center text-gray-400 hover:text-blue-600 cursor-pointer">
-            <i class="fas fa-user text-lg"></i>
-            <span class="text-[10px] mt-1 font-medium">โปรไฟล์</span>
+        <div class="flex flex-col items-center text-gray-400 hover:text-blue-600 cursor-pointer transition">
+            <i class="fas fa-cog text-lg"></i>
+            <span class="text-[10px] mt-1">ตั้งค่า</span>
         </div>
-    </nav>
+    </div>
 
-    <!-- AI Buddy Chat Overlay -->
-    <div id="aiChat" class="absolute inset-0 bg-white translate-y-full transition-transform duration-500 flex flex-col">
-        <div class="gradient-header pt-safe text-white shadow-md">
-            <div class="p-6 flex justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                        <i class="fas fa-robot text-2xl text-white"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-bold leading-tight text-white text-white">AI Financial Advisor</h3>
-                        <p class="text-[10px] opacity-70 italic text-white text-white text-white">เชี่ยวชาญสิทธิ์พนักงาน CP Group</p>
-                    </div>
+    <!-- AI Buddy Chat Overlay (Hidden by Default) -->
+    <div id="aiChat" class="absolute inset-0 bg-white z-20 translate-y-full transition-transform duration-300 flex flex-col">
+        <div class="gradient-header p-6 text-white flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-robot text-2xl"></i>
+                <div>
+                    <h3 class="font-bold">AI Financial Buddy</h3>
+                    <p class="text-[10px] opacity-70">กำลังออนไลน์ | พร้อมดูแลพนักงาน CP</p>
                 </div>
-                <button onclick="toggleAIChat()" class="w-8 h-8 flex items-center justify-center bg-black/20 rounded-full hover:bg-black/30 transition text-white text-white">
-                    <i class="fas fa-times text-white"></i>
-                </button>
             </div>
+            <button onclick="toggleAIChat()" class="text-white opacity-70 hover:opacity-100">
+                <i class="fas fa-times text-xl"></i>
+            </button>
         </div>
-        
-        <div class="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50 pb-20">
+        <div class="flex-1 p-6 overflow-y-auto space-y-4">
             <div class="flex items-start space-x-2">
-                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-bold shrink-0 text-blue-600">AI</div>
-                <div class="bg-white p-4 rounded-2xl rounded-tl-none text-sm text-gray-700 shadow-sm border border-gray-100">
-                    สวัสดีครับคุณธนกฤต ในฐานะ Gold Member ผมพร้อมช่วยคุณวางแผนการเงินและตรวจสอบสิทธิ์พิเศษสำหรับพนักงาน CP แล้วครับ ต้องการทราบข้อมูลด้านใดก่อนดีครับ?
+                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs">AI</div>
+                <div class="bg-blue-50 p-3 rounded-2xl rounded-tl-none text-sm text-gray-700 max-w-[80%]">
+                    สวัสดีครับคุณธนกฤต ผมเห็นคุณมีแผนจะซื้อบ้านเร็วๆ นี้ สนใจดูโปรโมชันดอกเบี้ยพิเศษสำหรับพนักงาน CP ไหมครับ?
                 </div>
             </div>
-            <div class="flex flex-col space-y-2 mt-4">
-                <button class="bg-white text-blue-600 text-[11px] p-3 rounded-xl border border-blue-100 shadow-sm text-left active:bg-blue-50 text-blue-600">
-                    <i class="fas fa-calculator mr-2 opacity-50 text-blue-600"></i> คำนวณสินเชื่อบ้านเรทพนักงาน
-                </button>
-                <button class="bg-white text-blue-600 text-[11px] p-3 rounded-xl border border-blue-100 shadow-sm text-left active:bg-blue-50 text-blue-600">
-                    <i class="fas fa-car-side mr-2 opacity-50 text-blue-600"></i> ตรวจสอบสิทธิ์กู้รถยนต์ 0%
-                </button>
+            <div class="flex items-start flex-row-reverse space-x-reverse space-x-2">
+                <div class="bg-blue-600 p-3 rounded-2xl rounded-tr-none text-sm text-white max-w-[80%]">
+                    สนใจครับ มีเงื่อนไขอะไรบ้าง?
+                </div>
             </div>
         </div>
-
-        <!-- Chat Input Section -->
-        <div class="p-4 bg-white border-t flex items-center space-x-2 mb-[80px]">
-            <input type="text" placeholder="พิมพ์ข้อความ..." class="flex-1 bg-gray-100 border-none rounded-full px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-            <button class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg active:scale-90 text-white">
-                <i class="fas fa-paper-plane text-sm text-white"></i>
+        <div class="p-4 border-t flex items-center space-x-2">
+            <input type="text" placeholder="พิมพ์คำถามของคุณ..." class="flex-1 bg-gray-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <button class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center">
+                <i class="fas fa-paper-plane text-xs"></i>
             </button>
         </div>
     </div>
 
-    <!-- Loan Modal Success -->
-    <div id="loanModal" class="absolute inset-0 bg-black/60 z-[100] hidden flex items-center justify-center p-6 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full p-8 text-center shadow-2xl animate-pop">
-            <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
-                <i class="fas fa-check text-green-600"></i>
+    <!-- Loan Modal (Demo) -->
+    <div id="loanModal" class="absolute inset-0 bg-black/50 z-30 hidden flex items-center justify-center p-6">
+        <div class="bg-white rounded-3xl w-full p-6 text-center animate-bounce-in">
+            <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
+                <i class="fas fa-check-circle"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2 text-gray-800">เบิกเงินสำเร็จ!</h3>
-            <p class="text-xs text-gray-500 mb-8">ธนาคารโอนเงิน 250,000 บาท เข้าบัญชี <br>Gold Member ของคุณแล้ว</p>
-            <button onclick="hideLoanModal()" class="w-full bg-blue-900 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition text-white">
-                รับทราบ
+            <h3 class="text-xl font-bold text-gray-800 mb-2">ยืนยันรายการสำเร็จ!</h3>
+            <p class="text-sm text-gray-500 mb-6">ธนาคารได้โอนเงิน ฿250,000 เข้าบัญชีเงินเดือนของคุณเรียบร้อยแล้ว</p>
+            <button onclick="hideLoanModal()" class="w-full bg-blue-900 text-white font-bold py-3 rounded-xl">
+                กลับสู่หน้าหลัก
             </button>
         </div>
     </div>
@@ -382,18 +289,10 @@
 <script>
     function toggleAIChat() {
         const chat = document.getElementById('aiChat');
-        const fab = document.getElementById('aiFab');
-        
-        const isHidden = chat.classList.contains('translate-y-full');
-        
-        if (isHidden) {
+        if (chat.classList.contains('translate-y-full')) {
             chat.classList.remove('translate-y-full');
-            chat.classList.add('active');
-            fab.classList.add('hidden-fab');
         } else {
             chat.classList.add('translate-y-full');
-            chat.classList.remove('active');
-            fab.classList.remove('hidden-fab');
         }
     }
 
